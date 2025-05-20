@@ -10,6 +10,8 @@ const AuthContext = createContext(null);
 
 export const AuthProvider = ({ children }) => {
   const [user, setUser] = useState(null);
+  const [appError, setAppError] = useState(null)
+  const [popError, setPopError] = useState(null)
   const [loading, setLoading] = useState(true);
   const navigate = useNavigate();
 
@@ -102,7 +104,7 @@ export const AuthProvider = ({ children }) => {
   }
 
   return (
-    <AuthContext.Provider value={{ user, login, logout, register, save, setUser, connectDomain, verifyDomain, verifyCNAME}}>
+    <AuthContext.Provider value={{ user, login, logout, register, save, setUser, connectDomain, verifyDomain, verifyCNAME, appError, setAppError, popError, setPopError}}>
       {children}
     </AuthContext.Provider>
   );

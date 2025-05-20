@@ -1,6 +1,6 @@
 
 import React, { useState, useEffect, useRef } from "react";
-import { Routes, Route, Navigate } from "react-router-dom";
+import { Routes, Route, Navigate} from "react-router-dom";
 import MainLayout from "./MainLayout";
 import { AuthProvider, useAuth } from "@/contexts/AuthContext";
 
@@ -20,6 +20,13 @@ import TicketDetails from "@/pages/TicketDetails";
 import LoginPage from "@/pages/Login";
 import RegisterPage from "@/pages/Register";
 import axios from 'axios';
+import PricingPlan from "@/pages/PricingPlan"
+import {CheckoutForm, Return} from "@/pages/Stripe";
+import AppError from "./AppError";
+import PopError from "./PopError";
+import AppNotFound from "./AppNotFound";
+import RaffleNotFound from "./raffleLanding/RaffleNotFound";
+import SpinningLogo from "./components/spinner";
 const api = axios.create({
   baseURL: 'http://localhost:5050',
   withCredentials: true, // same as fetch's credentials: 'include'
@@ -38,11 +45,11 @@ const RaffleSelected = ({ children, selectedRaffle }) => {
   }
   return null;
 };
-const UserPaymentPlan = () => {
-
+const RedirectHome = () => {
+  return <Navigate to="/" />
 }
 const AppContent = () => {
-  const { user, setUser } = useAuth();
+  const { user, setUser, appError, popError } = useAuth();
   useEffect(() => {
     const themePreference = window.matchMedia('(prefers-color-scheme: dark)');
     if (localStorage.theme === 'dark' || (!("theme" in localStorage) && themePreference.matches)) {
@@ -94,7 +101,11 @@ const AppContent = () => {
   
 
 
-  if (loadingUser) return <div>Loading...</div>;
+  if (loadingUser) return (
+    <div className="w-screen h-screen flex items-center justify-center">
+       <SpinningLogo className="h-40 w-40"/>
+    </div>
+  );
 
   if (!user) {
     return (
@@ -106,6 +117,7 @@ const AppContent = () => {
             <Route path="verify" element={<TicketVerificationRaffle />} />
             <Route path="contact" element={<ContactRaffle />} />
             <Route path="payment" element={<PaymentRaffle />} />
+            <Route path="*" element={<RaffleNotFound />} />
         </Route>
         <Route path="*" element={<Navigate to="/login" />} />
       </Routes>
@@ -113,8 +125,12 @@ const AppContent = () => {
   }
 
   return (
+    <>
     <Routes>
       <Route element={<MainLayout selectedRaffle={selectedRaffle} setSelectedRaffle={setSelectedRaffle} />}>
+        {appError ? <Route path="*" element={<AppError />} /> :
+        <>
+        
         <Route path="/" element={<ProtectedRoute><RaffleSelected selectedRaffle={selectedRaffle} ><HomePage selectedRaffle={selectedRaffle} /></RaffleSelected></ProtectedRoute>} />
         <Route path="/stats" element={<ProtectedRoute><RaffleSelected selectedRaffle={selectedRaffle} ><StatsPage selectedRaffle={selectedRaffle} /></RaffleSelected></ProtectedRoute>} />
         <Route path="/create" element={<ProtectedRoute><CreateRafflePage /></ProtectedRoute>} />
@@ -122,14 +138,27 @@ const AppContent = () => {
         <Route path="/edit/:id" element={<ProtectedRoute><RaffleEditPage /></ProtectedRoute>} />
         <Route path="/settings" element={<ProtectedRoute><SettingsPage /></ProtectedRoute>} />
         <Route path="/ticket/:raffleID/:transactionID" element={<ProtectedRoute><TicketDetails /></ProtectedRoute>} />
+        <Route path="/login" element={<RedirectHome />} />
+        <Route path="/register" element={<RedirectHome />} />
+        <Route path="*" element={<AppNotFound />} />
+        </>
+        
+        }
       </Route>
+      <Route path="/pricing-plan" element={<PricingPlan />} />
+      <Route path="/checkout" element={<CheckoutForm />} />
+      <Route path="/checkout/return" element={<Return />} />
       <Route path="/raffle/:id" element={<RaffleLanding />} >
             <Route path="" element={<HomeRaffle />} />
             <Route path="verify" element={<TicketVerificationRaffle />} />
             <Route path="contact" element={<ContactRaffle />} />
             <Route path="payment" element={<PaymentRaffle />} />
+            <Route path="*" element={<RaffleNotFound />} />
         </Route>
     </Routes>
+    {popError && <PopError message={popError.message}/> }
+
+    </>
   );
 };
 

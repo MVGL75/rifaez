@@ -8,9 +8,28 @@ const UserSchema = new mongoose.Schema({
     type: String,
     default: "Mi Empresa"
   },
-  logo: { 
+  stripeCustomerId: {
     type: String,
-    default: null
+    default: null,
+  },
+  subscriptionId: {
+    type: String,
+    default: null,
+  },
+  planId: {
+    type: String,
+    default: null,
+  },
+  subscriptionStatus: {
+    type: String,
+    enum: ['active', 'canceled', 'past_due', 'incomplete', 'incomplete_expired', 'trialing', 'unpaid'],
+    default: null,
+  },
+  logo: { 
+    type: {
+      url: String,
+      public_id: String,
+    },
   },
   workers: {
     type: [
@@ -21,7 +40,6 @@ const UserSchema = new mongoose.Schema({
         },
         role: {
           type: String,
-          required: true
         }
       }
     ],
@@ -29,10 +47,6 @@ const UserSchema = new mongoose.Schema({
       { email: "worker1@example.com", role: "editor" },
       { email: "worker2@example.com", role: "editor" }
     ]
-  },
-  currentPlan: { 
-    type: String,
-    default: "basic"
   },
   facebook: { 
     type: String,

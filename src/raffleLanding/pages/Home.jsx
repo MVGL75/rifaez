@@ -1,7 +1,7 @@
 
 import React, { useState, useEffect, useRef } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { ShoppingCart, ChevronDown } from "lucide-react";
+import { ShoppingCart, ChevronDown, SearchIcon, Shuffle } from "lucide-react";
 import { useNavigate, useOutletContext } from "react-router-dom";
 import { ticketInfoValidationSchema} from "../../validation/ticketInfoSchemaValidate"
 import { Button } from "../components/ui/button";
@@ -15,10 +15,13 @@ const Home = () => {
   const [currentImageIndex, setCurrentImageIndex] = useState(0);
   const [selectedTickets, setSelectedTickets] = useState([]);
   const [showSearch, setShowSearch] = useState(false);
-  const [filteredStates, setFilteredStates] = useState([...newMexicanStates, "Extranjero"])
+  const [filteredStates, setFilteredStates] = useState([...newMexicanStates, "Extranjero"]);
+  const [filteredTickets, setFilteredTickets] = useState([...raffle?.availableTickets])
   const [showTicketModal, setShowTicketModal] = useState(false);
+  const [randomNumber, setRandomNumber] = useState(null)
   const [wasSubmitted, setWasSubmitted] = useState(false)
   const [touchStart, setTouchStart] = useState(null);
+  const [searchTicket, setSearchTicket] = useState("")
   const [touchEnd, setTouchEnd] = useState(null);
   const purchaseFormRef = useRef(null);
   const [errors, setErrors] = useState({})
@@ -72,7 +75,14 @@ const Home = () => {
       setCurrentImageIndex((prev) => (prev - 1 + prizeImages.length) % prizeImages.length);
     }
   };
-
+  const handleSearch = (e) => {
+    const query = e.target.value
+    setSearchTicket(query)
+    const filteredArray = raffle?.availableTickets?.filter((item) =>
+      item.toString().includes(query)
+    );
+    setFilteredTickets(filteredArray)
+  }
   const ticketPrices = [
     { quantity: 1, price: raffle?.price },
     { quantity: 2, price: raffle?.price * 2 },
@@ -87,7 +97,11 @@ const Home = () => {
     if (selectedTickets.includes(ticket)) {
       setSelectedTickets(selectedTickets.filter(t => t !== ticket));
     } else {
-      setSelectedTickets([...selectedTickets, ticket]);
+      if (selectedTickets.length >= raffle.maxTpT) {
+        setSelectedTickets(prev => [...prev.slice(1), ticket]); 
+      } else {
+        setSelectedTickets(prev => [...prev, ticket]); 
+      }
     }
   };
 
@@ -98,7 +112,6 @@ const Home = () => {
 
   const validateForm = () => {
     const errorObj = {}
-    console.log(userInfo)
     let isValid = true
     const {error, value} = ticketInfoValidationSchema.validate(userInfo, { abortEarly: false })
     console.log(error)
@@ -111,6 +124,29 @@ const Home = () => {
     
   }
 
+  const randomizeSelection = () => {
+    if(!randomNumber) return setRandomNumber(1);
+    let newNum = randomNumber
+    if(newNum > raffle.maxTpT){
+      newNum = raffle.maxTpT
+    } 
+    if (newNum > raffle.availableTickets.length) {
+      newNum = raffle.availableTickets.length
+    }
+    if (newNum < 1) {
+      newNum = 1
+    }
+    const randomNums = []
+    for (let i = 0; i < newNum; i++) {
+      const random = Math.floor(Math.random() * raffle.availableTickets.length);
+      randomNums.push(raffle.availableTickets[random])
+    }
+    setSelectedTickets(randomNums);
+    setFilteredTickets(randomNums);
+  }
+  const handleRandom = (e) => {
+    setRandomNumber(e.target.value)
+  }
   const handleChange = (e) => {
     const name = e.target.name
     let value = e.target.value
@@ -270,14 +306,30 @@ const Home = () => {
       {/* Available Tickets Section */}
       <div id="ticketsSection" className="w-full bg-backgroundRaffle py-12">
         <div className="max-w-4xl mx-auto px-4 text-center">
-          <h2 className="text-2xl font-bold mb-8">Selecciona tus Boletos</h2>
+          <h2 className="text-2xl font-semi mb-8 flex gap-4 flex-col sm:flex-row text-left"><span>Selecciona tus Boletos</span>   <span className="text-colorRaffle-300 font-medium">Max ({raffle.maxTpT})</span></h2>
           
           {/* Selected Tickets Display */}
-          <div className="mb-8 p-4 bg-cardRaffle rounded-lg">
-            <h3 className="text-xl mb-4">Boletos Seleccionados:</h3>
-            <div className="flex flex-wrap gap-2 justify-center">
+          <div className="mb-8 p-6 bg-cardRaffle rounded-lg text-left">
+            <div className="flex flex-col gap-4 sm:flex-row justify-between sm:items-center mb-4">
+              <h3 className="text-xl">Boletos Seleccionados:</h3>
+              <div className="relative flex items-center gap-5">
+              <div className="relative w-full sm:w-auto">
+              <input value={searchTicket} onChange={handleSearch} className="border-2 w-full sm:w-[225px] rounded-xl px-4 pl-10 py-2 border-input text-sm" type="text" />
+              <SearchIcon className="w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2"/>
+              </div>
+              <div className="absolute right-4 sm:right-auto  sm:relative">
+                <Shuffle className="w-5 h-5 sm:w-6 sm:h-6" onClick={randomizeSelection} />
+                {randomNumber &&
+                <div className="absolute right-0 top-full translate-y-1/2 ">
+                  <input onChange={handleRandom} min={1} max={raffle.maxTpT} type="number" className=" w-20 h-12 px-4 py-4 bg-primaryRaffle text-colorRaffle-foreground rounded-xl" />
+                </div>
+}
+              </div>
+              </div>
+            </div>
+            <div className="flex flex-wrap gap-2 justify-left">
               {selectedTickets.map(ticket => (
-                <span key={ticket} className="bg-primaryRaffle px-3 py-1 rounded-full">
+                <span key={ticket} className="bg-primaryRaffle text-colorRaffle-foreground px-3 py-1 rounded-full">
                   #{ticket}
                 </span>
               ))}
@@ -289,7 +341,7 @@ const Home = () => {
 
           {/* Ticket Grid */}
           <div className="grid grid-cols-5 md:grid-cols-10 gap-2">
-            {raffle?.availableTickets?.map( i => (
+            {filteredTickets?.map( i => (
               <motion.button
                 key={i}
                 whileHover={{ scale: 1.1 }}
@@ -297,7 +349,7 @@ const Home = () => {
                 onClick={() => handleTicketSelection(i)}
                 className={`p-2 text-sm rounded transition-colors ${
                   selectedTickets.includes(i)
-                    ? "bg-primaryRaffle"
+                    ? "bg-primaryRaffle text-colorRaffle-foreground"
                     : "bg-cardRaffle hover:bg-gray-700"
                 }`}
               >

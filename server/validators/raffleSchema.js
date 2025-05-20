@@ -12,6 +12,18 @@ export const raffleValidationSchema = Joi.object({
   title: Joi.string().required(),
   description: Joi.string().required(),
   price: Joi.number().greater(0).required(),
+  logo: Joi.object({
+    url: Joi.string().required(),  
+    public_id: Joi.string().required()   
+  }).optional(),
+  phone: Joi.string().optional()
+      .pattern(/^[0-9]{10}$/)
+      .messages({
+      'string.base': 'El teléfono debe ser un texto.',
+      'string.empty': 'El teléfono es obligatorio.',
+      'string.pattern.base': 'El teléfono debe tener 10 dígitos numéricos',
+      'any.required': 'El teléfono es obligatorio.'
+  }),
   maxParticipants: Joi.number().greater(0).required(),
     isActive: Joi.boolean().default(true),
     participants: Joi.string().optional(),      
@@ -25,6 +37,7 @@ export const raffleValidationSchema = Joi.object({
       url: Joi.string().required(),  
       public_id: Joi.string().required()   
     })).required(),
+    template: Joi.string().valid('classic', 'modern', 'minimalist').required(),
     colorPalette: Joi.string().valid('blue', 'green', 'purple').required(),
     font: Joi.string().valid('xs', 's', 'm', 'l', 'xl').required(),
     logo_position: Joi.string().valid('left', 'center', 'right').required(),

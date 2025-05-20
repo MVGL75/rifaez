@@ -59,7 +59,7 @@ const StatsPage = ({ selectedRaffle }) => {
     ]
   })
   const [searchQuery, setSearchQuery] = useState("");
-
+  const [filteredTickets, setFilteredTickets] = useState(selectedRaffle?.currentParticipants);
   const getTimeLeft = (target)=>{
     const now = new Date();
     const end = new Date(target?.endDate);
@@ -79,7 +79,6 @@ const StatsPage = ({ selectedRaffle }) => {
   const [timeLeft, setTimeLeft] = useState(getTimeLeft(selectedRaffle))
 
   useEffect(() => {
-    console.log(selectedRaffle)
     const interval = setInterval(() => {
       setTimeLeft(getTimeLeft(selectedRaffle));
     }, 1000);
@@ -175,12 +174,23 @@ const StatsPage = ({ selectedRaffle }) => {
   };
   
 
-  // const filteredTickets = tickets.filter(ticket => 
-  //   ticket.id.includes(searchQuery) ||
-  //   ticket.buyer.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-  //   ticket.buyer.email.toLowerCase().includes(searchQuery.toLowerCase()) ||
-  //   ticket.buyer.phone.includes(searchQuery)
-  // );
+  const searchTicket = (e) => {
+    const searchQ = e.target.value
+    const searchLower = searchQ.toLowerCase();
+    const newFilteredTickets = selectedRaffle?.currentParticipants?.filter(ticket => 
+        ticket.phone.toString().includes(searchLower) ||
+        ticket.name.toLowerCase().includes(searchLower) ||
+        ticket.state.toLowerCase().includes(searchLower) ||
+        ticket.amount.toString().includes(searchLower) ||
+        ticket.transactionID.toLowerCase().includes(searchLower) ||
+        ticket.status.toLowerCase().includes(searchLower) ||
+        ticket.tickets.find(ticket_num => ticket_num.toString().includes(searchLower))
+      );
+    setSearchQuery(searchQ)
+    setFilteredTickets(newFilteredTickets)
+  }
+
+
 
   const handleMarkAsPaid = async (ticketId) => {
     const res = await api.post(`/raffle/${selectedRaffle._id}/${ticketId}/mark_paid`)
@@ -330,7 +340,7 @@ const StatsPage = ({ selectedRaffle }) => {
         className="bg-card rounded-lg p-6 shadow-lg"
       >
         <h2 className="text-xl font-semibold mb-4">Visitas y Ventas</h2>
-        <div className="h-[300px]">
+        <div className="h-[300px] max-h-fit">
           <Line options={chartOptions} data={chartData} />
         </div>
       </motion.div>
@@ -340,9 +350,9 @@ const StatsPage = ({ selectedRaffle }) => {
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ delay: 0.4 }}
-        className="bg-card rounded-lg p-6 shadow-lg"
+        className="bg-card rounded-lg px-4 py-6 sm:px-6 shadow-lg"
       >
-        <div className="flex items-center justify-between mb-6">
+        <div className="flex gap-4 md:items-center flex-col justify-between mb-6 md:flex-row">
           <div className="flex items-center space-x-2">
             <DollarSign className="w-6 h-6 text-primary" />
             <h2 className="text-xl font-semibold">Boletos Vendidos</h2>
@@ -353,24 +363,24 @@ const StatsPage = ({ selectedRaffle }) => {
               type="text"
               placeholder="Buscar por número o comprador..."
               value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
-              className="pl-10 p-2 rounded-md border border-input bg-background w-64"
+              onChange={searchTicket}
+              className="pl-10 p-2 rounded-md border border-input bg-background w-full"
             />
           </div>
         </div>
 
         <div className="space-y-4">
-          {selectedRaffle?.currentParticipants && selectedRaffle.currentParticipants.length > 0 ? (
-          selectedRaffle?.currentParticipants?.map((participant) => (
+          {filteredTickets && filteredTickets.length > 0 ? (
+          filteredTickets.map((participant) => (
             <div
               key={participant.transactionID}
               className="bg-muted/50 rounded-lg p-4"
             >
-              <div className="flex items-start justify-between">
-                <div className="space-y-2">
-                  <div className="flex items-center space-x-3">
+              <div className="flex gap-6 flex-col items-start sm:flex-row sm:justify-between ">
+                <div className="space-y-5 w-full sm:w-auto sm:space-y-4">
+                  <div className="flex flex-col sm:flex-row sm:items-center gap-3">
                     <Tag className="w-5 h-5 text-primary" />
-                    <div className="flex items-center space-x-2">
+                    <div className="flex items-center grow justify-between sm:justify-start gap-3">
                       <h3 className="font-medium">Transacción #{participant.transactionID}</h3>
                       {participant.tickets.length > 0 && (
                         <span className="bg-primary/10 text-primary px-2 py-1 rounded-md text-sm">
@@ -380,7 +390,7 @@ const StatsPage = ({ selectedRaffle }) => {
                     </div>
                   </div>
                   
-                  <div className="flex items-center space-x-4 text-sm text-muted-foreground">
+                  <div className="flex flex-col gap-4 items-start md:items-center sm:flex-row text-sm text-muted-foreground">
                     <div className="flex items-center space-x-1">
                       <User className="w-4 h-4" />
                       <span>{participant.name}</span>
@@ -396,7 +406,7 @@ const StatsPage = ({ selectedRaffle }) => {
                   </div>
 
                   {participant.tickets.length > 0 && (
-                    <div className="mt-3 pl-8 border-l-2 border-primary/20">
+                    <div className="sm:mt-3 pl-8 border-l-2 border-primary/20">
                       <div className="text-sm text-muted-foreground mb-2">
                         Boletos:
                       </div>
@@ -414,7 +424,7 @@ const StatsPage = ({ selectedRaffle }) => {
                   )}
                 </div>
 
-                <div className="flex items-center space-x-2">
+                <div className="flex w-full flex-col items-left sm:w-auto sm:flex-row sm:items-center gap-2">
                   {participant.status === "pending" && (
                     <Button
                       variant="outline"
@@ -436,9 +446,9 @@ const StatsPage = ({ selectedRaffle }) => {
                 </div>
               </div>
 
-              <div className="flex items-center justify-between mt-4 pt-4 border-t border-muted">
-                <div className="flex items-center space-x-4">
-                  <span className={`px-2 py-1 rounded-full text-xs font-medium ${
+              <div className="flex  items-center justify-between mt-4 pt-4 border-t border-muted">
+                <div className="flex flex-col-reverse items-left sm:flex-row sm:items-center gap-4">
+                  <span className={`px-2 py-1 rounded-full w-fit text-xs font-medium ${
                     participant.status === "paid"
                       ? "bg-green-100 text-green-800"
                       : "bg-yellow-100 text-yellow-800"

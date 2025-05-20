@@ -8,7 +8,7 @@ const Navbar = ({raffle}) => {
 
   return (
     <nav className={`${raffle.header === "on" ? "bg-primaryRaffle text-colorRaffle-foreground" : "bg-backgroundRaffle text-colorRaffle"} fixed w-full top-0 z-50`}>
-      <div className="container mx-auto px-4">
+      <div className="w-[1400px] max-w-[100vw] box-border mx-auto px-4">
         <div className="flex justify-between items-center h-16">
           {/* Mobile menu button */}
           <button

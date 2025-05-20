@@ -2,10 +2,10 @@
 import React, { useState, useEffect } from "react";
 import { motion } from "framer-motion";
 import { Button } from "@/components/ui/button";
-import { useToast } from "@/components/ui/use-toast";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "@/contexts/AuthContext";
-import { saveSchema, workerSchema } from "../validation/userSchema";
+import { saveSchema, workerSchema, passwordSchema } from "../validation/userSchema";
+import DefaultLogo from "../raffleLanding/components/ui/default-logo";
 import { 
   User, 
   CreditCard, 
@@ -34,34 +34,43 @@ import {
   Phone,
   Save,
   Info,
-  CircleX
+  CircleX,
+  CircleAlert
 } from 'lucide-react';
+
+
+import axios from "axios";
+const api = axios.create({
+  baseURL: 'http://localhost:5050',
+  withCredentials: true,
+});
+
+
 
 const SettingsPage = () => {
   const navigate = useNavigate();
-  const { toast } = useToast();
-  const { logout, user, save, connectDomain, verifyDomain, verifyCNAME } = useAuth();
+  const { logout, user, setUser, save, setAppError, setPopError, connectDomain, verifyDomain, verifyCNAME } = useAuth();
   const [activeSection, setActiveSection] = useState("account");
   const [theme, setTheme] = useState(user.theme ? user.theme : "system");
-  const [fontSize, setFontSize] = useState(16);
   const [language, setLanguage] = useState("es");
   const [wasSubmitted, setWasSubmitted] = useState({})
-  const [openObj, setOpenObj] = useState({})
   const [paymentInstructions, setPaymentInstructions] = useState("");
   const [newWorker, setNewWorker] = useState({});
   const [domainV, setDomainV] = useState('')
   const [newPhoneNumber, setNewPhoneNumber] = useState(null)
   const [record, setRecord] = useState({step: 0,})
+  const [fileState, setFileState] = useState(null)
+  const [changedPassword, setChangedPassword] = useState(false)
   const [loading, setLoading] = useState(false)
   const [errors, setErrors] = useState({});
+  const [workers, setWorkers] = useState(user.workers || [])
   const [successMessage, setSuccessMessage] = useState("")
+  const [passwordObj, setPasswordObj] = useState({})
   const [formData, setFormData] = useState({
     name: user.name || "Juan Pérez",
     email: user.username || "juan@example.com",
     companyName: user.companyName,
-    logo: user.logo,
-    workers: user.workers,
-    currentPlan: user.currentPlan,
+    logo: user.logo || undefined,
     facebook: user.facebook,
     phone: user.phone,
   });
@@ -73,18 +82,23 @@ const SettingsPage = () => {
   const handleUploadLogo = (e) => {
     const file = e.target.files[0];
     if (file) {
-      setFormData(prev => ({ ...prev, logo: URL.createObjectURL(file) }));
+      setFormData(prev => ({ ...prev, logo: {url: URL.createObjectURL(file)} }));
+      setFileState(file)
     }
   };
 
-  const handleAddWorker = () => {
+
+
+
+  const handleAddWorker = async () => {
     setWasSubmitted(prev => ({...prev, worker: true}))
-    const {error, value} = workerSchema.validate(newWorker, {abortEarly: false});
+    const {password, email} = newWorker
+
+    
+    const {error, value} = workerSchema.validate({email}, {abortEarly: false});
     let newObj = {}
     if(error){
-      error.details.forEach(detail => {
-        newObj[detail.context.key] = detail.message
-      })
+      newObj[error.details[0].context.key] = error.details[0].message
     }
     setErrors(prev => ({...prev, worker: newObj}))
 
@@ -92,42 +106,48 @@ const SettingsPage = () => {
       return;
     }
 
-    setFormData(prev => ({
-      ...prev,
-      workers: [...prev.workers, value]
-    }));
-    setWasSubmitted(prev => ({...prev, worker: undefined}))
-    setNewWorker({email: '', password: ''})
+    const res = await api.post("/save_settings/add_worker", {email, password})
+
+    if(res.data.status === 200){
+      setWorkers(prev => [...prev, value])
+      setWasSubmitted(prev => ({...prev, worker: undefined}))
+      setErrors(prev => ({...prev, addWorker: undefined}))
+      setNewWorker({email: '', password: ''})
+    } else if (res.data.status === 808){
+      setPopError({message: res.data.message, status: 808})
+    } else {
+      setErrors(prev => ({...prev, passwordIncorrect: "Invalid"}))
+    }
   };
 
-  const handleRemoveWorker = (email) => {
-    setFormData(prev => ({
-      ...prev,
-      workers: prev.workers.filter(worker => worker.email !== email)
-    }));
+  const handleRemoveWorker = async (email) => {
+    const res = await api.post("/save_settings/remove_worker", {email})
 
-    toast({
-      title: "Trabajador eliminado",
-      description: "El trabajador ha sido eliminado exitosamente"
-    });
+    if(res.data.status === 200){
+      setWorkers(prev => prev.filter(worker => worker.email !== email) || [])
+    } else {
+      setErrors(prev => ({...prev, removeWorker: "Invalid"}))
+    }
   };
 
+  useEffect(()=>{
+    if(wasSubmitted.form){
+      formValidate();
+    }
+  }, [formData])
 
   const formValidate = () => {
-    const {error, value} = saveSchema.validate(formData, {abortEarly: false})
+    const {error, value} = saveSchema.validate(formData, {abortEarly: false, stripUnknown: true})
     let newObj = {}
     if(error){
       error?.details.forEach(detail => {
         newObj[detail.context.key] =  detail.message
       })
     }
-    console.log(newObj.name)
     setErrors(newObj)
     return {error, value}
   }
-  const togglePasswordReq = () => {
-    setOpenObj(prev => ({...prev, pass_req: !prev.pass_req}));
-  }
+ 
   const handlePhoneChange = () => {
     setWasSubmitted(prev => ({...prev, phone: true}))
     const {error, value} = saveSchema.extract('phone').validate(newPhoneNumber);
@@ -174,7 +194,6 @@ const SettingsPage = () => {
       return;
    }
     if(type === "cname"){
-      console.log("try")
       const res = await verifyCNAME(domainV);
       const newErr = {}
       if(res.status ===  200){
@@ -185,6 +204,7 @@ const SettingsPage = () => {
       setErrors(prev => ({...prev, ...newErr}))
     }
   }
+
   const handleChange = (e) => {
     let {name, value} = e.target;
     if(name === "phone"){
@@ -202,6 +222,7 @@ const SettingsPage = () => {
     setFormData(prev => ({...prev, [name]: value}));
   }
 
+
   useEffect(() => {
     if(!wasSubmitted.phone) return;
     const {error} = saveSchema.extract('phone').validate(newPhoneNumber);
@@ -214,13 +235,11 @@ const SettingsPage = () => {
   }, [newPhoneNumber])
   useEffect(() => {
     if(!wasSubmitted.worker) return;
-    const {error, value} = workerSchema.validate(newWorker, {abortEarly: false});
-    console.log(error, value)
+    const {worker_email} = newWorker
+    const {error} = workerSchema.validate(worker_email, {abortEarly: false});
     let newObj = {}
     if(error){
-      error.details.forEach(detail => {
-        newObj[detail.context.key] = detail.message
-      })
+      newObj[error.details[0].context.key] = error.details[0].message
     }
     setErrors(prev => ({...prev, worker: newObj}))
   }, [newWorker])
@@ -247,16 +266,84 @@ const SettingsPage = () => {
     return parts.join('');
   }
 
+  const handlePasswordChange = (e) => {
+    const {name, value} = e.target
+    setPasswordObj(prev => ({...prev, [name]: value}));
+  }
+
+  const passwordChange = async () => {
+    setWasSubmitted(prev => ({...prev, password: true}));
+    if(!passwordObj.password){
+      setErrors(prev => ({...prev, password: "llena contraseña"}))
+      return;
+    }
+    const res = await api.post("/auth/check_password", {password: passwordObj.password})
+    if(res.data.status === 200){
+      setErrors(prev => ({...prev, password: undefined}))
+      const {error, value} = passwordSchema.validate(passwordObj.password_new)
+      if(error){
+        setErrors(prev => ({...prev, password_new: "contraseña no cumple los requisitos"}));
+        return;
+      } else if (passwordObj.password_new === passwordObj.password_new_confirm){
+        const res = await api.post("/auth/change_password", {password: passwordObj.password, password_new: value})
+        console.log(res)
+        if(res.data.status === 200){
+          setWasSubmitted(prev => ({...prev, password: undefined}));
+          setPasswordObj({});
+          setChangedPassword(true)
+          setErrors(prev => ({...prev, password: undefined, password_new: undefined, password_new_confirm: undefined,}))
+        }
+      } else {
+        setErrors(prev => ({...prev, password_new_confirm: "contraseñas deben ser iguales"}));
+      }
+    } else {
+      setErrors(prev => ({...prev, password: "contraseña es incorrecta"}))
+    }
+    
+  }
+
+  useEffect(() => {
+    if (wasSubmitted.password) {
+      const {error} = passwordSchema.validate(passwordObj.password_new)
+      if(error){
+        setErrors(prev => ({...prev, password_new: "contraseña no cumple los requisitos"}));
+      } else if (passwordObj.password_new !== passwordObj.password_new_confirm){
+        setErrors(prev => ({...prev, password_new_confirm: "contraseñas deben ser iguales"}));
+      } else {
+        setErrors(prev => ({...prev, password: undefined, password_new: undefined, password_new_confirm: undefined,}))
+      }
+    }
+  }, [passwordObj])
+
+  useEffect(() => {
+    let timer;
+    if (changedPassword) {
+      timer = setTimeout(() => {
+        setChangedPassword(false);
+      }, 4000);
+    }
+    return () => clearTimeout(timer);
+  }, [changedPassword])
   const saveSettings = async () => {
     setLoading(true);
+    setWasSubmitted({form: true});
     const {error, value} = formValidate();
     if(error){
-      console.log(error);
+      console.log(error)
+      setLoading(false);
       return;
     }
     try {
-      const res = await save(formData)
-      console.log(res)
+      const newRaffleData = new FormData();
+      Object.entries(value).forEach(([key, value]) => {
+        if(key !== "logo"){
+          newRaffleData.append(key, value);
+        }
+      });
+      if(fileState){
+        newRaffleData.append("logo", fileState);
+      }
+      const res = await save(newRaffleData)
       if(res.status === 200){
         setSuccessMessage('Usuario guardado exitosamente.');
       } else {
@@ -290,10 +377,38 @@ const SettingsPage = () => {
     }
     return () => clearTimeout(timer);
   }, [successMessage]);
+
+  const handleSubscribe = (priceId) => {
+      navigate(`/checkout?price_id=${priceId}`);
+  }
+  const handleSubscribeChange = async (priceId) => {
+    try {
+      const res = await api.post("/stripe/update-plan", {newPriceId: priceId});
+      if(res.data){
+        setUser(res.data)
+      }
+    } catch (error) {
+      console.log(error)
+      setAppError(error)
+    }
+  }
+  const handleCancelSubscription = async (priceId) => {
+    try {
+      const res = await api.post("/stripe/cancel-subscription");
+      if(res.data){
+        setUser(res.data)
+      }
+    } catch (error) {
+      console.log(error)
+      setAppError(error)
+    }
+  }
+
   const plans = [
     {
       id: "basic",
       name: "Plan Básico",
+      price_id: import.meta.env.VITE_PRICE_ID_BASIC, 
       price: "$9.99",
       features: [
         "Hasta 5 rifas activas",
@@ -304,6 +419,7 @@ const SettingsPage = () => {
     {
       id: "pro",
       name: "Plan Pro",
+      price_id: import.meta.env.VITE_PRICE_ID_PRO,
       price: "$19.99",
       features: [
         "Rifas ilimitadas",
@@ -313,8 +429,9 @@ const SettingsPage = () => {
       ]
     },
     {
-      id: "enterprise",
+      id: "business",
       name: "Plan Empresarial",
+      price_id: import.meta.env.VITE_PRICE_ID_BUSINESS,
       price: "$49.99",
       features: [
         "Todo lo del Plan Pro",
@@ -394,24 +511,54 @@ const SettingsPage = () => {
                 <label className="block text-sm font-medium mb-2">
                   Cambiar Contraseña
                 </label>
-                <div className="space-y-2">
+              
+                <div className="space-y-2 mb-4">
                   <input
                     type="password"
+                    name="password"
                     placeholder="Contraseña actual"
+                    onChange={handlePasswordChange}
+                    value={passwordObj.password}
                     className="w-full p-2 rounded-md border border-input bg-background"
                   />
+                  {errors.password &&
+                    <p className="text-red-500 mb-2 text-sm">
+                      Contraseña actual es incorrecta.
+                    </p>
+                  }
                   <input
                     type="password"
+                    name="password_new"
                     placeholder="Nueva contraseña"
+                    onChange={handlePasswordChange}
+                    value={passwordObj.password_new}
+
                     className="w-full p-2 rounded-md border border-input bg-background"
                   />
                   <input
                     type="password"
+                    name="password_new_confirm"
                     placeholder="Confirmar nueva contraseña"
+                    onChange={handlePasswordChange}
+                    value={passwordObj.password_new_confirm}
                     className="w-full p-2 rounded-md border border-input bg-background"
                   />
                 </div>
+                {(errors.password_new || errors.password_new_confirm)  &&
+                    <p className="text-red-500 mb-2 text-sm">
+                      {errors.password_new ? "La contraseña debe tener al menos 8 caracteres, e incluir como mínimo una letra mayúscula, una letra minúscula y un número." : "Contraseñas deben coincidir" }
+                    </p>
+                  }
               </div>
+              {changedPassword ?
+              <button className="text-sm px-5 py-2 rounded-full text-primary-foreground bg-primary ">
+                Contraseña cambiado
+              </button>
+              :
+              <button onClick={passwordChange} className="text-sm px-5 py-2 rounded-full text-primary-foreground bg-primary ">
+                Cambiar
+              </button>
+            }
             </div>
           </div>
         );
@@ -440,13 +587,13 @@ const SettingsPage = () => {
                   Logo de la Empresa
                 </label>
                 <div className="flex items-center space-x-4">
-                  {formData.logo && (
+                  {formData.logo ? (
                     <img
-                      src={formData.logo}
+                      src={formData.logo.url}
                       alt="Logo"
-                      className="w-16 h-16 rounded-lg object-cover"
+                      className="border-2 border-input h-10 w-10 rounded-full"
                     />
-                  )}
+                  ): <DefaultLogo className="border-2 border-input h-10 w-10 rounded-full" />}
                   <Button
                     variant="outline"
                     onClick={() => document.getElementById("logo-upload").click()}
@@ -520,7 +667,7 @@ const SettingsPage = () => {
               </div>
 
               <div className="border-t pt-6 mt-6">
-                <div className="flex items-center justify-between mb-4">
+                <div className="flex flex-col gap-3 sm:flex-row sm:items-center justify-between mb-4">
                   <h3 className="text-lg font-medium">Trabajadores</h3>
                   <Button
                     variant="outline"
@@ -534,7 +681,7 @@ const SettingsPage = () => {
                 </div>
 
                 <div className="space-y-4">
-                  {formData.workers.map((worker, index) => (
+                  {workers.map((worker, index) => (
                     <div
                       key={index}
                       className="flex items-center justify-between p-4 rounded-lg border"
@@ -555,7 +702,7 @@ const SettingsPage = () => {
                 </div>
 
                 {/* Add Worker Dialog */}
-                <dialog id="add-worker" className="p-6 rounded-lg shadow-lg bg-background">
+                <dialog id="add-worker" className="z-[100] p-6 rounded-lg shadow-lg bg-background">
                   <h3 className="text-lg font-medium mb-4">Agregar Trabajador</h3>
                   <div className="space-y-4">
                     <div>
@@ -576,17 +723,8 @@ const SettingsPage = () => {
                         <label className="block text-sm font-medium">
                           Tu Contraseña
                         </label> 
-                        <Info onClick={togglePasswordReq} className="w-4 h-4"/>
+                       
                       </div>
-                      {openObj.pass_req &&
-                      <div className="absolute top-8 left-0 bg-white py-2 px-2 rounded border border-input shadow-sm">
-                        <ul className="list-disc pl-4">
-                          <li className="text-sm">Min - 8 caracteres</li>
-                          <li className="text-sm">Mayuscula y Minuscula</li>
-                          <li className="text-sm">Min - 1 Numero</li>
-                        </ul>
-                      </div>
-                      }
                       <input
                         type="password"
                         name="worker_password"
@@ -596,6 +734,12 @@ const SettingsPage = () => {
                         placeholder="Ingresa tu contraseña para confirmar"
                       />
                     </div>
+                    {errors.passwordIncorrect &&
+                    <div className="text-red-500 flex gap-2 items-center">
+                      <CircleAlert className="h-4 w-4"/>
+                      <p className="text-sm">La contraseña es incorrecta</p>
+                    </div>
+                    }
                     <div className="flex justify-end space-x-2">
                       <Button
                         variant="outline"
@@ -623,44 +767,59 @@ const SettingsPage = () => {
               {plans.map((plan) => (
                 <div
                   key={plan.id}
-                  className={`p-6 rounded-lg border ${
-                    formData.currentPlan === plan.id
-                      ? "border-primary bg-primary/5"
-                      : "border-input"
-                  }`}
+                  className={`p-6 rounded-lg border 
+                    ${plan.id === user.currentPlan ?
+                     "border-primary bg-primary/5" : 
+                     "border-input"}  h-[350px] flex flex-col justify-between`}
                 >
-                  <h3 className="text-xl font-semibold">{plan.name}</h3>
-                  <p className="text-3xl font-bold mt-2">{plan.price}</p>
-                  <p className="text-sm text-muted-foreground">por mes</p>
-                  
-                  <ul className="mt-4 space-y-2">
-                    {plan.features.map((feature, index) => (
-                      <li key={index} className="flex items-center space-x-2">
-                        <Check className="w-4 h-4 text-green-500" />
-                        <span>{feature}</span>
-                      </li>
-                    ))}
-                  </ul>
+                  <div>
+                    <h3 className="text-xl font-semibold">{plan.name}</h3>
+                    <p className="text-3xl font-bold mt-2">{plan.price}</p>
+                    <p className="text-sm text-muted-foreground">por mes</p>
+                    
+                    <ul className="mt-4 space-y-2">
+                      {plan.features.map((feature, index) => (
+                        <li key={index} className="flex items-center space-x-2">
+                          <Check className="w-4 h-4 text-green-500" />
+                          <span>{feature}</span>
+                        </li>
+                      ))}
+                    </ul>
+                  </div>
+                  {user.currentPlan ? (
+                    <Button
+                      onClick={user.currentPlan === plan.id ? undefined : () => handleSubscribeChange(plan.price_id)}
+                      className="w-full mt-auto"
+                      variant={user.currentPlan === plan.id ? "outline" : "default"}
+                      disabled={user.currentPlan === plan.id} // Optional for UX
+                    >
+                      {user.currentPlan === plan.id ? "Plan Actual" : "Cambiar Plan"}
+                    </Button>
+                  ) : (
+                    <Button
+                      onClick={() => handleSubscribe(plan.price_id)}
+                      className="w-full mt-auto"
+                      variant="default"
+                    >
+                      Suscribir
+                    </Button>
+                  )}
 
-                  <Button
-                    className="w-full mt-6"
-                    variant={formData.currentPlan === plan.id ? "outline" : "default"}
-                  >
-                    {formData.currentPlan === plan.id ? "Plan Actual" : "Cambiar Plan"}
-                  </Button>
+                
                 </div>
               ))}
             </div>
 
-            <div className="mt-8">
+            {user.currentPlan && <div className="mt-8">
               <Button
                 variant="destructive"
                 className="flex items-center space-x-2"
+                onClick={()=>{handleCancelSubscription()}}
               >
                 <X className="w-4 h-4" />
                 <span>Cancelar Suscripción</span>
               </Button>
-            </div>
+            </div> }
           </div>
         );
 
@@ -834,22 +993,6 @@ const SettingsPage = () => {
                 </select>
               </div>
 
-              <div>
-                <h3 className="text-lg font-medium mb-4">Tamaño de Letra</h3>
-                <input
-                  type="range"
-                  min="12"
-                  max="20"
-                  value={fontSize}
-                  onChange={(e) => setFontSize(parseInt(e.target.value))}
-                  className="w-full"
-                />
-                <div className="flex justify-between text-sm mt-2">
-                  <span>Pequeño</span>
-                  <span>Normal</span>
-                  <span>Grande</span>
-                </div>
-              </div>
             </div>
           </div>
         );
@@ -868,6 +1011,101 @@ const SettingsPage = () => {
     { id: "appearance", icon: <Palette />, label: "Apariencia" }
   ];
 
+  useEffect(() => {
+    if (user?.asWorker) {
+      setActiveSection("appearance");
+    }
+  }, [user?.asWorker]);
+
+  if(user.asWorker){
+    return (
+      <div className="max-w-6xl mx-auto">
+      <motion.div
+        initial={{ opacity: 0, y: 20 }}
+        animate={{ opacity: 1, y: 0 }}
+        className="text-center mb-8"
+      >
+        <h1 className="text-4xl font-bold text-foreground">Configuración</h1>
+        <p className="text-lg text-muted-foreground mt-2">
+          Administra tu cuenta y preferencias
+        </p>
+      </motion.div>
+
+      <div className="grid grid-cols-1 md:grid-cols-[250px,1fr] gap-8">
+        {/* Sidebar */}
+        <motion.div
+          initial={{ opacity: 0, x: -20 }}
+          animate={{ opacity: 1, x: 0 }}
+          className="gap-2 flex flex-col"
+        >
+            <button
+              key="appearance"
+              onClick={() => setActiveSection("appearance")}
+              className={`w-full flex items-center space-x-2 p-2 rounded-lg transition-colors ${
+                activeSection === "appearance"
+                  ? "bg-primary text-primary-foreground"
+                  : "hover:bg-accent text-muted-foreground hover:text-foreground"
+              }`}
+            >
+              <Palette />
+              <span>Apariencia</span>
+            </button>
+           
+        </motion.div>
+
+        {/* Content */}
+        <motion.div
+          initial={{ opacity: 0, x: 20 }}
+          animate={{ opacity: 1, x: 0 }}
+          className="bg-card rounded-lg p-6 shadow-lg"
+        >
+           <div className="space-y-6">
+            <header className="flex justify-between items-center">
+              <h2 className="text-2xl font-semibold">Apariencia</h2>
+              <Button 
+                  variant="destructive"
+                  onClick={handleLogout}
+                  className="flex items-center space-x-2"
+                >
+                  <LogOut className="w-4 h-4" />
+                  <span>Cerrar Sesión</span>
+                </Button>
+            </header>
+
+            
+            <div className="space-y-6">
+              <div>
+                <h3 className="text-lg font-medium mb-4">Tema</h3>
+                <div className="flex items-center space-x-4">
+                  <button
+                    onClick={() => setTheme("light")}
+                    className={`p-4 rounded-lg border ${
+                      theme === "light" ? "border-primary bg-primary/5" : "border-input"
+                    }`}
+                  >
+                    <Sun className="w-6 h-6 mb-2" />
+                    <span>Claro</span>
+                  </button>
+                  <button
+                    onClick={() => setTheme("dark")}
+                    className={`p-4 rounded-lg border ${
+                      theme === "dark" ? "border-primary bg-primary/5" : "border-input"
+                    }`}
+                  >
+                    <Moon className="w-6 h-6 mb-2" />
+                    <span>Oscuro</span>
+                  </button>
+                </div>
+              </div>
+
+
+            </div>
+          </div>
+        </motion.div>
+      </div>
+    </div>
+    )
+  }
   return (
     <div className="max-w-6xl mx-auto">
       <motion.div

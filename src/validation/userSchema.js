@@ -1,17 +1,18 @@
 import Joi from 'joi';
 
+export const passwordSchema = Joi.string()
+  .min(8)
+  .pattern(new RegExp('^(?=.*[a-z])(?=.*[A-Z])(?=.*\\d).+$')) // at least one lowercase, one uppercase, and one number
+  .required()
+  .messages({
+    'string.empty': 'Password is required',
+    'string.min': 'Password must be at least 8 characters',
+    'string.pattern.base': 'Password must include uppercase, lowercase, and a number',
+  })
+
 export const workerSchema = Joi.object({
     _id: Joi.any().optional(), // allow it, or Joi.string().optional()
     email: Joi.string().email({ tlds: { allow: false } }).required(),
-    password: Joi.string()
-        .min(8)
-        .pattern(new RegExp('^(?=.*[a-z])(?=.*[A-Z])(?=.*\\d).+$')) // at least one lowercase, one uppercase, and one number
-        .required()
-        .messages({
-        'string.empty': 'Se requiere la contraseña',
-        'string.min': 'La contraseña debe tener al menos 8 caracteres',
-        'string.pattern.base': 'La contraseña debe incluir mayúsculas, minúsculas y un número',
-    }),
     role: Joi.string().valid('editor', 'admin', 'viewer').optional()
 })
 
@@ -25,8 +26,6 @@ export const saveSchema = Joi.object({
         'string.email': 'Must be a valid email address',
     }),
     companyName: Joi.string().optional(),
-  
-    logo: Joi.string().uri().allow(null, '').optional(),
   
     workers: Joi.array().items(workerSchema).optional(),
   

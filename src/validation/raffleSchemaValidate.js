@@ -19,10 +19,6 @@ export const raffleValidationSchema = Joi.object({
   price: Joi.number().greater(0).required(),
   maxParticipants: Joi.number().greater(0).required(),
  isActive: Joi.boolean().default(true),
- images: Joi.array().items( Joi.object({
-  url: Joi.string().required(),  
-  public_id: Joi.string().required()   
-  })).required(),
     participants: Joi.string().optional(),      
     additionalPrizes: Joi.array().items(
         Joi.object({
@@ -30,6 +26,7 @@ export const raffleValidationSchema = Joi.object({
         prize: Joi.string().required()   
         })
     ).default([]),
+    template: Joi.string().valid('classic', 'modern', 'minimalist').required(),
     colorPalette: Joi.string().valid('blue', 'green', 'purple').required(),
     font: Joi.string().valid('xs', 's', 'm', 'l', 'xl').required(),
     logo_position: Joi.string().valid('left', 'center', 'right').required(),

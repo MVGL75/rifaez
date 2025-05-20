@@ -2,19 +2,26 @@ import './config/env.js';
 
 import express from 'express';
 import mongoose from 'mongoose';
-import passportLocalMongoose from 'passport-local-mongoose';
 
 import { User } from './models/Users.js';
-import sanitizeUser from './utils/sanitize.js';
 import raffleRoutes from './routes/raffleRoutes.js';
 import authRoutes from './routes/authRoutes.js';
 import domainRoutes from './routes/domainRoutes.js';
+import stripeRoutes from './routes/stripeRoutes.js';
+import Webhook from "./middleware/webhook.js"
 import cors from 'cors';
+import helmet from 'helmet';
+import rateLimit from 'express-rate-limit';
+
 import session from 'express-session';
 import passport from 'passport';
 
 const mongoURI = 'mongodb://127.0.0.1:27017/rifas';
 
+const limiter = rateLimit({
+  windowMs: 15 * 60 * 1000,
+  max: 100,
+});
 
 
 mongoose.connect(mongoURI, {
@@ -24,44 +31,101 @@ mongoose.connect(mongoURI, {
   .catch(err => console.error('❌ MongoDB connection error:', err));
 
 const app = express();
-app.use(express.json());
+
+app.use("/stripe/webhook", Webhook)
+
+app.use(cors({
+  origin: process.env.CLIENT_ORIGIN || "http://localhost:3000", 
+  credentials: true             
+}));
+
+
+
+app.use(express.json({ limit: '10kb' }));
 app.use(session({
-  secret: 'your_secret_key', // put a good secret here!
+  secret: process.env.SESSION_SECRET, 
   resave: false,
   saveUninitialized: false,
   cookie: {
-    secure: false, // true if https
+    secure: process.env.NODE_ENV === "production", 
     sameSite: 'lax'
   }
 }));
-app.use(cors({
-  origin: "http://localhost:3000", 
-  credentials: true             
-}));
+
+app.disable('x-powered-by');
+app.use(helmet());
+app.use(limiter);
+
 
 app.use(passport.initialize());
 app.use(passport.session());
 
 passport.use(User.createStrategy());
-passport.serializeUser(User.serializeUser());
-passport.deserializeUser(User.deserializeUser());
+
+import { Strategy as LocalStrategy } from 'passport-local';
+
+passport.use('worker-aware', new LocalStrategy({
+  usernameField: 'username'
+}, async function verifyWorkerLogin(username, password, done) {
+  try {
+    // 1. Try login with main user
+    const user = await User.findOne({ username: username });
+    if (user) {
+      const match = await user.authenticate(password);
+      if (match.user) {
+        match.user.asWorker = false;
+        match.user.loggedInEmail = username;
+        return done(null, match.user);
+      }
+    }
+
+    // 2. Try login as a worker
+    const owner = await User.findOne({ 'workers.email': username });
+    if (!owner) return done(null, false, { message: 'User not found' });
+
+    const match = await owner.authenticate(password);
+    if (!match.user) return done(null, false, { message: 'Invalid password' });
+
+    match.user.asWorker = true;
+    match.user.loggedInEmail = username;
+    return done(null, match.user);
+  } catch (err) {
+    return done(err);
+  }
+}));
+
+passport.serializeUser((user, done) => {
+  done(null, {
+    id: user._id,
+    asWorker: user.asWorker,
+    loggedInEmail: user.loggedInEmail
+  });
+});
+
+passport.deserializeUser(async (storedSession, done) => {
+  try {
+    const user = await User.findById(storedSession.id).lean();
+
+    if (!user) return done(null, false);
+    
+    user.asWorker = storedSession.asWorker;
+    user.loggedInEmail = storedSession.loggedInEmail;
+
+    return done(null, user);
+  } catch (err) {
+    return done(err);
+  }
+});
 
 app.use('/raffle', raffleRoutes);
 app.use('/api/domains', domainRoutes)
+
+app.use('/stripe', stripeRoutes)
 app.use('/', authRoutes);
 
 
 
-app.get('/api/user', async (req, res) => {
-  if (req.isAuthenticated()) {
-    const user = await User.findById(req.user._id)
-    if(!user) return res.json({ message: 'User not found', status: 401 });
-    const popUser = await user.populate('raffles')
-    const safeUser = sanitizeUser(popUser)
-    return res.json(safeUser);
-  }
-  return res.json({ message: 'Not authenticated', status: 401 });
-});
+
 
 
 
@@ -70,6 +134,7 @@ app.use((err, req, res, next) => {
 
   res.status(err.status || 500).json({
     success: false,
+    type: "form",
     message: err.message || 'Internal Server Error',
   });
 })

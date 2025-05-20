@@ -35,7 +35,7 @@ const api = axios.create({
 const RaffleEditPage = ({}) => {
   const { id } = useParams();
   const navigate = useNavigate();
-  const { setUser } = useAuth()
+  const { setUser, user } = useAuth()
   const [saveLoader, setSaveLoader] = useState(null)
   const [raffle, setRaffle] = useState(null); 
   const [errors, setErrors] = useState({})
@@ -132,6 +132,13 @@ const RaffleEditPage = ({}) => {
     });
   };
 
+
+  const templates = {
+    basic : [["Clasico", "classic"]],
+    pro: [["Clasico", "classic"], ["Moderno", "modern"]],
+    business: [["Clasico", "classic"], ["Moderno", "modern"], ["Minimalista", "minimalist"]],
+  }
+
   useEffect(()=>{
     if(!raffle) return;
     const [error, value] = validateForm()
@@ -183,8 +190,13 @@ const RaffleEditPage = ({}) => {
   const switchHeader = (mode) => {
     setRaffle(prev => ({...prev, header: mode}));
   }
-  const switchMode = () => {
-    setRaffle(prev => ({...prev, nightMode: !prev.nightMode}))
+  const switchMode = (mode) => {
+    if(mode === "night"){
+      setRaffle(prev => ({...prev, nightMode: !prev.nightMode}))   
+    }
+    if(mode === "active"){
+      setRaffle(prev => ({...prev, isActive: !prev.isActive}))   
+    }
   }
 
   const handleSave = async () => {
@@ -217,29 +229,7 @@ const RaffleEditPage = ({}) => {
   };
 
 
-  const templates = [
-    { 
-      id: "modern", 
-      name: "Moderno",
-      preview: <img alt="Modern template preview" src="https://images.unsplash.com/photo-1581441366219-8c24d1517fef" />
-    },
-    { 
-      id: "classic", 
-      name: "Clásico",
-      preview: <img alt="Classic template preview" src="https://images.unsplash.com/photo-1576895250693-203a6ab50afd" />
-    },
-    { 
-      id: "minimal", 
-      name: "Minimalista",
-      preview: <img alt="Minimal template preview" src="https://images.unsplash.com/photo-1617451588899-7ac8679908c7" />
-    }
-  ];
 
-  const colorPalettes = [
-    { id: "blue", name: "Azul", colors: ["#1E40AF", "#60A5FA"] },
-    { id: "green", name: "Verde", colors: ["#065F46", "#34D399"] },
-    { id: "purple", name: "Púrpura", colors: ["#5B21B6", "#A78BFA"] }
-  ];
   if(!raffle) return null;
   if(formError) return (
     <div className="max-w-3xl mx-auto">
@@ -440,7 +430,7 @@ const RaffleEditPage = ({}) => {
       
         {/* Additional Prizes */}
         <div className="space-y-4">
-          <div className="flex items-center justify-between">
+          <div className="flex flex-col gap-4 sm:flex-row sm:items-center justify-between">
             <h3 className="text-xl font-semibold">Premios Adicionales</h3>
             <Button
               type="button"
@@ -455,7 +445,7 @@ const RaffleEditPage = ({}) => {
           </div>
 
           {raffle.additionalPrizes.map((prize, index) => (
-            <div key={index} className="flex items-center space-x-4">
+            <div key={index} className="flex flex-col xs:flex-row xs:items-center gap-4">
               <span className={`font-medium min-w-[100px] ${errors[`additionalPrizes.${index}.prize`] && "text-red-500"}`}>
                 {prize.place}º Lugar
               </span>
@@ -473,7 +463,25 @@ const RaffleEditPage = ({}) => {
         {/* Template Selection */}
         <div className="space-y-4">
           <h2 className="text-2xl font-semibold">Diseño</h2>
-
+          <div>
+                <label className={`block text-sm font-medium mb-2 ${errors.template && "text-red-500"}`}>
+                  Plantilla
+                </label>
+                <select
+                  name="template"
+                  value={raffle.template}
+                  onChange={handleChange}
+                  className={`w-full p-2 rounded-md border ${errors.template ? "border-red-500" : "border-input"} bg-background`}
+                >
+                  <option value="">Selecciona una plantilla</option>
+                  {templates[user?.currentPlan] ?
+                  templates[user?.currentPlan].map(template => (
+                    <option key={template[1]} value={template[1]}>{template[0]}</option>
+                  )): (
+                    <option value="classic">Clasico</option>
+                  )}
+                </select>
+              </div>
           <div>
                 <label className={`block text-sm font-medium mb-2 ${errors.colorPalette && "text-red-500"}`}>
                   Paleta de Colores
@@ -521,9 +529,9 @@ const RaffleEditPage = ({}) => {
             </div>
             <div>
                 <label className={`block text-sm font-medium mb-2 ${errors.nightMode && "text-red-500"}`}>
-                  Modo Obscuro
+                  Modo Oscuro
               </label>
-              <div onClick={switchMode} className={`rounded-[100px] w-[60px] py-1 px-1 flex justify-between ${raffle.nightMode ? "bg-purple-200" : "bg-yellow-200"}`}>
+              <div onClick={()=>{switchMode("night")}} className={`rounded-[100px] w-[60px] py-1 px-1 flex justify-between ${raffle.nightMode ? "bg-purple-200" : "bg-yellow-200"}`}>
                 { raffle.nightMode ? (
                   <>
                     <Moon className="w-5 h-5"/>
@@ -533,6 +541,14 @@ const RaffleEditPage = ({}) => {
                 <div className="h-5 w-5 rounded-full bg-[rgba(0,0,0,0.15)]"></div>
                 <Sun className="w-5 h-5"/>
                 </>)}
+              </div>
+            </div>
+            <div>
+                <label className={`block text-sm font-medium mb-2 ${errors.isActive && "text-red-500"}`}>
+                  Activo
+              </label>
+              <div onClick={()=>{switchMode("active")}} className={`rounded-[100px] w-[60px] py-1 px-1 flex ${raffle.isActive ? "bg-blue-300 flex-row-reverse" : "bg-gray-200 flex-row"}`}>
+                  <div className="h-5 w-5 rounded-full bg-white"></div>
               </div>
             </div>
         </div>
@@ -578,7 +594,7 @@ const RaffleEditPage = ({}) => {
         </div>
 
         {/* Action Buttons */}
-        <div className="flex justify-between pt-6">
+        <div className="flex flex-col gap-3 sm:flex-row justify-between pt-6">
           <Button
             variant="outline"
             onClick={handlePreview}

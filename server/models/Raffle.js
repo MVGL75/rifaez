@@ -1,13 +1,22 @@
 
 
-import { count } from "console";
+
 import mongoose from "mongoose"
-import { type } from "os";
 const RaffleSchema = new mongoose.Schema({
             title: {
                 type: String,
                 required: true
             },
+            phone: {
+                type: String,
+                default: "6672421133"
+            },
+            logo: { 
+                type: {
+                  url: String,
+                  public_id: String,
+                },
+              },
             description: {
                 type: String,
                 required: true
@@ -81,6 +90,10 @@ const RaffleSchema = new mongoose.Schema({
                     prize: String
                 }],
                 default: []
+            },
+            template: {
+                type: String,
+                required: true,
             },
             colorPalette: {
                 type: String,

@@ -32,8 +32,8 @@ const Payment = () => {
     topRef.current?.scrollIntoView({ behavior: 'smooth' });
   }, [navigate]);
 
-  const setPhoneFormat = () => {
-    const digits = userInfo?.phone?.replace(/\D/g, ''); 
+  const setPhoneFormat = (phone) => {
+    const digits = phone.replace(/\D/g, ''); 
 
     const parts = [];
 
@@ -90,29 +90,29 @@ const Payment = () => {
     });
   };
   if(success) return (
-    <div className="flex items-center text-white box-border mx-auto max-w-3xl container h-[calc(100vh-280px)] min-h-[500px] py-4">
+    <div className="flex items-center justify-center text-colorRaffle box-border mx-auto max-w-3xl w-[1400px] max-w-[100vw] h-[calc(100vh-280px)] min-h-[500px] py-4">
       <div className="bg-cardRaffle px-8 py-10 border border-gray-800 rounded-lg flex-col justify-center space-y-6 flex">
         <div className="text-3xl">Transaccion Exitosa</div>
         <div className="flex flex-col space-y-4">
           <span>Nombre: {userInfo.name}</span>
-          <span>Telefono: {setPhoneFormat()}</span>
+          <span>Telefono: {setPhoneFormat(userInfo.phone)}</span>
           <span>Estado: {userInfo.state}</span>
           <span>Boletos:</span>
           <div className="flex flex-wrap gap-2">
                   {selectedTickets.map(ticket => (
-                    <span key={ticket} className="bg-primaryRaffle px-3 py-1 rounded-full">
+                    <span key={ticket} className="bg-primaryRaffle text-colorRaffle-foreground px-3 py-1 rounded-full">
                       #{ticket}
                     </span>
                   ))}
             </div>
         </div>
-        <p className="text-base text-gray-300">Tus boletos han sido adquiridos, pero el pago sigue pendiente hasta que el organizador de la rifa revise tu comprobante y confirme la transacción.</p>
-        <button onClick={goToParent} className="text-colorRaffle rounded-[50px] w-fit bg-primaryRaffle flex justify-center items-center px-6 py-3">Regresar a pagina de rifa</button>
+        <p className="text-base text-colorRaffle-300">Tus boletos han sido adquiridos, pero el pago sigue pendiente hasta que el organizador de la rifa revise tu comprobante y confirme la transacción.</p>
+        <button onClick={goToParent} className="text-colorRaffle-foreground rounded-[50px] w-fit bg-primaryRaffle flex justify-center items-center px-6 py-3">Regresar a pagina de rifa</button>
         </div>
     </div>
   );
   if(noTickets) return (
-    <div className="text-colorRaffle box-border mx-auto max-w-2xl container min-h-[calc(100vh-280px)] py-4">
+    <div className="text-colorRaffle box-border mx-auto max-w-2xl w-[1400px] max-w-[100vw] min-h-[calc(100vh-280px)] py-4">
       <div className="h-[500px] flex-col justify-center text-center space-y-6 flex items-center">
         <div className="text-3xl">No haz seleccionado un boleto de la rifa</div>
         <p className="text-base text-colorRaffle-300">Debes seleccionar al menos un boleto de la rifa y llenar tu informacion para poder accesar los metodos de pago</p>
@@ -121,7 +121,7 @@ const Payment = () => {
       </div>
   );
   return (
-    <div className="container mx-auto px-4 py-8" ref={topRef}>
+    <div className="w-[1400px] max-w-[100vw] mx-auto px-4 py-8" ref={topRef}>
       <motion.div
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
@@ -134,7 +134,7 @@ const Payment = () => {
               <h2 className="text-xl font-bold text-colorRaffle mb-4">Resumen de Compra</h2>
               <div className="space-y-2 text-colorRaffle-300">
                 <p><span className="font-bold">Nombre:</span> {userInfo.name}</p>
-                <p><span className="font-bold">Teléfono:</span> {setPhoneFormat()}</p>
+                <p><span className="font-bold">Teléfono:</span> {setPhoneFormat(userInfo.phone)}</p>
                 <p><span className="font-bold">Estado:</span> {userInfo.state}</p>
                 <p><span className="font-bold">Boletos Seleccionados:</span></p>
                 <div className="flex flex-wrap gap-2">
@@ -157,8 +157,8 @@ const Payment = () => {
               </p>
               <p className="mb-5">
                 Una vez realizado el pago, envía tu comprobante por WhatsApp al{" "}
-                <a href="tel:6673877638" className="font-bold underline">
-                  (667) 387 7638
+                <a href={`tel:${raffle.phone}`} className="font-bold underline">
+                  {setPhoneFormat(raffle.phone)}
                 </a>
                 {" "}indicando tus números de boleto.
               </p>

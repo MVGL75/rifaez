@@ -28,6 +28,7 @@ const TicketDetails = () => {
   const { raffleID, transactionID } = useParams();
   const navigate = useNavigate();
   const { toast } = useToast();
+  const {setAppError} = useAuth()
   const [note, setNote] = useState("");
   const [notedAdded, setNoteAdded] = useState(false);
   const [notFound, setNotFound] = useState(false)
@@ -76,10 +77,17 @@ const TicketDetails = () => {
   }, [user])
 
   const handleMarkAsPaid = async () => {
-    const res = await api.post(`/raffle/${raffleID}/${ticket._id}/mark_paid`)
-    if(res.data.status === 200){
-      setUser(res.data.user)
+    try {
+      const res = await api.post(`/raffle/${raffleID}/${ticket._id}/mark_paid`)
+      if(res.data.status === 200){
+        setUser(res.data.user)
+      } else {
+        setAppError(error)
+      }
+    } catch (error) {
+      setAppError(error)
     }
+    
   };
 
   const handleAddNote = async () => {

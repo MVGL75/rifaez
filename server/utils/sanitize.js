@@ -1,4 +1,4 @@
-export default function ({username, name, raffles, phone, facebook, currentPlan, workers, logo, companyName, _id}){
+export default function ({username, name, raffles, phone, facebook, workers, logo, companyName, _id}){
     const safeUser = {
         _id,
         username,
@@ -6,7 +6,6 @@ export default function ({username, name, raffles, phone, facebook, currentPlan,
         raffles,
         phone,
         facebook,
-        currentPlan,
         workers,
         logo,
         companyName

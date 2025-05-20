@@ -1,11 +1,10 @@
 
-import React from "react";
+import React, { useEffect } from "react";
 import { motion } from "framer-motion";
 import { ChevronDown, Bell } from "lucide-react";
 
 const RaffleSelector = ({ raffles, selectedRaffle, onSelect }) => {
   const [isOpen, setIsOpen] = React.useState(false);
-  const notifications = 12; // This would come from your notifications system
 
   return (
     <div className="relative">
@@ -15,9 +14,9 @@ const RaffleSelector = ({ raffles, selectedRaffle, onSelect }) => {
       >
         <div className="flex items-center space-x-2">
           <span className="font-medium">{selectedRaffle?.title || "Seleccionar Rifa"}</span>
-          {notifications > 0 && (
+          {selectedRaffle?.notifications?.length > 0 && (
             <div className="bg-red-500 text-white text-xs px-1.5 py-0.5 rounded-full">
-              {notifications > 9 ? '+9' : notifications}
+              {selectedRaffle.notifications.length > 9 ? '+9' : selectedRaffle.notifications.length}
             </div>
           )}
         </div>

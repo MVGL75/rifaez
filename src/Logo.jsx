@@ -1,6 +1,6 @@
-const Logo = () => {
+const Logo = ({className = "w-6 h-6"}) => {
   return (
-    <img src="/logo.png" alt="Logo" className="w-6 h-6" />
+    <img src="/rifaez_logo.png" alt="Logo" className={className} />
   );
 };
 

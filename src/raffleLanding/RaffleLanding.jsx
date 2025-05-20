@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from "react";
 import { Outlet, useParams } from "react-router-dom";
+import RaffleNotFound from "./RaffleNotFound"
 import setCustomRaffle from "./utils/setCustomRaffle";
 import Navbar from "./components/Navbar";
 import axios from "axios";
@@ -8,7 +9,6 @@ const api = axios.create({
   withCredentials: true,
 });
 import Footer from "./components/Footer";
-import { Toaster } from "./components/ui/toaster";
 
 function RaffleLanding() {
   const { id } = useParams();
@@ -18,28 +18,28 @@ function RaffleLanding() {
   useEffect(() => {
     const fetchRaffle = async () => {
       try {
-        if (isFirstVisit) {
-          const res = await api.post(`/raffle/${id}/view`);
-          setIsFirstVisit(false);
-        }
         const res = await api.get(`/raffle/${id}`);
-        if (res.data.status === 400) {
+        if (res.data.status === 200) {
+          if (isFirstVisit) {
+            const res = await api.post(`/raffle/${id}/view`);
+            setIsFirstVisit(false);
+          }
+          const raffle = res.data.raffle;
+          setCustomRaffle(raffle);
+          setRaffle(raffle);
+        } else {
           setNotFound(true);
-          return;
         }
-        const raffle = res.data.raffle;
-        console.log(raffle);
-        setCustomRaffle(raffle);
-        setRaffle(raffle);
+        
       } catch (err) {
-        console.error("Error fetching raffle:", err);
-      } finally {
-      }
+        setNotFound(true);
+      } 
     };
 
     fetchRaffle();
   }, [id]);
 
+  if(notFound) return <RaffleNotFound />;
   if (!raffleData) return null;
 
   return (
@@ -48,8 +48,7 @@ function RaffleLanding() {
       <div className="pt-16">
         <Outlet context={raffleData} />
       </div>
-      <Footer />
-      <Toaster />
+      <Footer raffle={raffleData} />
     </div>
   );
 }

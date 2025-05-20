@@ -1,11 +1,12 @@
 
 import React, { useEffect, useState } from "react";
 import { motion } from "framer-motion";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useSearchParams } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { useToast } from "@/components/ui/use-toast";
 import { useAuth } from "../contexts/AuthContext";
 import { raffleValidationSchema } from "../validation/raffleSchemaValidate";
+import SpinnerLogo from "../components/spinner"
 import axios from "axios";
 const api = axios.create({
   baseURL: 'http://localhost:5050',
@@ -39,10 +40,13 @@ const CreateRafflePage = () => {
   const [currentStep, setCurrentStep] = useState(1);
   const [showSuccess, setShowSuccess] = useState(false);
   const [newRaffleId, setNewRaffleId] = useState(null);
+  const [searchParams] = useSearchParams();
+  const success = searchParams.get("success") || false;
   const [wasSubmitted, setWasSubmitted] = useState({})
   const [formError, setFormError] = useState(null)
   const [justAddedPrize, setAddedPrize] = useState(false)
   const [stopSubmit, setStopSubmit] = useState(true)
+  const [spinner, setSpinner] = useState(false)
   const [filesArray, setFiles] = useState([])
   const [errors, setErrors] = useState({})
   const [formData, setFormData] = useState({
@@ -63,6 +67,12 @@ const CreateRafflePage = () => {
     additionalPrizes: []
   });
 
+  const templates = {
+    basic : [["Clasico", "classic"]],
+    pro: [["Clasico", "classic"], ["Moderno", "modern"]],
+    business: [["Clasico", "classic"], ["Moderno", "modern"], ["Minimalista", "minimalist"]],
+  }
+
   const [totalRevenue, setTotalRevenue] = useState(0);
 
   const [paymentMethods, setPaymentMethods] = useState([
@@ -78,6 +88,14 @@ const CreateRafflePage = () => {
         : method
     ));
   };
+  useEffect(()=>{
+    if(success){
+     
+      const link = searchParams.get("link");
+      setNewRaffleId(link)
+      setShowSuccess(true);
+    }
+  }, [success])
   useEffect(()=>{
     const methods = paymentMethods.filter(payment => payment.enabled === true)
     const methodsID = methods.map(method => method.id)
@@ -116,6 +134,7 @@ const CreateRafflePage = () => {
       }
     }
     setErrors({...newObj});
+    console.log(error)
     return (Object.keys(newObj).length > 0)
   }
 
@@ -142,12 +161,15 @@ const CreateRafflePage = () => {
       setStopSubmit(false)
       return;
     }
+    setSpinner(true)
     setWasSubmitted(prev => ({...prev, [currentStep]: true}))
     const isInvalid = formValidate();
-    if(isInvalid) return;
+    if(isInvalid) return setSpinner(false);
     const {error, value} = raffleValidationSchema.validate(formData)
+    console.log(error)
     if(error){
       setFormError(error)
+      setSpinner(false)
     } else {
       const newRaffleData = new FormData();
       Object.entries(value).forEach(([key, value]) => {
@@ -161,16 +183,24 @@ const CreateRafflePage = () => {
       filesArray.forEach(image => newRaffleData.append('images', image));
       try {
         const res = await api.post("/raffle/create", newRaffleData)
-        console.log(res)
         if(res.data.status === 200){
           setUser(res.data.user)
           setNewRaffleId(res.data.link)
+          setSpinner(false)
           setShowSuccess(true);
+        } else if (res.data.status === 808){
+          sessionStorage.setItem("pendingForm", JSON.stringify({
+            fields: Object.fromEntries(newRaffleData.entries())
+          }));
+          navigate("/pricing-plan");
         } else {
           setFormError(res.data.message)
+          setSpinner(false)
         }
       } catch (error) {
+        console.log(error)
         setFormError(error.message)
+        setSpinner(false)
       }
     }
   };
@@ -338,7 +368,7 @@ const CreateRafflePage = () => {
 
               {/* Additional Prizes */}
               <div className="space-y-4">
-                <div className="flex items-center justify-between">
+                <div className="flex flex-col gap-3 sm:flex-row sm:items-center justify-between">
                   <h3 className="text-lg font-medium">Premios Adicionales</h3>
                   <Button
                     type="button"
@@ -353,7 +383,7 @@ const CreateRafflePage = () => {
                 </div>
 
                 {formData.additionalPrizes.map((prize, index) => (
-                  <div key={index} className="flex items-center space-x-4">
+                  <div key={index} className="flex flex-col sm:flex-row sm:items-center gap-4">
                     <span className={`font-medium min-w-[100px] ${errors[`additionalPrizes_${index}`] && "text-red-500"}`}>
                       {prize.place}º Lugar
                     </span>
@@ -380,6 +410,25 @@ const CreateRafflePage = () => {
           >
             <h2 className="text-2xl font-semibold">Diseño de la Página</h2>
             <div className="space-y-4">
+            <div>
+                <label className={`block text-sm font-medium mb-2 ${errors.template && "text-red-500"}`}>
+                  Plantilla
+                </label>
+                <select
+                  name="template"
+                  value={formData.template}
+                  onChange={handleChange}
+                  className={`w-full p-2 rounded-md border ${errors.template ? "border-red-500" : "border-input"} bg-background`}
+                >
+                  <option value="">Selecciona una plantilla</option>
+                  {templates[user?.currentPlan] ?
+                  templates[user?.currentPlan].map(template => (
+                    <option key={template[1]} value={template[1]}>{template[0]}</option>
+                  )): (
+                    <option value="classic">Clasico</option>
+                  )}
+                </select>
+              </div>
               <div>
                 <label className={`block text-sm font-medium mb-2 ${errors.colorPalette && "text-red-500"}`}>
                   Paleta de Colores
@@ -561,6 +610,19 @@ const CreateRafflePage = () => {
         return null;
     }
   };
+  if(spinner){
+    return (
+      <div className="max-w-3xl mx-auto ">
+        <motion.div
+          initial={{ opacity: 0, scale: 0.95 }}
+          animate={{ opacity: 1, scale: 1 }}
+          className="bg-card flex items-center justify-center rounded-lg p-8 	min-h-[420px] shadow-lg text-center space-y-6"
+        >
+          <SpinnerLogo className="w-32 h-32" />
+        </motion.div>
+      </div>
+    )
+  }
   if(formError){
     return (
       <div className="max-w-3xl mx-auto">

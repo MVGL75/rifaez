@@ -1,0 +1,121 @@
+import express from 'express';
+import Stripe from 'stripe';
+import AppError from '../utils/AppError.js';
+import { User } from "../models/Users.js"
+import isAuthenticated from '../middleware/isAuthenticated.js';
+
+const stripe = new Stripe(process.env.STRIPE_SECRET_KEY);
+
+
+const router = express.Router();
+
+const checkPriceId = [process.env.PRICE_ID_BASIC, process.env.PRICE_ID_PRO, process.env.PRICE_ID_BUSINESS]
+
+
+router.post('/create-checkout-session', isAuthenticated, async (req, res) => {
+  const {priceId, customerEmail} = req.body;
+  if (!priceId || !customerEmail) {
+    throw new AppError({message: "missing priceid or customer email"});
+  }  
+  const newPriceId = checkPriceId.find(id => id === priceId)
+  if(!newPriceId){
+    throw new AppError({message: "price is invalid"});
+  }
+  const user = await User.findById(req.user._id)
+  if(user.subscriptionId){
+    const subscription = await stripe.subscriptions.retrieve(user.subscriptionId);
+    if(subscription){
+      await updateSubscription(user, subscription, priceId)
+      return res.redirect("/api/user")
+    }
+  }
+  try {
+    const session = await stripe.checkout.sessions.create({
+      mode: 'subscription',
+      customer_email: customerEmail,
+      ui_mode: 'embedded',
+      line_items: [
+        {
+          price: newPriceId,
+          quantity: 1,
+        },
+      ],
+      return_url: `${process.env.CLIENT_URL}/checkout/return?session_id={CHECKOUT_SESSION_ID}${req.session?.redirectAfterPayment && `&redirect_url=${req.session?.redirectAfterPayment?.url}&front_url=${req.session?.redirectAfterPayment?.frontUrl}`}`,
+    });
+    res.json({ clientSecret: session.client_secret });
+  } catch (err) {
+    throw new AppError(err)
+  }
+});
+
+router.post("/update-plan", isAuthenticated, async (req, res) => {
+  try {
+    const {newPriceId} = req.body
+    const user = await User.findByUsername(req.user.username)
+    const subscription = await stripe.subscriptions.retrieve(user.subscriptionId);
+
+    await updateSubscription(user, subscription, newPriceId)
+    res.redirect("/api/user")
+  } catch (error) {
+    throw new AppError(error)
+  } 
+})
+
+
+const updateSubscription = async (user, subscription, newPriceId) => {
+  await stripe.subscriptions.update(user.subscriptionId, {
+    items: [
+      {
+        id: subscription.items.data[0].id,
+        price: newPriceId, // new plan
+      },
+    ],
+    cancel_at_period_end: false,
+    proration_behavior: 'create_prorations',
+  });
+  user.planId = newPriceId;
+  user.subscriptionStatus = "active";
+  await user.save();
+  
+}
+
+router.post('/cancel-subscription', isAuthenticated, async (req, res) => {
+  try {
+    const user = await User.findById(req.user._id);
+    if (!user || !user.subscriptionId) {
+      return res.status(400).json({ error: 'No subscription found for user.' });
+    }
+
+    // Cancel immediately or at period end
+    const canceledSubscription = await stripe.subscriptions.update(user.subscriptionId, {
+      cancel_at_period_end: true,
+    });
+
+    user.subscriptionStatus = 'canceled';
+    await user.save();
+    
+    res.redirect("/api/user");
+    
+  } catch (error) {
+    throw new AppError(error)
+  }
+});
+
+router.get('/session-status', async (req, res) => {
+  try {
+    const session = await stripe.checkout.sessions.retrieve(req.query.session_id);
+    res.json({
+      ...session
+    });
+  } catch (e) {
+    throw new AppError(e)
+  }
+});
+
+
+
+
+
+
+
+export default router;

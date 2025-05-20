@@ -15,41 +15,7 @@ const api = axios.create({
 const EditRafflePage = () => {
   const navigate = useNavigate();
   const { user, setUser } = useAuth();
-  const [selectedRaffle, setSelectedRaffle] = useState(null);
-  const raffles = [
-    {
-      id: 1,
-      title: "iPhone 15 Pro",
-      description: "Gana el último iPhone 15 Pro",
-      price: "5.00",
-      endDate: "2025-05-01",
-      maxParticipants: 100,
-      participants: 45,
-      status: "active",
-      url: "/raffle/1",
-      template: "modern",
-      colorPalette: "blue",
-      paymentMethod: "default",
-      paymentEnabled: true,
-      extraInfo: "RIFA SUJETA AL 80% DE LOS BOLETOS VENDIDOS"
-    },
-    {
-      id: 2,
-      title: "PlayStation 5",
-      endDate: "2025-04-15",
-      participants: 32,
-      status: "active",
-      url: "/raffle/2"
-    },
-    {
-      id: 3,
-      title: "MacBook Air",
-      endDate: "2025-04-30",
-      participants: 28,
-      status: "active",
-      url: "/raffle/3"
-    },
-  ];
+ 
 
   const handlePreview = (id) => {
     navigate(`/raffle/${id}`);
@@ -124,53 +90,62 @@ const EditRafflePage = () => {
               </tr>
             </thead>
             <tbody className="divide-y divide-muted">
-              {user.raffles.map((raffle) => (
-                <tr key={raffle._id}>
-                  <td className="px-6 py-4 whitespace-nowrap">{raffle.title}</td>
-                  <td className="px-6 py-4 whitespace-nowrap">
-                    {raffle.readableEndDate}
-                  </td>
-                  <td className="px-6 py-4 whitespace-nowrap">
-                    {raffle.currentParticipants.length}
-                  </td>
-                  <td className="px-6 py-4 whitespace-nowrap">
-                    <span className="px-2 py-1 text-xs font-medium rounded-full bg-green-100 text-green-800">
-                      {raffle.isActive ? "Active" : "Inactive"}
-                    </span>
-                  </td>
-                  <td className="px-6 py-4 whitespace-nowrap">
-                    <div className="flex space-x-2">
-                      <Button
-                        variant="outline"
-                        size="sm"
-                        className="flex items-center space-x-1"
-                        onClick={() => handlePreview(raffle._id)}
-                      >
-                        <Eye className="w-4 h-4" />
-                        <span>Vista Previa</span>
-                      </Button>
-                      <Button
-                        variant="outline"
-                        size="sm"
-                        className="flex items-center space-x-1"
-                        onClick={() => handleEdit(raffle)}
-                      >
-                        <Edit2 className="w-4 h-4" />
-                        <span>Editar</span>
-                      </Button>
-                      <Button
-                        variant="destructive"
-                        size="sm"
-                        className="flex items-center space-x-1"
-                        onClick={() => handleDelete(raffle)}
-                      >
-                        <Trash2 className="w-4 h-4" />
-                        <span>Eliminar</span>
-                      </Button>
-                    </div>
-                  </td>
-                </tr>
-              ))}
+            {user.raffles && user.raffles.length > 0 ? (
+                  user.raffles.map((raffle) => (
+                    <tr key={raffle._id}>
+                      <td className="px-6 py-4 whitespace-nowrap">{raffle.title}</td>
+                      <td className="px-6 py-4 whitespace-nowrap">
+                        {raffle.readableEndDate}
+                      </td>
+                      <td className="px-6 py-4 whitespace-nowrap">
+                        {raffle.currentParticipants.length}
+                      </td>
+                      <td className="px-6 py-4 whitespace-nowrap">
+                        <span className={`px-2 py-1 text-xs font-medium rounded-full ${raffle.isActive ? "bg-green-100 text-green-800" : "bg-red-100 text-red-800"}`}>
+                          {raffle.isActive ? "Active" : "Inactive"}
+                        </span>
+                      </td>
+                      <td className="px-6 py-4 whitespace-nowrap">
+                        <div className="flex space-x-2">
+                          <Button
+                            variant="outline"
+                            size="sm"
+                            className="flex items-center space-x-1"
+                            onClick={() => handlePreview(raffle._id)}
+                          >
+                            <Eye className="w-4 h-4" />
+                            <span>Vista Previa</span>
+                          </Button>
+                          <Button
+                            variant="outline"
+                            size="sm"
+                            className="flex items-center space-x-1"
+                            onClick={() => handleEdit(raffle)}
+                          >
+                            <Edit2 className="w-4 h-4" />
+                            <span>Editar</span>
+                          </Button>
+                          <Button
+                            variant="destructive"
+                            size="sm"
+                            className="flex items-center space-x-1"
+                            onClick={() => handleDelete(raffle)}
+                          >
+                            <Trash2 className="w-4 h-4" />
+                            <span>Eliminar</span>
+                          </Button>
+                        </div>
+                      </td>
+                    </tr>
+                  ))
+                ) : (
+                  <tr>
+                    <td colSpan={5} className="text-center py-4 text-gray-500">
+                      No hay rifas disponibles.
+                    </td>
+                  </tr>
+                )}
+
             </tbody>
           </table>
         </div>

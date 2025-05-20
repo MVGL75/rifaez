@@ -212,7 +212,7 @@ const HomePage = ({ selectedRaffle }) => {
       <div className="md:hidden">
         <div className="bg-white p-4">
           {/* Stats Cards */}
-          <div className="grid grid-cols-2 gap-4 mb-6">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
             <div className="bg-blue-50 p-4 rounded-lg border border-blue-100">
               <div className="flex items-center justify-between mb-2">
                 <Eye className="w-4 h-4 text-blue-600" />
@@ -231,7 +231,7 @@ const HomePage = ({ selectedRaffle }) => {
             </div>
           </div>
 
-          <div className="flex justify-between items-center mb-4">
+          <div className="flex flex-col gap-3 sm:flex-row xs:justify-between xs:items-center mb-4">
             <div className="flex items-center space-x-2">
               <Eye className="w-4 h-4 text-primary" />
               <span className="text-sm font-medium">Visitas Activas: {activeVisitors}</span>
@@ -280,7 +280,7 @@ const HomePage = ({ selectedRaffle }) => {
                 </div>
               ))
             ) : (
-              <div>hi</div>
+              <div className="text-muted-foreground">No tienes ninguna notificación.</div>
             )}
 
           </div>

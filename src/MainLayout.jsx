@@ -29,7 +29,7 @@ export default function({selectedRaffle, setSelectedRaffle}){
         <nav className="hidden md:flex items-center justify-between px-8 py-4 bg-card border-b">
             <div className="flex items-center space-x-8">
             <Link to="/" className="text-2xl font-bold text-foreground">
-                <Logo className="w-4 h-4" />
+                <Logo className="w-6 h-6" />
             </Link>
             <div className="flex items-center space-x-4">
                 <NavLink to="/" active={isActive("/")}>
@@ -61,10 +61,12 @@ export default function({selectedRaffle, setSelectedRaffle}){
                 />
                 </div>
             )}
-            <button className="p-2 hover:bg-accent rounded-full relative">
+            <Link to="/" className="p-2 hover:bg-accent rounded-full relative">
                 <Bell className="w-5 h-5" />
-                <span className="absolute top-0 right-0 w-2 h-2 bg-red-500 rounded-full" />
-            </button>
+                {(selectedRaffle?.notifications && selectedRaffle?.notifications?.length > 0) &&
+                    <span className="absolute top-0 right-0 w-2 h-2 bg-red-500 rounded-full" />
+                }
+            </Link>
             <NavLink to="/settings" active={isActive("/settings")}>
                 <Settings className="w-4 h-4" />
                 <span>Ajustes</span>
@@ -104,14 +106,14 @@ export default function({selectedRaffle, setSelectedRaffle}){
         )}
 
         {/* Main Content */}
-        <main className="container mx-auto px-4 py-8 mb-20 md:mb-0">
+        <main className="max-w-[1400px] mx-auto px-2 sm:px-4 pt-8 pb-20 md:pb-8">
             <Outlet/>
         </main>
         </div>
     )
 }
 
-const NavLink = ({ to, children, active = false }) => (
+const NavLink = ({ to, children, active = false, className }) => (
     <Link
       to={to}
       className={`flex items-center space-x-2 px-4 py-2 rounded-lg transition-colors ${

@@ -2,23 +2,52 @@
 import React, { useState } from "react";
 import { motion } from "framer-motion";
 import { Button } from "@/components/ui/button";
-import { useOutletContext } from "react-router-dom";
-import { Search } from "lucide-react";
+import { useOutletContext, useParams } from "react-router-dom";
+import { Search, TriangleAlert } from "lucide-react";
+import axios from "axios";
+const api = axios.create({
+  baseURL: "http://localhost:5050",
+  withCredentials: true,
+});
 
 const TicketVerification = () => {
+  const { id } = useParams();
   const [ticketNumber, setTicketNumber] = useState("");
+  const [success, setSuccess] = useState(null)
   const raffle = useOutletContext();
 
-  const handleVerification = (e) => {
+  const setPhoneFormat = (phone) => {
+    const digits = phone?.replace(/\D/g, ''); 
+
+    const parts = [];
+
+    if (digits?.length > 0) {
+      parts.push('(' + digits.substring(0, Math.min(3, digits.length)));
+    }
+    if (digits?.length >= 4) {
+      parts[0] += ') ';
+      parts.push(digits.substring(3, Math.min(6, digits.length)));
+    }
+    if (digits?.length >= 7) {
+      parts.push('-' + digits.substring(6, 10));
+    }
+
+    return parts.join('');
+  }
+
+  const handleVerification = async (e) => {
     e.preventDefault();
-    toast({
-      title: "Verificación de Boleto",
-      description: "Este boleto está disponible para compra.",
-    });
+    const res = await api.post(`/raffle/${id}/verify`, { query: ticketNumber })
+    console.log(res)
+    if(res.data.status === 200){
+      setSuccess({message: 'success', ticket: res.data.ticket})
+    } else {
+      setSuccess({message: 'unsuccessful'})
+    }
   };
 
   return (
-    <div className="container mx-auto px-4 py-8">
+    <div className="max-w-[1400px] mx-auto px-4 py-8">
       <div className="max-w-2xl mx-auto">
         <motion.div
           initial={{ opacity: 0, y: 20 }}
@@ -40,10 +69,12 @@ const TicketVerification = () => {
           transition={{ delay: 0.2 }}
           className="bg-cardRaffle p-8 rounded-lg shadow-xl"
         >
+          
+          {!success &&
+          <>
           <p className="text-colorRaffle text-center mb-8">
             Introduce tu BOLETO, FOLIO ó CELULAR y haz click en "Verificar"
           </p>
-
           <form onSubmit={handleVerification} className="space-y-6">
             <div className="relative">
               <input
@@ -63,6 +94,31 @@ const TicketVerification = () => {
               Verificar
             </Button>
           </form>
+          </>
+          }
+          {success?.message === "success" &&
+            <div className="space-y-5">
+              <div className="text-colorRaffle text-xl">
+                Transaccion #{success.ticket.id}
+              </div>
+              <div className="flex items-center gap-3">
+                <div className="text-colorRaffle">Estado de Pago:</div>
+                {success.ticket.status === "paid" ? 
+                <span class="px-2 py-1 rounded-full text-xs font-medium bg-green-100 text-green-800">Pagado</span>
+                 : <span class="px-2 py-1 rounded-full text-xs font-medium bg-yellow-100 text-yellow-800">Pendiente</span>
+                 }
+              </div>
+            </div>
+          }
+          {success?.message === "unsuccessful" &&
+            <div className="space-y-4">
+              <TriangleAlert className="text-red-400"/>
+              <h1 className="text-colorRaffle text-xl">Boleto no encontrado</h1>
+              <p className="text-colorRaffle">Asegurese de haber ingresado los datos correctamente</p>
+            </div>
+          }
+
+
         </motion.div>
 
         <motion.div
@@ -73,8 +129,8 @@ const TicketVerification = () => {
         >
           <p>
             ¿Tienes dudas? Contáctanos por WhatsApp al{" "}
-            <a href="tel:6673877638" className="text-colorRaffle">
-              (667) 387 7638
+            <a href={`tel:${raffle.phone}`} className="text-colorRaffle">
+              {setPhoneFormat(raffle.phone)}
             </a>
           </p>
         </motion.div>
