@@ -17,7 +17,7 @@ import { fileURLToPath } from 'url';
 import session from 'express-session';
 import passport from 'passport';
 
-const mongoURI = 'mongodb://127.0.0.1:27017/rifas';
+const mongoURI = process.env.MONGO_URI;
 
 const limiter = rateLimit({
   windowMs: 15 * 60 * 1000,
