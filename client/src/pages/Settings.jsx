@@ -43,7 +43,7 @@ import {
 
 import axios from "axios";
 const api = axios.create({
-  baseURL: 'http://localhost:5050',
+  baseURL: import.meta.env.VITE_CURRENT_HOST,
   withCredentials: true,
 });
 

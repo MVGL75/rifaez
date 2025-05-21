@@ -3,7 +3,7 @@ import React, { createContext, useContext, useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import axios from 'axios';
 const api = axios.create({
-  baseURL: 'http://localhost:5050',
+  baseURL: import.meta.env.VITE_CURRENT_HOST,
   withCredentials: true, // same as fetch's credentials: 'include'
 });
 const AuthContext = createContext(null);

@@ -8,7 +8,7 @@ import { useNavigate } from "react-router-dom";
 import { useToast } from "@/components/ui/use-toast";
 import axios from 'axios';
 const api = axios.create({
-  baseURL: 'http://localhost:5050',
+  baseURL: import.meta.env.VITE_CURRENT_HOST,
   withCredentials: true, 
 });
 

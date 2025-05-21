@@ -4,6 +4,10 @@ import { useSearchParams, Link, useNavigate } from 'react-router-dom';
 import { useCallback, useState, useEffect } from 'react';
 import Logo from '../Logo';
 import axios from 'axios';
+const api = axios.create({
+  baseURL: import.meta.env.VITE_CURRENT_HOST,
+  withCredentials: true,
+});
 import { useAuth } from '../contexts/AuthContext';
 
 const stripePromise = loadStripe(import.meta.env.VITE_STRIPE_PUBLISHABLE_KEY);
@@ -14,7 +18,7 @@ export const CheckoutForm = () => {
   const [clientSecret, setClientSecret] = useState(null);
   const priceId = searchParams.get("price_id")
   const fetchClientSecret = useCallback(async () => {
-    const res = await axios.post('http://localhost:5050/stripe/create-checkout-session', {priceId, customerEmail: user.username}, { withCredentials: true });
+    const res = await api.post('/stripe/create-checkout-session', {priceId, customerEmail: user.username}, { withCredentials: true });
     return res.data.clientSecret;
   }, [priceId]);
 
@@ -60,7 +64,7 @@ export const Return = () => {
     if (sessionId) {
       const fetchStatus = async () => {
         try {
-          const res = await axios.get(`http://localhost:5050/stripe/session-status?session_id=${sessionId}`, { withCredentials: true });
+          const res = await api.get(`/stripe/session-status?session_id=${sessionId}`, { withCredentials: true });
           setCheckoutStatus({...res.data})
           if(redirectUrl && (res.data.status === "complete")){
             const pending = sessionStorage.getItem("pendingForm");
@@ -72,7 +76,7 @@ export const Return = () => {
                 newFormData.append(key, value);
               });
               try {
-                const res = await axios.post(`http://localhost:5050${redirectUrl}`, newFormData, { withCredentials: true });
+                const res = await api.post(`${redirectUrl}`, newFormData, { withCredentials: true });
                 setUser(res.data.user)
                 console.log(`${frontUrl}?success=true&link=${res.data.link}`)
                 return navigate(`${frontUrl}?success=true&link=${res.data.link}`)

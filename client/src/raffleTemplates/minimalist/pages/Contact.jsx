@@ -7,7 +7,7 @@ import { useLocation } from "react-router-dom";
 import { MailCheck } from 'lucide-react';
 import {contactValidationSchema} from '../../../validation/contactSchemaValidate.js'
 const api = axios.create({
-  baseURL: 'http://localhost:5050',
+  baseURL: import.meta.env.VITE_CURRENT_HOST,
   withCredentials: true,
 });
 
