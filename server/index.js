@@ -1,4 +1,5 @@
 import './config/env.js';
+console.log(process.env.STRIPE_SECRET_KEY)
 
 import express from 'express';
 import mongoose from 'mongoose';
@@ -8,6 +9,7 @@ import raffleRoutes from './routes/raffleRoutes.js';
 import authRoutes from './routes/authRoutes.js';
 import domainRoutes from './routes/domainRoutes.js';
 import stripeRoutes from './routes/stripeRoutes.js';
+import path from "path";
 import Webhook from "./middleware/webhook.js"
 import cors from 'cors';
 import helmet from 'helmet';
@@ -33,6 +35,8 @@ mongoose.connect(mongoURI, {
 const app = express();
 
 app.use("/stripe/webhook", Webhook)
+
+app.use(express.static(path.join(__dirname, '../client/dist')))
 
 app.use(cors({
   origin: process.env.CLIENT_ORIGIN || "http://localhost:3000", 
@@ -125,7 +129,9 @@ app.use('/', authRoutes);
 
 
 
-
+app.get('*', (req, res) => {
+  res.sendFile(path.join(__dirname, '../client/dist/index.html')); // 'build/index.html' if CRA
+});
 
 
 

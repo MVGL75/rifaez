@@ -3,7 +3,7 @@ import {User} from '../models/Users.js'
 import sanitizeUser from '../utils/sanitize.js';
 import sanitizeRaffle from '../utils/sanitizeRaffle.js';
 import { raffleValidationSchema } from '../validators/raffleSchema.js';
-import { contactValidationSchema } from '../../src/validation/contactSchemaValidate.js';
+import { contactValidationSchema } from '../validators/contactSchemaValidate.js';
 import { ticketInfoValidationSchema } from '../validators/ticketInfoSchemaValidate.js';
 import AppError from '../utils/AppError.js';
 import { getNextTransactionId, RaffleCounter } from '../models/RaffleCounter.js';

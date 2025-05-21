@@ -4,8 +4,9 @@ import AppError from '../utils/AppError.js';
 import { User } from "../models/Users.js"
 import isAuthenticated from '../middleware/isAuthenticated.js';
 import plans from '../seed/plans.js';
-
-const stripe = new Stripe(process.env.STRIPE_SECRET_KEY);
+const stripe = new Stripe(process.env.STRIPE_SECRET_KEY, {
+  apiVersion: '2022-11-15'
+});
 
 
 const router = express.Router();

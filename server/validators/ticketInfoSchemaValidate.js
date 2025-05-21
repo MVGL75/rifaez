@@ -1,6 +1,6 @@
 import Joi from 'joi';
 
-import mexicanStates from '../../src/raffleTemplates/lib/mexicanStates.js';
+import mexicanStates from '../lib/mexicanStates.js';
 
 
 export const ticketInfoValidationSchema = Joi.object({
