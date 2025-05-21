@@ -113,7 +113,7 @@ const SettingsPage = () => {
       return;
     }
 
-    const res = await api.post("/save_settings/add_method", value)
+    const res = await api.post("/auth/save_settings/add_method", value)
 
     if(res.data.status === 200){
       setMethods(prev => [...prev, {...value, id: res.data.id}])
@@ -126,7 +126,7 @@ const SettingsPage = () => {
   };
 const removeMethod = async (methodInp) => {
   const methodNew = methodInp
-  const res = await api.post("/save_settings/remove_method", methodNew)
+  const res = await api.post("/auth/save_settings/remove_method", methodNew)
   if(res.data.status === 200){
     setMethods(prev => prev.filter(method => method._id === methodNew._id) || [])
   } else {
@@ -150,7 +150,7 @@ const removeMethod = async (methodInp) => {
       return;
     }
 
-    const res = await api.post("/save_settings/add_worker", {email, password})
+    const res = await api.post("/auth/save_settings/add_worker", {email, password})
 
     if(res.data.status === 200){
       setWorkers(prev => [...prev, value])
@@ -165,7 +165,7 @@ const removeMethod = async (methodInp) => {
   };
 
   const handleRemoveWorker = async (email) => {
-    const res = await api.post("/save_settings/remove_worker", {email})
+    const res = await api.post("/auth/save_settings/remove_worker", {email})
 
     if(res.data.status === 200){
       setWorkers(prev => prev.filter(worker => worker.email !== email) || [])

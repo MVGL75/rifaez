@@ -25,7 +25,7 @@ export const AuthProvider = ({ children }) => {
 
   const login = async ({ username, password }) => {
     try {
-      const res = await api.post('/login', { username, password });
+      const res = await api.post('/auth/login', { username, password });
       if (res.data.status === 200) {
         setUser(res.data.user);
         return navigate('/');
@@ -38,7 +38,7 @@ export const AuthProvider = ({ children }) => {
   
   const logout = async () => {
     try {
-      const res = await api.post('/logout');
+      const res = await api.post('/auth/logout');
       setUser(null);
       navigate('/login');
       setMessage(res.data.message || res.data.error);
@@ -49,7 +49,7 @@ export const AuthProvider = ({ children }) => {
   
   const register = async ({ name, email, password }) => {
     try {
-      const res = await api.post('/register', { name, email, password });
+      const res = await api.post('/auth/register', { name, email, password });
       if (res.data.status === 201) {
         setUser(res.data.user);
         navigate('/');
@@ -89,7 +89,7 @@ export const AuthProvider = ({ children }) => {
   
   const save = async (user) => {
     try {
-      const res = await api.post('/save_settings', user);
+      const res = await api.post('/auth/save_settings', user);
       return res.data;
     } catch (err) {
       return { error: err.response?.data?.message || 'Save failed' };

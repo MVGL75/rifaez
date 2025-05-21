@@ -14,7 +14,7 @@ import Webhook from "./middleware/webhook.js"
 import cors from 'cors';
 import helmet from 'helmet';
 import rateLimit from 'express-rate-limit';
-
+import { fileURLToPath } from 'url';
 import session from 'express-session';
 import passport from 'passport';
 
@@ -24,7 +24,8 @@ const limiter = rateLimit({
   windowMs: 15 * 60 * 1000,
   max: 100,
 });
-
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
 
 mongoose.connect(mongoURI, {
   useNewUrlParser: true,
@@ -35,8 +36,8 @@ mongoose.connect(mongoURI, {
 const app = express();
 
 app.use("/stripe/webhook", Webhook)
+  app.use(express.static(path.join(__dirname, '../client/dist')))
 
-app.use(express.static(path.join(__dirname, '../client/dist')))
 
 app.use(cors({
   origin: process.env.CLIENT_ORIGIN || "http://localhost:3000", 
@@ -125,14 +126,21 @@ app.use('/raffle', raffleRoutes);
 app.use('/api/domains', domainRoutes)
 
 app.use('/stripe', stripeRoutes)
-app.use('/', authRoutes);
+app.use('/auth', authRoutes);
 
 
 
-app.get('*', (req, res) => {
-  res.sendFile(path.join(__dirname, '../client/dist/index.html')); // 'build/index.html' if CRA
+app.use((req, res, next) => {
+  if (req.method === 'GET' &&
+      !req.path.startsWith('/api') &&
+      !req.path.startsWith('/stripe') &&
+      !req.path.startsWith('/raffle') &&
+      !req.path.startsWith('/auth')) {
+    res.sendFile(path.join(__dirname, '../client/dist/index.html'));
+  } else {
+    next();
+  }
 });
-
 
 
 app.use((err, req, res, next) => {
