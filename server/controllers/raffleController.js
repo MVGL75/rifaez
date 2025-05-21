@@ -293,14 +293,5 @@ export const editRaffle = async (req, res) => {
 
   
 
-  // import {RaffleCounter} from "../models/RaffleCounter.js"
-  // async function update(){
-  //   // await getNextTransactionId('68157b7126cb3bba807324a3')
-  //   const raffle = await Raffle.findById('68157b7126cb3bba807324a3')
-  //   raffle.stats.dailySales[1].time[0].count = 32
-  //   await raffle.save()
-  //   console.log(raffle.stats.dailySales[1].time[0].count)
-  // }
-  // update()
 
 

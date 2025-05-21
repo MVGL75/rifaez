@@ -28,7 +28,7 @@ export const createDomain = async (req, res) => {
     }
     const custom = await customDomain.create({...domainBody})
 
-    console.log(custom)
+
   
     return res.json({
       message: 'Please add the following TXT record to your DNS settings:',

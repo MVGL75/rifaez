@@ -32,6 +32,16 @@ router.post('/create-checkout-session', isAuthenticated, async (req, res) => {
     }
   }
   try {
+    const baseUrl = `${process.env.CLIENT_URL}/checkout/return?session_id={CHECKOUT_SESSION_ID}`;
+
+    let extraParams = '';
+    if (req.session?.redirectAfterPayment?.url && req.session?.redirectAfterPayment?.frontUrl) {
+      const url = encodeURIComponent(req.session.redirectAfterPayment.url);
+      const frontUrl = encodeURIComponent(req.session.redirectAfterPayment.frontUrl);
+      extraParams = `&redirect_url=${url}&front_url=${frontUrl}`;
+    }
+
+    const return_url = `${baseUrl}${extraParams}`;
     const session = await stripe.checkout.sessions.create({
       mode: 'subscription',
       customer_email: customerEmail,
@@ -42,7 +52,7 @@ router.post('/create-checkout-session', isAuthenticated, async (req, res) => {
           quantity: 1,
         },
       ],
-      return_url: `${process.env.CLIENT_URL}/checkout/return?session_id={CHECKOUT_SESSION_ID}${req.session?.redirectAfterPayment && `&redirect_url=${req.session?.redirectAfterPayment?.url}&front_url=${req.session?.redirectAfterPayment?.frontUrl}`}`,
+      return_url,
     });
     res.json({ clientSecret: session.client_secret });
   } catch (err) {

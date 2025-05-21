@@ -1,5 +1,4 @@
 import './config/env.js';
-console.log(process.env.STRIPE_SECRET_KEY)
 
 import express from 'express';
 import mongoose from 'mongoose';
@@ -27,10 +26,7 @@ const limiter = rateLimit({
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
-mongoose.connect(mongoURI, {
-  useNewUrlParser: true,
-  useUnifiedTopology: true,
-}).then(() => console.log('✅ Connected to MongoDB'))
+mongoose.connect(mongoURI).then(() => console.log('✅ Connected to MongoDB'))
   .catch(err => console.error('❌ MongoDB connection error:', err));
 
 const app = express();
@@ -58,10 +54,21 @@ app.use(session({
 }));
 
 app.disable('x-powered-by');
-app.use(helmet());
 app.use(limiter);
 
-
+app.use(
+  helmet({
+    contentSecurityPolicy: {
+      directives: {
+        defaultSrc: ["'self'"],
+        scriptSrc: ["'self'", "https://js.stripe.com", "'unsafe-inline'"],
+        imgSrc: ["'self'", "https://res.cloudinary.com", "data:"],
+        frameSrc: ["https://js.stripe.com", "https://hooks.stripe.com"],
+        connectSrc: ["'self'", "https://api.stripe.com"]
+      },
+    },
+  })
+);
 app.use(passport.initialize());
 app.use(passport.session());
 
