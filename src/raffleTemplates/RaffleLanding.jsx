@@ -1,5 +1,8 @@
 import React, { useEffect, useState } from "react";
 import { Outlet, useParams } from "react-router-dom";
+import classicLanding from "./classic/Landing"
+import modernLanding from "./modern/Landing";
+import minimalistLanding from "./minimalist/Landing";
 import RaffleNotFound from "./RaffleNotFound"
 import setCustomRaffle from "./utils/setCustomRaffle";
 import Navbar from "./components/Navbar";
@@ -9,6 +12,12 @@ const api = axios.create({
   withCredentials: true,
 });
 import Footer from "./components/Footer";
+
+const TEMPLATES = {
+  classic: classicLanding,
+  modern: modernLanding,
+  minimalist: minimalistLanding,
+}
 
 function RaffleLanding() {
   const { id } = useParams();
@@ -41,15 +50,9 @@ function RaffleLanding() {
 
   if(notFound) return <RaffleNotFound />;
   if (!raffleData) return null;
-
+  const Layout = TEMPLATES[raffleData.template] || classicLanding;
   return (
-    <div className="min-h-screen bg-backgroundRaffle text-colorRaffle">
-      <Navbar raffle={raffleData} />
-      <div className="pt-16">
-        <Outlet context={raffleData} />
-      </div>
-      <Footer raffle={raffleData} />
-    </div>
+    <Layout raffle={raffleData}/>
   );
 }
 

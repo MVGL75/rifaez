@@ -24,6 +24,7 @@ import {
   CircleChevronRight,
   CircleChevronLeft,
   AlertCircle,
+  CircleMinus,
 } from "lucide-react";
 import { raffleValidationSchema } from "../validation/raffleSchemaValidate";
 import axios from 'axios';
@@ -166,6 +167,18 @@ const RaffleEditPage = ({}) => {
     setRaffle(prev => ({...prev, additionalPrizes: [...prev.additionalPrizes, { place: prev.additionalPrizes.length + 2, prize: "" }]
     }));
   };
+  const removePrize = (indexOld) => {
+    setRaffle(prev => {
+      const addPrizes = prev.additionalPrizes?.filter((prize, index) => index !== indexOld)
+      for (let i = 0; i < addPrizes.length; i++) {
+        addPrizes[i].place = i + 2;
+      }
+      return {
+        ...prev,
+        additionalPrizes: addPrizes,
+      }
+    });
+  }
 
   const handlePrizeChange = (index, value) => {
     setRaffle(prev => {
@@ -445,10 +458,13 @@ const RaffleEditPage = ({}) => {
           </div>
 
           {raffle.additionalPrizes.map((prize, index) => (
-            <div key={index} className="flex flex-col xs:flex-row xs:items-center gap-4">
+            <div key={index} className="flex flex-col  gap-4">
+              <header className="flex items-center justify-between w-full">
               <span className={`font-medium min-w-[100px] ${errors[`additionalPrizes.${index}.prize`] && "text-red-500"}`}>
                 {prize.place}º Lugar
               </span>
+              <CircleMinus onClick={()=>{removePrize(index)}} className="w-5 h-5 text-red-500"/>
+              </header>
               <input
                 type="text"
                 value={prize.prize}
@@ -493,6 +509,8 @@ const RaffleEditPage = ({}) => {
                   className={`w-full p-2 rounded-md border ${errors.colorPalette ? "border-red-500" : "border-input"} bg-background`}
                 >
                   <option value="">Selecciona una paleta</option>
+                  <option value="red">Rojo</option>
+                  <option value="yellow">Amarillo</option>
                   <option value="blue">Azul</option>
                   <option value="green">Verde</option>
                   <option value="purple">Púrpura</option>

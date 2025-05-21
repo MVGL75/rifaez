@@ -3,17 +3,14 @@ import plans from "../seed/plans.js"
 import AppError from "../utils/AppError.js";
 const rafflePlan = async (req, res, next) => {
     const user = await User.findById(req.user._id)
-    const activePermission = plans[user?.planId]?.permissions?.find(perm => perm.split(":")[0] === "active_raffles");
-    if (activePermission) {
-        const amount = activePermission.split(":")[1]
-        if(amount !== "unlimited"){
-            const amountNum = Number(amount);
-      
+    const activeRaffleAmount = plans[user?.planId].activeRaffles;
+    if (activeRaffleAmount) {
+        if(activeRaffleAmount !== "unlimited"){
             const userWithRaffles = await user.populate('raffles');
             const activeRaffles = userWithRaffles.raffles?.filter(r => r.isActive);
             const extraActiveRaffle = (req.body.isActive === false) ? 0 : 1;
-            if (activeRaffles?.length >= amountNum) {
-              const diff = activeRaffles.length - amountNum + extraActiveRaffle;
+            if (activeRaffles?.length >= activeRaffleAmount) {
+              const diff = activeRaffles.length - activeRaffleAmount + extraActiveRaffle;
           
               for (let i = 0; i < diff; i++) {
                 activeRaffles[i].isActive = false;

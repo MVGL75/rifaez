@@ -1,0 +1,243 @@
+import {useState, useEffect, useRef} from 'react';
+import { Button } from '../components/ui/button';
+import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '../components/ui/card';
+import { motion } from 'framer-motion';
+import { useLocation, useNavigate, useOutletContext, useParams } from 'react-router-dom';
+import { Banknote, CreditCard, Smartphone, Copy, CheckCircle } from 'lucide-react';
+import { useToast } from '../components/ui/use-toast';
+import axios from "axios";
+const api = axios.create({
+  baseURL: 'http://localhost:5050',
+  withCredentials: true,
+});
+
+const PaymentMethodCard = ({ method }) => {
+  const formatMethodNumber = (input) => {
+    const digits = String(input).replace(/\D/g, '');
+  
+    return digits.replace(/(.{4})/g, '$1 ').trim();
+  }
+  return (
+    <Card className="shadow-lg hover:shadow-xl transition-shadow duration-300">
+      <CardHeader>
+        <CardTitle className="flex items-center text-xl sm:text-2xl text-primaryRaffle">
+          {method.bank}
+        </CardTitle>
+      </CardHeader>
+      <CardContent className="space-y-3">
+          <div  className="text-sm sm:text-base">
+            <span className="font-semibold text-colorRaffle">Beneficiario: </span>
+            <span className="text-colorRaffle-300 break-all">{method.person}</span>
+            {true && (
+              <Button
+                variant="ghost"
+                size="sm"
+                className="ml-2 px-2 py-1 h-auto text-primaryRaffle hover:bg-blue-100"
+                onClick={() => onCopy(detail.value, detail.label)}
+              >
+                <Copy className="h-4 w-4 mr-1" /> Copiar
+              </Button>
+            )}
+          </div>
+          <div  className="text-sm sm:text-base">
+            <span className="font-semibold text-colorRaffle">Numero de Tarjeta: </span>
+            <span className="text-colorRaffle-300 break-all">{formatMethodNumber(method.number)}</span>
+            {true && (
+              <Button
+                variant="ghost"
+                size="sm"
+                className="ml-2 px-2 py-1 h-auto text-primaryRaffle hover:bg-blue-100"
+                onClick={() => onCopy(detail.value, detail.label)}
+              >
+                <Copy className="h-4 w-4 mr-1" /> Copiar
+              </Button>
+            )}
+          </div>
+      </CardContent>
+    </Card>
+  );
+};
+
+const PaymentPage = () => {
+  const { toast } = useToast();
+  const WHATSAPP_NUMBER = "5212323232323"; 
+  const location = useLocation();
+  const WHATSAPP_MESSAGE = "Hola, he realizado el pago de mis boletos. Adjunto mi comprobante.";
+  const navigate = useNavigate();
+  const [selectedTickets, setSelectedTickets] = useState([]);
+  const [success, setSuccess] =  useState(false)
+  const [noTickets, setNoTickets] = useState(true);
+  const raffle = useOutletContext();
+  const [userInfo, setUserInfo] = useState({});
+  const {id} = useParams()
+  const topRef = useRef(null);
+
+  useEffect(() => {
+    const tickets = JSON.parse(localStorage.getItem('selectedTickets') || '[]');
+    const user = JSON.parse(localStorage.getItem('userInfo') || '{}');
+    if (!tickets.length) {
+      return;
+    }
+    setNoTickets(false)
+    setSelectedTickets(tickets);
+    setUserInfo(user);
+    
+    topRef.current?.scrollIntoView({ behavior: 'smooth' });
+  }, []);
+
+  const finalizePayment = async () => {
+    const res = await api.post(`/raffle/${id}/payment`, {...userInfo, tickets: [...selectedTickets]})
+    if(res.data.status === 200){
+      localStorage.removeItem('selectedTickets');
+      localStorage.removeItem('userInfo');
+      setSuccess(true)
+    } else {
+      console.log(res)
+    }
+  }
+
+  const handleCopyToClipboard = (text, label) => {
+    navigator.clipboard.writeText(text).then(() => {
+      toast({
+        title: "Copiado al portapapeles",
+        description: `${label} (${text}) copiado exitosamente.`,
+        action: <CheckCircle className="text-green-500"/>,
+      });
+    }).catch(err => {
+      toast({
+        title: "Error al copiar",
+        description: `No se pudo copiar ${label}. Por favor, inténtalo manualmente.`,
+        variant: "destructive",
+      });
+    });
+  };
+  
+  const paymentMethods = raffle.paymentMethods;
+  const setPhoneFormat = (phone) => {
+    const digits = phone?.replace(/\D/g, ''); 
+
+    const parts = [];
+
+    if (digits?.length > 0) {
+      parts.push('(' + digits.substring(0, Math.min(3, digits.length)));
+    }
+    if (digits?.length >= 4) {
+      parts[0] += ') ';
+      parts.push(digits.substring(3, Math.min(6, digits.length)));
+    }
+    if (digits?.length >= 7) {
+      parts.push('-' + digits.substring(6, 10));
+    }
+    return parts.join('');
+  }
+  const goToParent = () => {
+    const segments = location.pathname.split("/").filter(Boolean); 
+    const parentPath = "/" + segments.slice(0, -1).join("/"); 
+    navigate(parentPath);
+  };
+
+  if(success){
+    return(
+        <div className="flex items-center justify-center text-colorRaffle box-border mx-auto w-full h-[calc(100vh-280px)] min-h-[500px] py-4">
+        <div className="bg-cardRaffle px-8 py-10 shadow-lg border border-borderRaffle rounded-lg flex-col justify-center space-y-6 flex">
+          <div className="text-3xl">Transaccion Exitosa</div>
+          <div className="flex flex-col space-y-4">
+            <span>Nombre: {userInfo.name}</span>
+            <span>Telefono: {setPhoneFormat(userInfo.phone)}</span>
+            <span>Estado: {userInfo.state}</span>
+            <span>Boletos:</span>
+            <div className="flex flex-wrap gap-2">
+                    {selectedTickets.map(ticket => (
+                      <span key={ticket} className="bg-primaryRaffle text-colorRaffle-foreground px-3 py-1 rounded-full">
+                        #{ticket}
+                      </span>
+                    ))}
+              </div>
+          </div>
+          <p className="text-base text-colorRaffle-300">Tus boletos han sido adquiridos, pero el pago sigue pendiente hasta que el organizador de la rifa revise tu comprobante y confirme la transacción.</p>
+          <button onClick={goToParent} className="text-colorRaffle-foreground rounded-[50px] w-fit bg-primaryRaffle flex justify-center items-center px-6 py-3">Regresar a pagina de rifa</button>
+          </div>
+      </div>
+     
+    )
+  }
+  if(noTickets) return (
+    <div className="text-colorRaffle box-border mx-auto max-w-2xl w-full min-h-[calc(100vh-280px)] py-4">
+      <div className="h-[500px] flex-col justify-center text-center space-y-6 flex items-center">
+        <div className="text-3xl">No haz seleccionado un boleto de la rifa</div>
+        <p className="text-base text-colorRaffle-300">Debes seleccionar al menos un boleto de la rifa y llenar tu informacion para poder accesar los metodos de pago</p>
+        <button onClick={goToParent} className="text-colorRaffle-foreground rounded-[50px] w-fit ml-auto mr-auto bg-primaryRaffle flex justify-center items-center px-6 py-3">Regresar a pagina de rifa</button>
+        </div>
+      </div>
+  );
+  return (
+    <motion.div
+      className="space-y-8 max-w-3xl mx-auto py-6 sm:py-8"
+      initial={{ opacity: 0, y: 20 }}
+      animate={{ opacity: 1, y: 0 }}
+      transition={{ duration: 0.5 }}
+    >
+      
+      <section className="text-center px-4">
+        <h1 className="text-3xl sm:text-4xl font-bold text-primaryRaffle mb-3">Realiza tu Pago</h1>
+        <p className="text-md sm:text-lg text-colorRaffle-300">
+          Selecciona tu método de pago preferido y sigue las instrucciones.
+        </p>
+      </section>
+
+      <div className="grid md:grid-cols-2 gap-6 px-4">
+        {paymentMethods.map((method, index) => (
+          <motion.div
+            key={index}
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.5, delay: index * 0.1 }}
+          >
+            <PaymentMethodCard 
+             method={method}
+            />
+          </motion.div>
+        ))}
+      </div>
+
+      <section className="text-center mt-10 px-4">
+        <Card className="bg-cardRaffle border-borderRaffle shadow-xl p-6 sm:p-8">
+          <CardContent className="space-y-4">
+            <h2 className="text-xl sm:text-2xl font-semibold text-primaryRaffle">
+              ¡Importante! Envía tu Comprobante
+            </h2>
+            <p className="text-md sm:text-lg text-colorRaffle">
+              Una vez realizado el depósito o transferencia, por favor envía tu comprobante de pago al siguiente número de WhatsApp para confirmar tu participación:
+            </p>
+            <a
+              href={`https://wa.me/${WHATSAPP_NUMBER}?text=${encodeURIComponent(WHATSAPP_MESSAGE)}`}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="inline-block"
+            >
+              <Button size="lg" className="text-lg sm:text-xl bg-green-500 hover:bg-green-600 text-colorRaffle-foreground">
+                <Smartphone className="mr-2 h-5 w-5 sm:h-6 sm:w-6" /> Enviar Comprobante por WhatsApp
+              </Button>
+            </a>
+            <p className="text-sm text-colorRaffle-300 mt-2">
+              Número de contacto: <span className="font-semibold text-primaryRaffle">{WHATSAPP_NUMBER.replace(/(\d{2})(\d{4})(\d{4})/, '$1 $2 $3')}</span>
+            </p>
+          </CardContent>
+        </Card>
+      </section>
+
+      <section className='flex items-center justify-center'>
+        <button onClick={finalizePayment} className='rounded-full px-4 py-2 bg-primaryRaffle text-colorRaffle-foreground'>Finalizar Pago</button>
+      </section>
+      
+      <section className="text-center px-4 pt-6">
+          <p className="text-xs text-colorRaffle-300">
+            Si tienes alguna duda, contáctanos a través de la sección de "Contacto". Tus boletos serán confirmados una vez validado el pago.
+          </p>
+      </section>
+
+    </motion.div>
+  );
+};
+
+export default PaymentPage;

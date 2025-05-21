@@ -18,11 +18,6 @@ export const createRaffle = async(req, res)=>{
       const images = req.files?.map(file => ({url: file.path, public_id: file.filename})); 
       const parsedBody = {
         ...req.body,
-        phone: req.user.phone,
-        logo: {
-          url: req.user.logo.url,
-          public_id: req.user.logo.public_id,
-        },
         images,
         paymentMethods: JSON.parse(req.body.paymentMethods || '[]'),
         additionalPrizes: JSON.parse(req.body.additionalPrizes || '[]'),
@@ -107,16 +102,22 @@ export const editRaffle = async (req, res) => {
   export const findRaffle = async (req, res)=>{
     const raffleID = req.params.id
     const raffle = await Raffle.findById(raffleID).lean()
+    const user = await User.findOne({ raffles: raffleID });
+
     if(raffle){
-      const cleanRaffle = sanitizeRaffle(raffle)
-      const unavailableTickets = raffle.currentParticipants.flatMap(part => part.tickets);
-      const availableTickets = []
-      for (let i = 1; i < raffle.maxParticipants + 1; i++) {
-        if(!unavailableTickets.includes(i)){
-          availableTickets.push(i)
+      if(raffle.isActive){
+        const cleanRaffle = sanitizeRaffle(raffle)
+        const unavailableTickets = raffle.currentParticipants.flatMap(part => part.tickets);
+        const availableTickets = []
+        for (let i = 1; i < raffle.maxParticipants + 1; i++) {
+          if(!unavailableTickets.includes(i)){
+            availableTickets.push(i)
+          }
         }
+        res.json({message: "Raffle found", status: 200, raffle: {...cleanRaffle, availableTickets: availableTickets, logo: user.logo, phone: user.phone, email: user.username}})
+      } else {
+        return res.json({message: "raffle inactive"})
       }
-      res.json({message: "Raffle found", status: 200, raffle: {...cleanRaffle, availableTickets: availableTickets}})
     } else {
       throw new AppError("Raffle Not Found", 400)
     }
@@ -127,7 +128,7 @@ export const editRaffle = async (req, res) => {
     const contactData = req.body
     const {error, value} = contactValidationSchema.validate(contactData)
     if(error){
-      res.json({message: error.details, status: 400})
+      return res.json({message: error.details, status: 400})
     }
     await Raffle.updateOne(
       { _id: raffleID },
@@ -151,7 +152,7 @@ export const editRaffle = async (req, res) => {
     }
     const {error, value} = ticketInfoValidationSchema.validate(newBody)
     if(error){
-      res.json({message: error.details, status: 400})
+      return res.json({message: error.details, status: 400})
     }
     raffle.currentParticipants.push(value)
     await updateStats(raffle, "dailySales", amount);

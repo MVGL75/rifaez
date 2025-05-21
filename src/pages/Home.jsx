@@ -93,10 +93,6 @@ const HomePage = ({ selectedRaffle }) => {
     setTodayStats({
       visits: dailyV,
       sales: dailyS,
-      trend: {
-        visits: "+12.5%", // You can replace with real logic later
-        sales: "+8.1%"
-      }
     });
   
   }, [selectedRaffle]);
@@ -216,7 +212,6 @@ const HomePage = ({ selectedRaffle }) => {
             <div className="bg-blue-50 p-4 rounded-lg border border-blue-100">
               <div className="flex items-center justify-between mb-2">
                 <Eye className="w-4 h-4 text-blue-600" />
-                <span className="text-xs text-blue-600">{todayStats.trend.visits}</span>
               </div>
               <p className="text-sm text-blue-900 font-medium">Visitas Hoy</p>
               <p className="text-xl font-bold text-blue-700">{todayStats.visits}</p>
@@ -224,7 +219,6 @@ const HomePage = ({ selectedRaffle }) => {
             <div className="bg-green-50 p-4 rounded-lg border border-green-100">
               <div className="flex items-center justify-between mb-2">
                 <DollarSign className="w-4 h-4 text-green-600" />
-                <span className="text-xs text-green-600">{todayStats.trend.sales}</span>
               </div>
               <p className="text-sm text-green-900 font-medium">Ventas Hoy</p>
               <p className="text-xl font-bold text-green-700">${todayStats.sales}</p>
@@ -320,7 +314,6 @@ const HomePage = ({ selectedRaffle }) => {
                 </div>
                 <h3 className="text-xl font-semibold text-blue-900">Visitas Hoy</h3>
               </div>
-              <span className="text-sm font-medium text-blue-600">{todayStats.trend.visits}</span>
             </div>
             <p className="text-3xl font-bold text-blue-700">{todayStats.visits}</p>
             <p className="text-sm text-blue-600 mt-2">Visitantes únicos en las últimas 24 horas</p>
@@ -334,7 +327,6 @@ const HomePage = ({ selectedRaffle }) => {
                 </div>
                 <h3 className="text-xl font-semibold text-green-900">Ventas Hoy</h3>
               </div>
-              <span className="text-sm font-medium text-green-600">{todayStats.trend.sales}</span>
             </div>
             <p className="text-3xl font-bold text-green-700">${todayStats.sales}</p>
             <p className="text-sm text-green-600 mt-2">Ingresos totales del día</p>

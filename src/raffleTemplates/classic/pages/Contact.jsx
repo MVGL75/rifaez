@@ -5,7 +5,7 @@ import { Button } from "@/components/ui/button";
 import axios from 'axios';
 import { useLocation } from "react-router-dom";
 import { MailCheck } from 'lucide-react';
-import {contactValidationSchema} from '../../validation/contactSchemaValidate'
+import {contactValidationSchema} from '../../../validation/contactSchemaValidate.js'
 const api = axios.create({
   baseURL: 'http://localhost:5050',
   withCredentials: true,
@@ -59,7 +59,7 @@ const Contact = () => {
 
 
   return (
-    <div className="container mx-auto px-4 py-8 h-[calc(100vh-280px)] min-h-[500px]">
+    <div className="max-w-[100vw] w-[1400px] mx-auto px-4 py-8 h-[calc(100vh-280px)] min-h-[500px]">
       <motion.div
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}

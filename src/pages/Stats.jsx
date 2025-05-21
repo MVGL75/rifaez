@@ -262,28 +262,28 @@ const StatsPage = ({ selectedRaffle }) => {
           icon={<Eye className="w-5 h-5" />}
           title="Visitas Totales"
           value={selectedRaffle.totalVisits}
-          trend="+12.5%"
+          trend=""
           positive
         />
         <StatCard
           icon={<Ticket className="w-5 h-5" />}
           title="Boletos Vendidos"
           value={`${selectedRaffle?.currentParticipants?.reduce((acc, current) => acc + current?.tickets?.length, 0) || 0} / ${selectedRaffle.maxParticipants} `}
-          trend="+8.1%"
+          trend=""
           positive
         />
         <StatCard
           icon={<AlertTriangle className="w-5 h-5" />}
           title="Pagos Pendientes"
           value={selectedRaffle?.currentParticipants?.length - selectedRaffle?.stats?.paidParticipants}
-          trend="-2"
+          trend=""
           positive={false}
         />
         <StatCard
           icon={<DollarSign className="w-5 h-5" />}
           title="Ingresos"
           value={selectedRaffle?.currentParticipants?.reduce((acc, current) => acc + current.amount, 0) || 0}
-          trend="+15.2%"
+          trend=""
           positive
         />
       </motion.div>
@@ -498,18 +498,6 @@ const StatCard = ({ icon, title, value, trend, positive }) => (
   <div className="bg-card rounded-lg p-6 shadow-lg">
     <div className="flex items-center justify-between">
       <div className="p-2 bg-primary/10 rounded-full text-primary">{icon}</div>
-      <span
-        className={`text-sm font-medium flex items-center ${
-          positive ? "text-green-600" : "text-red-600"
-        }`}
-      >
-        {positive ? (
-          <ArrowUpRight className="w-4 h-4 mr-1" />
-        ) : (
-          <ArrowDownRight className="w-4 h-4 mr-1" />
-        )}
-        {trend}
-      </span>
     </div>
     <h3 className="text-lg font-semibold mt-4">{title}</h3>
     <p className="text-3xl font-bold mt-2">{value}</p>

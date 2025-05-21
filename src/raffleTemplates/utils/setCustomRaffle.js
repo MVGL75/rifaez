@@ -3,11 +3,11 @@ export default function(raffle){
 
     // Tailwind-style shades (manually defined or imported from tailwind/colors)
     const colorShades = {
-        blue: ['#93c5fd', '#60a5fa', '#3b82f6', '#2563eb', '#1d4ed8'],
-        red: ['#fca5a5', '#f87171', '#ef4444', '#dc2626', '#b91c1c'],
-        green: ['#86efac', '#4ade80', '#22c55e', '#16a34a', '#15803d'],
-        yellow: ['#fde68a', '#fcd34d', '#fbbf24', '#f59e0b', '#d97706'],
-        purple: ['#d8b4fe', '#c084fc', '#a855f7', '#9333ea', '#7e22ce'],
+        blue: ['#93c5fd', '#60a5fa', '#3b82f6', '#2563eb', '#1d4ed8', "#000b26", "#eff6ff"],
+        red: ['#fca5a5', '#f87171', '#ef4444', '#dc2626', '#b91c1c' , "#000b26", "#eff6ff"],
+        green: ['#86efac', '#4ade80', '#22c55e', '#16a34a', '#15803d' , "#000b26", "#eff6ff"],
+        yellow: ['#fde68a', '#fcd34d', '#fbbf24', '#f59e0b', '#d97706' , "#000b26", "#eff6ff"],
+        purple: ['#d8b4fe', '#c084fc', '#a855f7', '#9333ea', '#7e22ce', "#140029", "#eff6ff"],
         // add more if needed
     };
     const fontSizes = {
@@ -21,12 +21,16 @@ export default function(raffle){
     const nightModeSelector = {
         true: {
             background: "#01011f",
+            lightTint: "#232323",
+            lightColorTint: colorShades[raffle.colorPalette][5],
             color: ["#f7f7f7", "#fff", "#fff", "#fff", "#fff", "#fff"],
-            card: "#323232",
+            card: "#242424",
             border: "#323232",
         },
         false: {
             background: "#ffffff",
+            lightTint: "#f5f5f5",
+            lightColorTint: colorShades[raffle.colorPalette][6],
             color: ["#333333", "#000", "#000", "#000", "#000", "#fff"],
             card: "#f7f7f7",
             border: "#e7e7e7",
@@ -38,6 +42,8 @@ export default function(raffle){
     const nightMode = nightModeSelector[raffle.nightMode]
     // Default palette
     const settings = {
+        '--light-tint': nightMode.lightTint,
+        '--light-color-tint': nightMode.lightColorTint,
         '--background-raffle': nightMode.background,
         '--primary-raffle': tones[2], // 500
         '--primary-raffle-300': tones[0],

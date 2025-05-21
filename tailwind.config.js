@@ -61,6 +61,12 @@ module.exports = {
 				cardRaffle: {
 					DEFAULT: 'var(--card-raffle)',
 				},
+				lightColorTint: {
+					DEFAULT: 'var(--light-color-tint)',
+				},
+				lightTint: {
+					DEFAULT: 'var(--light-tint)',
+				},
 				borderRaffle: {
 					DEFAULT: 'var(--border-raffle)',
 				},

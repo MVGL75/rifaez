@@ -54,7 +54,7 @@ const TicketVerification = () => {
           animate={{ opacity: 1, y: 0 }}
           className="text-center mb-12"
         >
-          <img  alt="Rifas El Tomate Logo" className="w-32 h-32 mx-auto mb-6" src="https://images.unsplash.com/photo-1701500096464-da0c875f2e2e" />
+          <img  alt="Rifas El Tomate Logo" className="w-32 h-32 mx-auto mb-6" src={raffle.logo.url} />
           <h1 className="text-3xl font-bold text-colorRaffle mb-4">
             VERIFICADOR DE BOLETOS
           </h1>

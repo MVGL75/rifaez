@@ -72,7 +72,6 @@ export const AuthProvider = ({ children }) => {
   const verifyDomain = async (domain) => {
     try {
       const res = await api.post('/api/domains/verify', {domain});
-      console.log(res)
       return res.data;
     } catch (err) {
       return { error: err.response?.data?.message || 'Connection failed' };
@@ -81,9 +80,7 @@ export const AuthProvider = ({ children }) => {
 
   const verifyCNAME = async (domain) => {
     try {
-      console.log("try c")
       const res = await api.post('/api/domains/verify/cname', {domain});
-      console.log(res, "CNAME")
       return res.data;
     } catch (err) {
       return { error: err.response?.data?.message || 'Connection failed' };

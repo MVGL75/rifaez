@@ -1,0 +1,27 @@
+
+import { Route, Routes } from "react-router-dom";
+import HomeRaffle from "./pages/HomePage";
+import ContactRaffle from "./pages/ContactPage";
+import PaymentRaffle from "./pages/PaymentPage";
+import TicketVerificationRaffle from "./pages/AvailableTicketsPage";
+import TicketRaffle from "./pages/TicketsPage";
+import Layout from "./Layout"
+import RaffleNotFound from "../RaffleNotFound"
+import { useEffect } from "react";
+
+function Landing({raffle}) {
+  return (
+    <>
+       <Routes>
+        <Route path="/" element={<Layout raffle={raffle} />}>
+          <Route index element={<TicketVerificationRaffle />} />
+          <Route path="contacto" element={<ContactRaffle />} />
+          <Route path="pago" element={<PaymentRaffle />} />
+          <Route path="*" element={<RaffleNotFound />} />
+        </Route>
+      </Routes>
+    </>
+  );
+}
+
+export default Landing;

@@ -4,8 +4,8 @@ import { motion } from "framer-motion";
 import { Button } from "@/components/ui/button";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "@/contexts/AuthContext";
-import { saveSchema, workerSchema, passwordSchema } from "../validation/userSchema";
-import DefaultLogo from "../raffleLanding/components/ui/default-logo";
+import { saveSchema, workerSchema, passwordSchema, methodSchema } from "../validation/userSchema";
+import DefaultLogo from "../raffleTemplates/components/ui/default-logo";
 import { 
   User, 
   CreditCard, 
@@ -35,7 +35,9 @@ import {
   Save,
   Info,
   CircleX,
-  CircleAlert
+  CircleAlert,
+  CirclePlus,
+  Trash2
 } from 'lucide-react';
 
 
@@ -56,6 +58,7 @@ const SettingsPage = () => {
   const [wasSubmitted, setWasSubmitted] = useState({})
   const [paymentInstructions, setPaymentInstructions] = useState("");
   const [newWorker, setNewWorker] = useState({});
+  const [newMethod, setNewMethod] = useState({})
   const [domainV, setDomainV] = useState('')
   const [newPhoneNumber, setNewPhoneNumber] = useState(null)
   const [record, setRecord] = useState({step: 0,})
@@ -63,6 +66,7 @@ const SettingsPage = () => {
   const [changedPassword, setChangedPassword] = useState(false)
   const [loading, setLoading] = useState(false)
   const [errors, setErrors] = useState({});
+  const [methods, setMethods] = useState(user.payment_methods || [])
   const [workers, setWorkers] = useState(user.workers || [])
   const [successMessage, setSuccessMessage] = useState("")
   const [passwordObj, setPasswordObj] = useState({})
@@ -86,10 +90,50 @@ const SettingsPage = () => {
       setFileState(file)
     }
   };
+  const formatMethodNumber = (input) => {
+    const digits = String(input).replace(/\D/g, '');
+  
+    return digits.replace(/(.{4})/g, '$1 ').trim();
+  }
+  
 
+  const addPaymentMethod = async () => {
+    setWasSubmitted(prev => ({...prev, method: true}))
+    const {error, value} = methodSchema.validate(newMethod, {abortEarly: false});
+    let newObj = {}
+    if(error){
+      error.details.forEach(error => {
+        newObj[error.context.key] = error.message
+      })
+      
+    }
+    setErrors(prev => ({...prev, method: newObj}))
 
+    if(error){
+      return;
+    }
 
+    const res = await api.post("/save_settings/add_method", value)
 
+    if(res.data.status === 200){
+      setMethods(prev => [...prev, {...value, id: res.data.id}])
+      setWasSubmitted(prev => ({...prev, method: undefined}))
+      setErrors(prev => ({...prev, method: undefined}))
+      setNewMethod({bank: '', person: '', number: ""})
+    } else {
+      setAppError({message: "error creating method"})
+    }
+  };
+const removeMethod = async (methodInp) => {
+  const methodNew = methodInp
+  const res = await api.post("/save_settings/remove_method", methodNew)
+  if(res.data.status === 200){
+    setMethods(prev => prev.filter(method => method._id === methodNew._id) || [])
+  } else {
+    setErrors(prev => ({...prev, removeWorker: "Invalid"}))
+  }
+  
+}
   const handleAddWorker = async () => {
     setWasSubmitted(prev => ({...prev, worker: true}))
     const {password, email} = newWorker
@@ -219,6 +263,18 @@ const SettingsPage = () => {
       setNewWorker(prev => ({...prev, [name.slice(7)]: value}));
       return;
     }
+    if(name === "method_person" || name === "method_number" || name === "method_bank"){
+      if(name === "method_number"){
+        let digits = value.replace(/\D/g, '');
+        if (digits.length > 16) {
+          digits = digits.slice(0, 16);
+        }
+        value = digits
+      }
+      
+      setNewMethod(prev => ({...prev, [name.slice(7)]: value}));
+      return;
+    }
     setFormData(prev => ({...prev, [name]: value}));
   }
 
@@ -235,14 +291,26 @@ const SettingsPage = () => {
   }, [newPhoneNumber])
   useEffect(() => {
     if(!wasSubmitted.worker) return;
-    const {worker_email} = newWorker
-    const {error} = workerSchema.validate(worker_email, {abortEarly: false});
+    const {email} = newWorker
+    const {error} = workerSchema.validate(email, {abortEarly: false});
     let newObj = {}
     if(error){
       newObj[error.details[0].context.key] = error.details[0].message
     }
     setErrors(prev => ({...prev, worker: newObj}))
   }, [newWorker])
+  useEffect(() => {
+    if(!wasSubmitted.method) return;
+    const {error} = methodSchema.validate(newMethod, {abortEarly: false});
+    let newObj = {}
+    if(error){
+      error.details.forEach(error => {
+        newObj[error.context.key] = error.message
+      })
+      
+    }
+    setErrors(prev => ({...prev, method: newObj}))
+  }, [newMethod])
 
   const setPhoneFormat = (phone) => {
     if (typeof phone !== 'string') {
@@ -286,7 +354,6 @@ const SettingsPage = () => {
         return;
       } else if (passwordObj.password_new === passwordObj.password_new_confirm){
         const res = await api.post("/auth/change_password", {password: passwordObj.password, password_new: value})
-        console.log(res)
         if(res.data.status === 200){
           setWasSubmitted(prev => ({...prev, password: undefined}));
           setPasswordObj({});
@@ -329,7 +396,6 @@ const SettingsPage = () => {
     setWasSubmitted({form: true});
     const {error, value} = formValidate();
     if(error){
-      console.log(error)
       setLoading(false);
       return;
     }
@@ -344,6 +410,7 @@ const SettingsPage = () => {
         newRaffleData.append("logo", fileState);
       }
       const res = await save(newRaffleData)
+      console.log(res)
       if(res.status === 200){
         setSuccessMessage('Usuario guardado exitosamente.');
       } else {
@@ -618,12 +685,12 @@ const SettingsPage = () => {
                 </label>
                 <div className="space-y-4">
                   <div className="relative">
-                    <Facebook className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground w-5 h-5" />
+                    <Facebook className={`absolute left-3 top-1/2 transform -translate-y-1/2 ${errors.facebook ? "text-red-500" : "text-muted-foreground"} w-5 h-5`} />
                     <input
                       type="text"
                       value={formData.facebook}
                       onChange={(e) => setFormData(prev => ({ ...prev, facebook: e.target.value }))}
-                      className="w-full pl-10 p-2 rounded-md border border-input bg-background"
+                      className={`w-full pl-10 p-2 rounded-md border ${errors.facebook ? "border-red-500" : "border-input"} bg-background`}
                       placeholder="URL de Facebook"
                     />
                   </div>
@@ -826,44 +893,87 @@ const SettingsPage = () => {
       case "gateways":
         return (
           <div className="space-y-6">
-            <h2 className="text-2xl font-semibold">Pasarelas de Pago</h2>
+            <h2 className="text-2xl font-semibold">Metodos de Pago</h2>
             
             <div className="space-y-4">
-              {paymentGateways.map((gateway) => (
-                <div
-                  key={gateway.id}
-                  className="p-6 rounded-lg border border-input"
-                >
-                  <div className="flex items-center justify-between">
-                    <div className="flex items-center space-x-4">
-                      {gateway.id === "stripe" && <PaymentIcon className="w-6 h-6" />}
-                      {gateway.id === "paypal" && <DollarSign className="w-6 h-6" />}
-                      {gateway.id === "custom" && <Bank className="w-6 h-6" />}
-                      <div>
-                        <h3 className="font-medium">{gateway.name}</h3>
-                        <p className="text-sm text-muted-foreground">
-                          Comisión: {gateway.commission}
-                        </p>
-                      </div>
+              <button onClick={()=>{document.getElementById("add-method").showModal()}} className="flex justify-center items-center gap-4 py-3 w-full border rounded-lg border-input hover:bg-gray-100">
+                <span>Agregar Metodo</span>
+                <CirclePlus strokeWidth={1.5} className="w-5 h-5"/>
+                </button>
+                {methods && methods.map((method) => (
+                  <div key={method._id} className="bg-white border border-input rounded-lg w-full">
+                    <div className="flex items-center justify-between px-4 py-3 bg-muted px-4 py-3">
+                      <div className="">{method.bank}</div>
+                      <div onClick={()=>{removeMethod(method)}} className="bg-red-500 rounded-sm p-2"><Trash2 className="h-4 w-4 text-white"/></div>
                     </div>
-                    <Button variant={gateway.connected ? "outline" : "default"}>
-                      {gateway.connected ? "Configurar" : "Conectar"}
-                    </Button>
+                    <div className="flex items-center justify-between px-4 py-3">
+                      <div>{method.person}</div>
+                      <div>{formatMethodNumber(method.number)}</div>
+                    </div>
                   </div>
 
-                  {gateway.id === "custom" && (
-                    <div className="mt-4">
-                      <textarea
-                        value={paymentInstructions}
-                        onChange={(e) => setPaymentInstructions(e.target.value)}
-                        placeholder="Ingresa las instrucciones de pago (ej: datos bancarios)"
-                        className="w-full p-3 rounded-lg border min-h-[100px]"
-                      />
-                    </div>
-                  )}
-                </div>
-              ))}
+                ))}
             </div>
+            <dialog id="add-method" className="w-screen h-screen bg-transparent">
+              <div className="flex justify-center items-center w-full h-full">
+              <div className="bg-background p-6 shadow-lg rounded-lg w-[300px]">
+                      <h3 className="text-lg font-medium mb-4">Agregar Metodo de Pago</h3>
+                      <div className="space-y-4">
+                        <div>
+                          <label className={`block text-sm font-medium mb-2 ${errors.method?.bank && "text-red-500"}`}>
+                            Banco
+                          </label>
+                          <input
+                            name="method_bank"
+                            type="text"
+                            value={newMethod.bank}
+                            onChange={handleChange}
+                            className={`w-full p-2 rounded-md border ${errors.method?.bank ? "border-red-500" : "border-input"} bg-background`}
+                            placeholder="BBVA"
+                          />
+                        </div>
+                        <div>
+                          <label className={`block text-sm font-medium mb-2 ${errors.method?.person && "text-red-500"}`}>
+                            Beneficiario
+                          </label>
+                          <input
+                            name="method_person"
+                            type="text"
+                            value={newMethod.person}
+                            onChange={handleChange}
+                            className={`w-full p-2 rounded-md border ${errors.method?.person ? "border-red-500" : "border-input"} bg-background`}
+                            placeholder="Pedro Carreras"
+                          />
+                        </div>
+                        <div>
+                          <label className={`block text-sm font-medium mb-2 ${errors.method?.number && "text-red-500"}`}>
+                            Numero de Cuenta
+                          </label>
+                          <input
+                            name="method_number"
+                            type="text"
+                            value={formatMethodNumber(newMethod.number)}
+                            onChange={handleChange}
+                            className={`w-full p-2 rounded-md border ${errors.method?.number ? "border-red-500" : "border-input"} bg-background`}
+                            placeholder="1111 2222 3333 4444"
+                          />
+                        </div>
+                     
+                        <div className="flex justify-end space-x-2">
+                          <Button
+                            variant="outline"
+                            onClick={() => document.getElementById("add-method").close()}
+                          >
+                            Cancelar
+                          </Button>
+                          <Button onClick={addPaymentMethod}>
+                            Agregar
+                          </Button>
+                        </div>
+                      </div>
+                </div>
+              </div>
+            </dialog>
           </div>
         );
 
@@ -1006,7 +1116,7 @@ const SettingsPage = () => {
     { id: "account", icon: <User />, label: "Cuenta" },
     { id: "company", icon: <Building2 />, label: "Empresa" },
     { id: "subscription", icon: <CreditCard />, label: "Suscripción" },
-    { id: "gateways", icon: <PaymentIcon />, label: "Pasarelas" },
+    { id: "gateways", icon: <PaymentIcon />, label: "Metodos de Pago" },
     { id: "domains", icon: <Globe />, label: "Dominios" },
     { id: "appearance", icon: <Palette />, label: "Apariencia" }
   ];

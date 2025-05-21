@@ -29,6 +29,17 @@ export const workerSchema = Joi.object({
   email: Joi.string().email({ tlds: { allow: false } }).required(),
   role: Joi.string().valid('editor', 'admin', 'viewer').optional()
 })
+export const methodSchema = Joi.object({
+  bank: Joi.string().required(),
+  person: Joi.string().required(),
+  number: Joi.string()
+    .pattern(/^\d{16}$/)
+    .required()
+    .messages({
+      'string.pattern.base': 'Card number must be exactly 16 digits.',
+      'string.empty': 'Card number is required.',
+    }),
+});
 
 export const saveSchema = Joi.object({
   name: Joi.string().optional(),
@@ -49,6 +60,8 @@ export const saveSchema = Joi.object({
   workers: Joi.array().items(workerSchema).optional(),
 
   currentPlan: Joi.string().valid('basic', 'premium', 'pro').optional(), 
+
+  payment_methods: Joi.array().items(methodSchema).optional(),
 
   facebook: Joi.string().uri().allow('', null).optional(),
 

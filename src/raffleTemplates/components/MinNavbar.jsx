@@ -22,7 +22,7 @@ const Navbar = ({raffle}) => {
           {raffle.logo_position === "center" &&
           <div className="absolute left-1/2 transform -translate-x-1/2">
             <Link to="">
-              <img alt="Rifas El Tomate Logo" className="h-14 w-14 rounded-full object-cover" src="https://images.unsplash.com/photo-1701500096464-da0c875f2e2e" />
+              <img alt="Rifas El Tomate Logo" className="h-14 w-14 rounded-full object-cover" src={raffle.logo.url} />
             </Link>
           </div>
           }

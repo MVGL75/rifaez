@@ -6,6 +6,7 @@ import { Button } from "@/components/ui/button";
 import { useToast } from "@/components/ui/use-toast";
 import { useAuth } from "../contexts/AuthContext";
 import { raffleValidationSchema } from "../validation/raffleSchemaValidate";
+import { methodSchema } from "../validation/userSchema";
 import SpinnerLogo from "../components/spinner"
 import axios from "axios";
 const api = axios.create({
@@ -29,7 +30,8 @@ import {
   CaptionsOff,
   Ticket,
   CalendarClock,
-  Files
+  Files,
+  PlusIcon
 } from "lucide-react";
 import { array } from "joi";
 
@@ -45,6 +47,8 @@ const CreateRafflePage = () => {
   const [wasSubmitted, setWasSubmitted] = useState({})
   const [formError, setFormError] = useState(null)
   const [justAddedPrize, setAddedPrize] = useState(false)
+  const [newMethod, setNewMethod] = useState({})
+  const [methodErrors, setMethodErrors] = useState({})
   const [stopSubmit, setStopSubmit] = useState(true)
   const [spinner, setSpinner] = useState(false)
   const [filesArray, setFiles] = useState([])
@@ -74,19 +78,45 @@ const CreateRafflePage = () => {
   }
 
   const [totalRevenue, setTotalRevenue] = useState(0);
-
-  const [paymentMethods, setPaymentMethods] = useState([
-    { id: "stripe", name: "Stripe", enabled: false },
-    { id: "paypal", name: "PayPal", enabled: false },
-    { id: "custom", name: "Instrucciones de Pago", enabled: false }
-  ]);
+  const newMethods = user.payment_methods?.map(method => {
+    return { id: method._id, bank: method.bank, person: method.person, number: method.number, enabled: false }
+  })
+  const [paymentMethods, setPaymentMethods] = useState(newMethods);
 
   const handlePaymentMethodToggle = (methodId) => {
-    setPaymentMethods(prev => prev.map(method => 
-      method.id === methodId 
-        ? { ...method, enabled: !method.enabled }
-        : method
-    ));
+    setPaymentMethods(prev => {
+      
+      const isTogglingOn = !prev.find(m => m.id === methodId)?.enabled;
+      if (!isTogglingOn) {
+        return prev.map(method =>
+          method.id === methodId
+            ? { ...method, enabled: false }
+            : method
+        );
+      }
+    
+      const enabled = prev.filter(m => m.enabled);
+    
+      if (enabled.length < 3) {
+        return prev.map(method =>
+          method.id === methodId
+            ? { ...method, enabled: true }
+            : method
+        );
+      }
+      const methodToDisable = enabled[0];
+    
+      return prev.map(method => {
+        if (method.id === methodToDisable.id) {
+          return { ...method, enabled: false };
+        }
+        if (method.id === methodId) {
+          return { ...method, enabled: true };
+        }
+        return method;
+      });
+    });
+    
   };
   useEffect(()=>{
     if(success){
@@ -96,11 +126,12 @@ const CreateRafflePage = () => {
       setShowSuccess(true);
     }
   }, [success])
+
+  
   useEffect(()=>{
     const methods = paymentMethods.filter(payment => payment.enabled === true)
-    const methodsID = methods.map(method => method.id)
     setFormData(prev => {
-      return {...prev, paymentMethods: [...methodsID]}
+      return {...prev, paymentMethods: [...methods]}
     })
   },[paymentMethods])
   const formValidate = () => {
@@ -113,7 +144,7 @@ const CreateRafflePage = () => {
             keys.push("title", "description");
             break;
         case 2:
-            keys.push("price", "maxParticipants", "additionalPrizes");
+            keys.push("price", "maxParticipants", "prize");
             break;
         case 3:
             keys.push("colorPalette", "logo_position", "header", "font", "nightMode");
@@ -134,10 +165,50 @@ const CreateRafflePage = () => {
       }
     }
     setErrors({...newObj});
-    console.log(error)
     return (Object.keys(newObj).length > 0)
   }
+  const formatMethodNumber = (input) => {
+    const digits = String(input).replace(/\D/g, '');
+  
+    return digits.replace(/(.{4})/g, '$1 ').trim();
+  }
 
+  const addPaymentMethod = async () => {
+    setWasSubmitted(prev => ({...prev, method: true}))
+    const {error, value} = methodSchema.validate(newMethod, {abortEarly: false});
+    let newObj = {}
+    if(error){
+      error.details.forEach(error => {
+        newObj[error.context.key] = error.message
+      })
+      
+    }
+    setMethodErrors(newObj)
+
+    if(error){
+      return;
+    }
+    const id = Math.random().toString(36).substring(2, 10);
+
+    console.log(id)
+
+      setPaymentMethods(prev => [...prev, {...value, id: id, enabled: false,}])
+      setWasSubmitted(prev => ({...prev, method: undefined}))
+      setMethodErrors(prev => ({...prev, method: undefined}))
+      setNewMethod({bank: '', person: '', number: ""})
+  };
+  useEffect(() => {
+    if(!wasSubmitted.method) return;
+    const {error} = methodSchema.validate(newMethod, {abortEarly: false});
+    let newObj = {}
+    if(error){
+      error.details.forEach(error => {
+        newObj[error.context.key] = error.message
+      })
+      
+    }
+    setMethodErrors(newObj)
+  }, [newMethod])
   const handleNextStep = () => {
     setWasSubmitted(prev => ({...prev, [currentStep]: true}))
     let isInvalid = formValidate();
@@ -174,8 +245,15 @@ const CreateRafflePage = () => {
       const newRaffleData = new FormData();
       Object.entries(value).forEach(([key, value]) => {
         if (key === "additionalPrizes" || key === "paymentMethods") {
-          const serialized = value && value.length > 0 ? JSON.stringify(value) : JSON.stringify([]);
-          newRaffleData.append(key, serialized);
+          if(key === "paymentMethods"){
+            const diffValue = value.map(v => ({bank: v.bank, person: v.person, number: v.number }))
+            const serialized = value && value.length > 0 ? JSON.stringify(diffValue) : JSON.stringify([]);
+            newRaffleData.append(key, serialized);
+            return;
+          } else {
+            const serialized = value && value.length > 0 ? JSON.stringify(value) : JSON.stringify([]);
+            newRaffleData.append(key, serialized);
+          }
         } else if (key !== "fileCounter") {
           newRaffleData.append(key, value);
         }
@@ -183,6 +261,7 @@ const CreateRafflePage = () => {
       filesArray.forEach(image => newRaffleData.append('images', image));
       try {
         const res = await api.post("/raffle/create", newRaffleData)
+        console.log(res)
         if(res.data.status === 200){
           setUser(res.data.user)
           setNewRaffleId(res.data.link)
@@ -228,10 +307,22 @@ const CreateRafflePage = () => {
   }
 
   const handleChange = (e) => {
-    const { name, value, type, files } = e.target;
+    let { name, value, type, files } = e.target;
     if(type === "file"){
       setFormData(prev => ({...prev, fileCounter: files.length}))
       setFiles(Array.from(files));
+      return;
+    }
+    if(name === "method_person" || name === "method_number" || name === "method_bank"){
+      if(name === "method_number"){
+        let digits = value.replace(/\D/g, '');
+        if (digits.length > 16) {
+          digits = digits.slice(0, 16);
+        }
+        value = digits
+      }
+      
+      setNewMethod(prev => ({...prev, [name.slice(7)]: value}));
       return;
     }
     setFormData(prev => {
@@ -247,6 +338,7 @@ const CreateRafflePage = () => {
     });
   };
     useEffect(()=>{
+      console.log(formData)
       if(wasSubmitted[currentStep] && !justAddedPrize) {
         formValidate()
       } else {
@@ -440,6 +532,8 @@ const CreateRafflePage = () => {
                   className={`w-full p-2 rounded-md border ${errors.colorPalette ? "border-red-500" : "border-input"} bg-background`}
                 >
                   <option value="">Selecciona una paleta</option>
+                  <option value="red">Rojo</option>
+                  <option value="yellow">Amarillo</option>
                   <option value="blue">Azul</option>
                   <option value="green">Verde</option>
                   <option value="purple">Púrpura</option>
@@ -546,7 +640,7 @@ const CreateRafflePage = () => {
               </div>
               <div>
               <label htmlFor="files" className={`block text-sm font-medium mb-2 ${errors.fileCounter && "text-red-500"}`}>
-                  Imagenes
+                  Imagenes Max(10)
                 </label>
                 <div className="relative">
                   <input id="fileCounter" accept="image/*" type="file" name="fileCounter" onChange={handleChange} multiple
@@ -566,42 +660,106 @@ const CreateRafflePage = () => {
               animate={{ opacity: 1, x: 0 }}
               className={`${errors.paymentMethods ? "space-y-4" : "space-y-6"}`}
             >
-              <h2 className="text-2xl font-semibold">Configuración de Pagos</h2>
+              <h2 className="text-2xl font-semibold">Metodo de Pagos</h2>
               {errors.paymentMethods && 
               <div className="text-red-500 flex items-center space-x-2">
                 <AlertCircle></AlertCircle>
-                <span>Deberas elegir una configuracion de pago</span>
+                <span>Deberas elegir un metodo de pago. Maximo (3)</span>
               </div>}
-              <div className="space-y-4">
-                {paymentMethods.map(method => (
-                  <div
-                    key={method.id}
-                    className="flex items-center justify-between p-4 rounded-lg border"
-                  >
-                    <span>{method.name}</span>
-                    <div
-                      className={`w-12 h-6 rounded-full transition-colors ${
-                        method.enabled ? 'bg-primary' : 'bg-gray-200'
-                      } cursor-pointer`}
-                      onClick={() => handlePaymentMethodToggle(method.id)}
-                    >
-                      <div
-                        className={`w-5 h-5 rounded-full bg-white transform transition-transform ${
-                          method.enabled ? 'translate-x-7' : 'translate-x-1'
-                        } mt-0.5`}
-                      />
+              <div className="space-y-6">
+                <div className="space-y-4">
+                {paymentMethods.map((method, index) => (
+                      <div key={index} className="bg-white border border-input rounded-lg w-full">
+                      <div className="flex items-center justify-between px-4 py-3 bg-muted px-4 py-3">
+                        <div className="">{method.bank}</div>
+                        <div
+                            className={`w-12 h-6 rounded-full transition-colors ${
+                              method.enabled ? 'bg-primary' : 'bg-gray-200'
+                            } cursor-pointer`}
+                            onClick={() => handlePaymentMethodToggle(method.id)}
+                          >
+                            <div
+                              className={`w-5 h-5 rounded-full bg-white transform transition-transform ${
+                                method.enabled ? 'translate-x-7' : 'translate-x-1'
+                              } mt-0.5`}
+                            />
+                        </div>
+                      </div>
+                      <div className="flex items-center justify-between px-4 py-3">
+                        <div>{method.person}</div>
+                        <div>{formatMethodNumber(method.number)}</div>
+                      </div>
                     </div>
-                  </div>
                 ))}
-  
-                {paymentMethods.find(m => m.id === "custom")?.enabled && (
-                  <textarea
-                    name="payment_instructions"
-                    onChange={handleChange}
-                    placeholder="Ingresa las instrucciones de pago..."
-                    className={`w-full p-3 rounded-lg border min-h-[100px] ${errors.payment_instructions && "border-red-500"}`}
-                  />
-                )}
+                </div>
+                <div className="flex justify-end">
+                  <button onClick={()=>{document.getElementById("add-method").showModal()}} className="px-4 py-2 rounded-lg text-sm border border-input flex gap-2 items-center">
+                    <span>Crear Metodo</span>
+                    <PlusIcon className="h-4 w-4"/>
+                    </button>
+                </div>
+
+                <dialog id="add-method" className="w-screen h-screen bg-transparent">
+              <div className="flex justify-center items-center w-full h-full">
+              <div className="bg-background p-6 shadow-lg rounded-lg w-[300px]">
+                      <h3 className="text-lg font-medium mb-4">Agregar Metodo de Pago</h3>
+                      <div className="space-y-4">
+                        <div>
+                          <label className={`block text-sm font-medium mb-2 ${methodErrors?.bank && "text-red-500"}`}>
+                            Banco
+                          </label>
+                          <input
+                            name="method_bank"
+                            type="text"
+                            value={newMethod.bank}
+                            onChange={handleChange}
+                            className={`w-full p-2 rounded-md border ${methodErrors?.bank ? "border-red-500" : "border-input"} bg-background`}
+                            placeholder="BBVA"
+                          />
+                        </div>
+                        <div>
+                          <label className={`block text-sm font-medium mb-2 ${methodErrors?.person && "text-red-500"}`}>
+                            Beneficiario
+                          </label>
+                          <input
+                            name="method_person"
+                            type="text"
+                            value={newMethod.person}
+                            onChange={handleChange}
+                            className={`w-full p-2 rounded-md border ${methodErrors?.person ? "border-red-500" : "border-input"} bg-background`}
+                            placeholder="Pedro Carreras"
+                          />
+                        </div>
+                        <div>
+                          <label className={`block text-sm font-medium mb-2 ${methodErrors?.number && "text-red-500"}`}>
+                            Numero de Cuenta
+                          </label>
+                          <input
+                            name="method_number"
+                            type="text"
+                            value={formatMethodNumber(newMethod.number)}
+                            onChange={handleChange}
+                            className={`w-full p-2 rounded-md border ${methodErrors?.number ? "border-red-500" : "border-input"} bg-background`}
+                            placeholder="1111 2222 3333 4444"
+                          />
+                        </div>
+                     
+                        <div className="flex justify-end space-x-2">
+                          <Button
+                            variant="outline"
+                            onClick={() => document.getElementById("add-method").close()}
+                          >
+                            Cancelar
+                          </Button>
+                          <Button onClick={addPaymentMethod}>
+                            Agregar
+                          </Button>
+                        </div>
+                      </div>
+                </div>
+              </div>
+            </dialog>
+                    
               </div>
             </motion.div>
           );

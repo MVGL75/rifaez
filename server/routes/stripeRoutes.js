@@ -3,6 +3,7 @@ import Stripe from 'stripe';
 import AppError from '../utils/AppError.js';
 import { User } from "../models/Users.js"
 import isAuthenticated from '../middleware/isAuthenticated.js';
+import plans from '../seed/plans.js';
 
 const stripe = new Stripe(process.env.STRIPE_SECRET_KEY);
 
@@ -54,8 +55,11 @@ router.post("/update-plan", isAuthenticated, async (req, res) => {
     const user = await User.findByUsername(req.user.username)
     const subscription = await stripe.subscriptions.retrieve(user.subscriptionId);
 
+
+
     await updateSubscription(user, subscription, newPriceId)
     res.redirect("/api/user")
+
   } catch (error) {
     throw new AppError(error)
   } 
@@ -73,10 +77,14 @@ const updateSubscription = async (user, subscription, newPriceId) => {
     cancel_at_period_end: false,
     proration_behavior: 'create_prorations',
   });
+  if(plans[user.planId].rank > plans[newPriceId].rank){
+    await restrictUserFeatures(user, newPriceId);
+  }
   user.planId = newPriceId;
   user.subscriptionStatus = "active";
   await user.save();
-  
+
+
 }
 
 router.post('/cancel-subscription', isAuthenticated, async (req, res) => {
@@ -111,6 +119,45 @@ router.get('/session-status', async (req, res) => {
     throw new AppError(e)
   }
 });
+
+
+const restrictUserFeatures = async (user, newPriceId) => {
+  const newPlanRestrictions = plans[newPriceId];
+
+  const userWithRaffles = await user.populate('raffles');
+  const activeRaffleAmount = newPlanRestrictions.activeRaffles;
+
+  const activeRaffles = userWithRaffles.raffles?.filter(r => r.isActive) || [];
+  const excess = activeRaffles.length - activeRaffleAmount;
+
+  if (excess > 0) {
+    await Promise.all(
+      activeRaffles.slice(0, excess).map(raffle => {
+        raffle.isActive = false;
+        return raffle.save();
+      })
+    );
+  }
+
+  const permittedTemplates = newPlanRestrictions.templates || [];
+  await Promise.all(
+    userWithRaffles.raffles.map(raffle => {
+      if (!permittedTemplates.includes(raffle.template)) {
+        raffle.template = "classic";
+        return raffle.save();
+      }
+    })
+  );
+  const permittedWorkers = newPlanRestrictions.workers;
+  const currentWorkerCount = user.workers?.length || 0;
+  const workerDiff = currentWorkerCount - permittedWorkers;
+
+  if (workerDiff > 0) {
+    user.workers = user.workers.slice(0, permittedWorkers);
+  }
+
+  await user.save();
+};
 
 
 

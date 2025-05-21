@@ -8,6 +8,21 @@ const isoDateAfterToday = (value, helpers) => {
     return value; 
 };
 
+const colors = ['red', 'blue', 'yellow', 'green', 'purple']
+
+export const methodSchema = Joi.object({
+  bank: Joi.string().required(),
+  person: Joi.string().required(),
+  number: Joi.string()
+    .pattern(/^\d{16}$/)
+    .required()
+    .messages({
+      'string.pattern.base': 'Card number must be exactly 16 digits.',
+      'string.empty': 'Card number is required.',
+    }),
+});
+
+
 export const raffleValidationSchema = Joi.object({
   title: Joi.string().required(),
   description: Joi.string().required(),
@@ -38,19 +53,14 @@ export const raffleValidationSchema = Joi.object({
       public_id: Joi.string().required()   
     })).required(),
     template: Joi.string().valid('classic', 'modern', 'minimalist').required(),
-    colorPalette: Joi.string().valid('blue', 'green', 'purple').required(),
+    colorPalette: Joi.string().valid(...colors).required(),
     font: Joi.string().valid('xs', 's', 'm', 'l', 'xl').required(),
     logo_position: Joi.string().valid('left', 'center', 'right').required(),
     header: Joi.string().valid('on', 'off').required(),
     nightMode: Joi.boolean().required(),
     maxTpT: Joi.number().required(),
     timeLimitPay: Joi.number().required(),
-    paymentMethods: Joi.array().items(Joi.string().valid('stripe', 'paypal', 'custom').required()).required(),
-    payment_instructions: Joi.string().when('paymentMethods', {
-      is: Joi.array().items(Joi.string().valid('custom')).required(),
-      then: Joi.required(), // Make it required if "custom" is in paymentMethods
-      otherwise: Joi.optional() 
-    }),
+    paymentMethods: Joi.array().items(methodSchema.required()).max(3).required(),
     endDate: Joi.string()
         .isoDate()
         .custom(isoDateAfterToday, 'Date must be after today') 

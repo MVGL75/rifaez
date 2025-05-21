@@ -1,6 +1,6 @@
 import {User} from '../models/Users.js'
 import Raffle from '../models/Raffle.js';
-import { registerSchema, saveSchema, workerSchema } from '../validators/registerSchema.js';
+import { registerSchema, saveSchema, workerSchema, methodSchema } from '../validators/registerSchema.js';
 import sanitizeUser from '../utils/sanitize.js';
 import { v2 as cloudinary } from 'cloudinary';
 import plans from '../seed/plans.js';
@@ -160,4 +160,33 @@ export const save = async(req, res)=> {
     
 
     res.json({message: "worker removed", status: 200})
+  }
+  export const addPaymentMethod = async (req, res) => {
+    const {error, value} = methodSchema.validate(req.body, {stripUnknown: true})
+    if(error){
+      throw new AppError(error);
+    }
+    const user = await User.findById(req.user._id);
+
+    user.payment_methods.push(value);
+
+    await user.save();
+
+    const newMethodId = user.payment_methods[user.payment_methods.length - 1]._id;
+
+    res.json({message: "method added", status: 200, id: newMethodId})
+  }
+
+  export const removePaymentMethod = async (req, res) => {
+    const {error, value} = methodSchema.validate(req.body, {stripUnknown: true})
+    if(error){
+      throw new AppError(error);
+    }
+    await User.updateOne(
+      { _id: req.user._id },
+      { $pull: { payment_methods: value } }
+    );
+    
+
+    res.json({message: "method removed", status: 200})
   }

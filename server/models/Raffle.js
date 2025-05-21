@@ -7,16 +7,6 @@ const RaffleSchema = new mongoose.Schema({
                 type: String,
                 required: true
             },
-            phone: {
-                type: String,
-                default: "6672421133"
-            },
-            logo: { 
-                type: {
-                  url: String,
-                  public_id: String,
-                },
-              },
             description: {
                 type: String,
                 required: true
@@ -78,12 +68,13 @@ const RaffleSchema = new mongoose.Schema({
                 required: true
             },
             paymentMethods: {
-                type: [String],
-                required: true
-            },
-            payment_instructions: {
-                type: String,
-            },
+                type: [{
+                  bank: String,
+                  person: String, 
+                  number: String,
+                }],
+                default: [],
+              },
             additionalPrizes: {
                 type: [{
                     place: Number,

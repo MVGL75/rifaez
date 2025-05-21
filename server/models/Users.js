@@ -48,6 +48,14 @@ const UserSchema = new mongoose.Schema({
       { email: "worker2@example.com", role: "editor" }
     ]
   },
+  payment_methods: {
+    type: [{
+      bank: String,
+      person: String, 
+      number: String,
+    }],
+    default: [],
+  },
   facebook: { 
     type: String,
     default: ""

@@ -1,11 +1,11 @@
 
 import React, { useState, useEffect, useRef } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { ShoppingCart, ChevronDown, SearchIcon, Shuffle } from "lucide-react";
+import { ShoppingCart, ChevronDown, SearchIcon, Shuffle, ArrowDown } from "lucide-react";
 import { useNavigate, useOutletContext } from "react-router-dom";
-import { ticketInfoValidationSchema} from "../../validation/ticketInfoSchemaValidate"
-import { Button } from "../components/ui/button";
-import mexicanStates from "../lib/mexicanStates";
+import { ticketInfoValidationSchema} from "../../../validation/ticketInfoSchemaValidate"
+import { Button } from "../../components/ui/button";
+import mexicanStates from "../../lib/mexicanStates";
 import { use } from "react";
 
 const Home = () => {
@@ -24,6 +24,7 @@ const Home = () => {
   const [searchTicket, setSearchTicket] = useState("")
   const [touchEnd, setTouchEnd] = useState(null);
   const purchaseFormRef = useRef(null);
+  const ticketSectionRef = useRef(null);
   const [errors, setErrors] = useState({})
   const [userInfo, setUserInfo] = useState({
     name: "",
@@ -214,76 +215,87 @@ const Home = () => {
   const scrollToPurchaseForm = () => {
     purchaseFormRef.current?.scrollIntoView({ behavior: 'smooth' });
   };
-
+  const scrollToTicketSection = () => {
+    ticketSectionRef.current?.scrollIntoView({ behavior: 'smooth' });
+  };
+  console.log(raffle.additionalPrizes)
   return (
     <div className="flex flex-col items-center min-h-screen bg-backgroundRaffle">
-      <div className="w-full max-w-4xl mx-auto px-4 py-8 text-center relative">
+      <div className=" w-[1400px] max-w-[100vw] mx-auto px-4 py-8 relative">
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.5 }}
         >
           {/* Prize Amount */}
-          <h1 className="text-4xl md:text-6xl font-bold text-colorRaffle mb-4">
-          {raffle?.title}
-          </h1>
-          <p className="text-xl mb-4">Fecha de sorteo - {formatSpanishDate(raffle?.endDate)}</p>
+          <div className="flex flex-col lg:flex-row pt-20 gap-20">
+          <div className="lg:w-[40%] pt-10">
+            <h1 className="text-4xl md:text-6xl font-bold text-colorRaffle mb-14">
+            {raffle?.title}
+            </h1>
+            <p className="mb-10">Un nuevo iPhone Pro 15 de 256 GB que tiene buena funcionalidad es compatible a bluetooth es modelo nuevo.</p>
+            <div className="flex items-center gap-4 mb-3">
+              <span className="text-colorRaffle-300 font-semibold">Precio de Boleto</span>
+              <span>${raffle.price}</span>
+            </div>
+            <div className="flex items-center gap-4 mb-8">
+              <span className="text-colorRaffle-300 font-semibold">Fecha de rifa</span>
+              <span>{formatSpanishDate(raffle?.endDate)}</span>
+            </div>
+            <button onClick={scrollToTicketSection} className="flex px-4 py-2 bg-primaryRaffle text-colorRaffle-foreground rounded-lg items-center gap-2">
+              <span>Boletos</span>
+              <ChevronDown/>
+            </button>
+          </div>
 
           {/* Image Carousel */}
-          <div 
-            className="relative h-[400px] mb-8 border-4 border-primaryRaffle rounded-lg overflow-hidden"
-            onTouchStart={onTouchStart}
-            onTouchMove={onTouchMove}
-            onTouchEnd={onTouchEnd}
-          >
-            <AnimatePresence mode="wait">
-              <motion.div
-                key={currentImageIndex}
-                initial={{ opacity: 0, x: 100 }}
-                animate={{ opacity: 1, x: 0 }}
-                exit={{ opacity: 0, x: -100 }}
-                className="absolute inset-0"
+          <div className="grow">
+              <div 
+                className="relative h-[400px] mb-8 rounded-3xl overflow-hidden"
+                onTouchStart={onTouchStart}
+                onTouchMove={onTouchMove}
+                onTouchEnd={onTouchEnd}
               >
-                <img 
-                  className="w-full h-full object-cover"
-                  alt={prizeImages[currentImageIndex].alt}
-                  src={prizeImages[currentImageIndex].url}
-                />
-                <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black to-transparent p-4">
-                  <h2 className="text-2xl font-bold">{prizeImages[currentImageIndex].description}</h2>
-                </div>
-              </motion.div>
-            </AnimatePresence>
-          </div>
+                <AnimatePresence mode="wait">
+                  <motion.div
+                    key={currentImageIndex}
+                    initial={{ opacity: 0, x: 100 }}
+                    animate={{ opacity: 1, x: 0 }}
+                    exit={{ opacity: 0, x: -100 }}
+                    className="absolute inset-0"
+                  >
+                    <img 
+                      className="w-full h-full object-cover"
+                      alt={prizeImages[currentImageIndex].alt}
+                      src={prizeImages[currentImageIndex].url}
+                    />
+                    <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black to-transparent p-4">
+                      <h2 className="text-2xl font-bold">{prizeImages[currentImageIndex].description}</h2>
+                    </div>
+                  </motion.div>
+                </AnimatePresence>
+              </div>
 
-          {/* Prize Places */}
-          <div className="grid grid-cols-2 gap-4 mb-8">
-            {raffle?.additionalPrizes.map(prize => {
-            <motion.div
-              whileHover={{ scale: 1.05 }}
-              className="bg-gray-900 p-4 rounded-lg"
-            >
-              <h3 className="text-lg font-bold text-primaryRaffle">{prize.place}do Lugar</h3>
-              <p>{prize.prize}</p>
-            </motion.div>
-            })}
-          </div>
 
-          {/* Animated Down Arrows */}
-          <motion.div
-            animate={{ y: [0, 10, 0] }}
-            transition={{ duration: 2, repeat: Infinity }}
-            className="flex justify-center items-center space-x-4 mb-8"
-          >
-            <ChevronDown className="text-colorRaffle" size={32} />
-            <p className="text-colorRaffle font-bold">LISTA DE BOLETOS ABAJO</p>
-            <ChevronDown className="text-colorRaffle" size={32} />
-          </motion.div>
+              {/* Prize Places */}
+              <div className="grid grid-cols-2 gap-4 mb-8">
+                {raffle?.additionalPrizes.map(prize => (
+                <motion.div
+                  whileHover={{ scale: 1.05 }}
+                  className="bg-cardRaffle p-4 rounded-lg"
+                >
+                  <h3 className="text-lg font-bold text-primaryRaffle">{prize.place}do Lugar</h3>
+                  <p>{prize.prize}</p>
+                </motion.div>
+                ))}
+              </div>
+              </div>
+          </div>
         </motion.div>
       </div>
 
       {/* Ticket Prices */}
-      <div className="w-full bg-backgroundRaffle py-8">
+      <div className="w-full bg-lightTint py-8 border-t-2 border-b-2 border-borderRaffle py-20">
         <div className="max-w-4xl mx-auto px-4">
           <h2 className="text-2xl font-bold text-center mb-6">Precios de Boletos</h2>
           <div className="flex flex-col space-y-2 items-center">
@@ -293,7 +305,7 @@ const Home = () => {
                 onClick={() => handlePriceClick(quantity)}
                 whileHover={{ scale: 1.05 }}
                 whileTap={{ scale: 0.95 }}
-                className="text-colorRaffle-foreground bg-primaryRaffle fake-700 p-3 w-full max-w-sm rounded-lg text-center transform transition-all hover:bg-primaryRaffle"
+                className="text-colorRaffle bg-cardRaffle shadow-lg fake-700 p-3 w-full max-w-sm rounded-lg text-center transform transition-all hover:bg-primaryRaffle"
               >
                 <p className="">{quantity} boleto{quantity > 1 ? 's' : ''}</p>
                 <p className="text-lg">${price} MXN</p>
@@ -305,16 +317,16 @@ const Home = () => {
 
       {/* Available Tickets Section */}
       <div id="ticketsSection" className="w-full bg-backgroundRaffle py-12">
-        <div className="max-w-4xl mx-auto px-4 text-center">
-          <h2 className="text-2xl font-semi mb-8 flex gap-4 flex-col sm:flex-row text-left"><span>Selecciona tus Boletos</span>   <span className="text-colorRaffle-300 font-medium">Max ({raffle.maxTpT})</span></h2>
+        <div className="w-[1400px] max-w-[100vw] mx-auto px-4 text-center">
+          
           
           {/* Selected Tickets Display */}
-          <div className="mb-8 p-6 bg-cardRaffle rounded-lg text-left">
+          <div ref={ticketSectionRef} className="mb-8 px-8 py-6 bg-cardRaffle rounded-lg text-left">
             <div className="flex flex-col gap-4 sm:flex-row justify-between sm:items-center mb-4">
-              <h3 className="text-xl">Boletos Seleccionados:</h3>
+              <h3 className="text-xl">Selecciona tus boletos - max ({raffle.maxTpT})</h3>
               <div className="relative flex items-center gap-5">
               <div className="relative w-full sm:w-auto">
-              <input value={searchTicket} onChange={handleSearch} className="border-2 w-full sm:w-[225px] rounded-xl px-4 pl-10 py-2 border-input text-sm" type="text" />
+              <input value={searchTicket} onChange={handleSearch} className="border-2 w-full sm:w-[300px] rounded-full px-4 pl-10 py-2 border-borderRaffle text-sm" type="text" />
               <SearchIcon className="w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2"/>
               </div>
               <div className="absolute right-4 sm:right-auto  sm:relative">
@@ -350,7 +362,7 @@ const Home = () => {
                 className={`p-2 text-sm rounded transition-colors ${
                   selectedTickets.includes(i)
                     ? "bg-primaryRaffle text-colorRaffle-foreground"
-                    : "bg-cardRaffle hover:bg-gray-700"
+                    : "bg-cardRaffle hover:bg-gray-700 hover:text-colorRaffle-foreground"
                 }`}
               >
                 {i}

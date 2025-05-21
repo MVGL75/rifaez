@@ -51,23 +51,13 @@ const Payment = () => {
     return parts.join('');
   }
 
-  const paymentMethods = [
+  const paymentMethods = raffle.paymentMethods.map(method => (
     {
-      bank: "BBVA",
-      accountHolder: "Juan Pérez",
-      accountNumber: "1234 5678 9012 3456"
-    },
-    {
-      bank: "Santander",
-      accountHolder: "Juan Pérez",
-      accountNumber: "9876 5432 1098 7654"
-    },
-    {
-      bank: "Oxxo Pay",
-      accountHolder: "Juan Pérez",
-      accountNumber: "1234 5678 9012"
+      bank: method.bank,
+      accountHolder: method.person,
+      accountNumber: method.number,
     }
-  ];
+  ));
   const finalizePayment = async () => {
     const res = await api.post(location.pathname, {...userInfo, tickets: [...selectedTickets]})
     if(res.data.status === 200){
