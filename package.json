@@ -29,10 +29,10 @@
     "yargs-parser": "^21.1.1"
   },
   "scripts": {
-    "postinstall": "cd client && npm install && npm run build",
+    "postinstall": "cd client && npm install --include=dev && npm run build",
     "dev": "nodemon server/index.js",
     "start": "node server/index.js",
-    "build": "cd client && npm install && npm run build"
+    "build": "cd client && npm install --include=dev && npm run build"
   },
   "author": "",
   "license": "ISC",
