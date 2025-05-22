@@ -32,6 +32,8 @@ mongoose.connect(mongoURI).then(() => console.log('✅ Connected to MongoDB'))
 
 const app = express();
 
+app.set('trust proxy', 1);
+
 app.use("/stripe/webhook", Webhook)
   app.use(express.static(path.join(__dirname, '../client/dist')))
 

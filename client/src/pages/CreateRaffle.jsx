@@ -190,7 +190,6 @@ const CreateRafflePage = () => {
     }
     const id = Math.random().toString(36).substring(2, 10);
 
-    console.log(id)
 
       setPaymentMethods(prev => [...prev, {...value, id: id, enabled: false,}])
       setWasSubmitted(prev => ({...prev, method: undefined}))
@@ -260,6 +259,7 @@ const CreateRafflePage = () => {
       });
       filesArray.forEach(image => newRaffleData.append('images', image));
       try {
+        console.log(import.meta.env.VITE_CURRENT_HOST + "/raffle/create")
         const res = await api.post("/raffle/create", newRaffleData)
         console.log(res)
         if(res.data.status === 200){

@@ -15,6 +15,7 @@ import plans from "../seed/plans.js"
 
 
 export const createRaffle = async(req, res)=>{
+    console.log("/create")
       const images = req.files?.map(file => ({url: file.path, public_id: file.filename})); 
       const parsedBody = {
         ...req.body,
