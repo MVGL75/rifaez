@@ -72,7 +72,7 @@ const ContactPage = () => {
     setWasSubmitted(true)
     const [isValid, value] = validateForm()
     if(isValid){
-      const res = await api.post(`/raffle/${id}/contact`, value)
+      const res = await api.post(`/api/raffle/${id}/contact`, value)
       if(res.data.status === 200){
         setContactSent(true)
       }

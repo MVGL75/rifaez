@@ -26,7 +26,7 @@ const EditRafflePage = () => {
   };
 
   const handleDelete = async (raffle) => {
-    const res = await api.post(`/raffle/delete/${raffle.id}`)
+    const res = await api.post(`/api/raffle/delete/${raffle.id}`)
     if(res.data.status === 200){
       setUser(res.data.user)
     }

@@ -193,7 +193,7 @@ const StatsPage = ({ selectedRaffle }) => {
 
 
   const handleMarkAsPaid = async (ticketId) => {
-    const res = await api.post(`/raffle/${selectedRaffle._id}/${ticketId}/mark_paid`)
+    const res = await api.post(`/api/raffle/${selectedRaffle._id}/${ticketId}/mark_paid`)
     if(res.data.status === 200){
       setUser(res.data.user)
     }

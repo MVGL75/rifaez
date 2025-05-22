@@ -78,7 +78,7 @@ const TicketDetails = () => {
 
   const handleMarkAsPaid = async () => {
     try {
-      const res = await api.post(`/raffle/${raffleID}/${ticket._id}/mark_paid`)
+      const res = await api.post(`/api/raffle/${raffleID}/${ticket._id}/mark_paid`)
       if(res.data.status === 200){
         setUser(res.data.user)
       } else {
@@ -92,7 +92,7 @@ const TicketDetails = () => {
 
   const handleAddNote = async () => {
     if (note.trim()) {
-      const res = await api.post(`/raffle/${raffleID}/${ticket._id}/add_note`, {note})
+      const res = await api.post(`/api/raffle/${raffleID}/${ticket._id}/add_note`, {note})
       if(res.data.status === 200){
         setUser(res.data.user)
         setNoteAdded(true)

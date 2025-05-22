@@ -27,10 +27,10 @@ function RaffleLanding() {
   useEffect(() => {
     const fetchRaffle = async () => {
       try {
-        const res = await api.get(`/raffle/${id}`);
+        const res = await api.get(`/api/raffle/${id}`);
         if (res.data.status === 200) {
           if (isFirstVisit) {
-            const res = await api.post(`/raffle/${id}/view`);
+            const res = await api.post(`/api/raffle/${id}/view`);
             setIsFirstVisit(false);
           }
           const raffle = res.data.raffle;

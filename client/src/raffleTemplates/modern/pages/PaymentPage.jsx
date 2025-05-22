@@ -86,7 +86,7 @@ const PaymentPage = () => {
   }, []);
 
   const finalizePayment = async () => {
-    const res = await api.post(`/raffle/${id}/payment`, {...userInfo, tickets: [...selectedTickets]})
+    const res = await api.post(`/api/raffle/${id}/payment`, {...userInfo, tickets: [...selectedTickets]})
     if(res.data.status === 200){
       localStorage.removeItem('selectedTickets');
       localStorage.removeItem('userInfo');

@@ -69,7 +69,7 @@ const RaffleEditPage = ({}) => {
   }
   const fetchRaffle = async () => {
     try {
-      const res = await api.get(`/raffle/edit/${id}`);
+      const res = await api.get(`/api/raffle/edit/${id}`);
       const raffle = res.data?.raffle;
       const raffleWithoutId = removeIdFields(raffle)
       const oldPub = raffle.images || [];
@@ -232,7 +232,7 @@ const RaffleEditPage = ({}) => {
         newRaffleData.append("oldPublicIds", oldPublicIds)
         if(filesArray && filesArray.length > 0) filesArray.forEach(image => newRaffleData.append('images', image));
         console.log(`/raffle/edit/${id}`)
-        const res = await api.post(`/raffle/edit/${id}`, newRaffleData)
+        const res = await api.post(`/api/raffle/edit/${id}`, newRaffleData)
         if(res.data.status === 200){
           setUser(res.data.user)
           setSaveLoader(false)

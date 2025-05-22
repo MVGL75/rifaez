@@ -137,7 +137,7 @@ passport.deserializeUser(async (storedSession, done) => {
   }
 });
 
-app.use('/raffle', raffleRoutes);
+app.use('/api/raffle', raffleRoutes);
 app.use('/api/domains', domainRoutes)
 
 app.use('/stripe', stripeRoutes)
@@ -149,7 +149,6 @@ app.use((req, res, next) => {
   if (req.method === 'GET' &&
       !req.path.startsWith('/api') &&
       !req.path.startsWith('/stripe') &&
-      !req.path.startsWith('/raffle') &&
       !req.path.startsWith('/auth')) {
     res.sendFile(path.join(__dirname, '../client/dist/index.html'));
   } else {

@@ -18,6 +18,7 @@ router.post('/create', isAuthenticated, catchAsync(checkPlan), upload.array('ima
 router.post('/delete/:id', isAuthenticated, hasPermission, catchAsync(deleteRaffle));
 router.post('/edit/:id', isAuthenticated, hasPermission, upload.array('images', 10), catchAsync(rafflePlan), catchAsync(editRaffle));
 router.post('/:id/:ticketID/mark_paid', isAuthenticated, hasPermission, catchAsync(markPaid));
+
 router.post('/:id/:ticketID/add_note', isAuthenticated, hasPermission, catchAsync(addNote));
 router.post('/:id/contact', catchAsync(contactRaffle));
 router.post('/:id/payment', catchAsync(paymentRaffle));

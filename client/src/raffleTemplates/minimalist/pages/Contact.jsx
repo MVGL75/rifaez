@@ -50,7 +50,7 @@ const Contact = () => {
     setWasSubmitted(true)
     const [isValid, value] = validateForm()
     if(isValid){
-      const res = await api.post(location.pathname, value)
+      const res = await api.post(`/api${location.pathname}`, value)
       if(res.data.status === 200){
         setContactSent(true)
       }
