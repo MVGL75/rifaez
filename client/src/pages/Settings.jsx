@@ -67,6 +67,7 @@ const SettingsPage = () => {
   const [loading, setLoading] = useState(false)
   const [errors, setErrors] = useState({});
   const [methods, setMethods] = useState(user.payment_methods || [])
+
   const [workers, setWorkers] = useState(user.workers || [])
   const [successMessage, setSuccessMessage] = useState("")
   const [passwordObj, setPasswordObj] = useState({})
@@ -114,9 +115,10 @@ const SettingsPage = () => {
     }
 
     const res = await api.post("/auth/save_settings/add_method", value)
-
+    console.log(res)
     if(res.data.status === 200){
-      setMethods(prev => [...prev, {...value, id: res.data.id}])
+      setUser(res.data.user)
+      setMethods(prev => [...prev, {...value, _id: res.data.id}])
       setWasSubmitted(prev => ({...prev, method: undefined}))
       setErrors(prev => ({...prev, method: undefined}))
       setNewMethod({bank: '', person: '', number: ""})
@@ -124,11 +126,13 @@ const SettingsPage = () => {
       setAppError({message: "error creating method"})
     }
   };
+
 const removeMethod = async (methodInp) => {
   const methodNew = methodInp
-  const res = await api.post("/auth/save_settings/remove_method", methodNew)
+  const res = await api.post("/auth/save_settings/remove_method", {id: methodNew._id})
   if(res.data.status === 200){
-    setMethods(prev => prev.filter(method => method._id === methodNew._id) || [])
+    setUser(res.data.user)
+    setMethods(prev => prev.filter(method => method._id !== methodNew._id) || [])
   } else {
     setErrors(prev => ({...prev, removeWorker: "Invalid"}))
   }

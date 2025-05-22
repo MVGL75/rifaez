@@ -259,9 +259,7 @@ const CreateRafflePage = () => {
       });
       filesArray.forEach(image => newRaffleData.append('images', image));
       try {
-        console.log(import.meta.env.VITE_CURRENT_HOST + "/raffle/create")
         const res = await api.post("/api/raffle/create", newRaffleData)
-        console.log(res)
         if(res.data.status === 200){
           setUser(res.data.user)
           setNewRaffleId(res.data.link)
@@ -338,7 +336,6 @@ const CreateRafflePage = () => {
     });
   };
     useEffect(()=>{
-      console.log(formData)
       if(wasSubmitted[currentStep] && !justAddedPrize) {
         formValidate()
       } else {

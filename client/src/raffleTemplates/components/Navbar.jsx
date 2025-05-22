@@ -1,6 +1,7 @@
 
 import React, { useState } from "react";
 import { Link } from "react-router-dom";
+import defaultLogo from "./ui/default-logo";
 import { Menu, X } from "lucide-react";
 
 const Navbar = ({raffle}) => {
@@ -22,7 +23,9 @@ const Navbar = ({raffle}) => {
           {raffle.logo_position === "center" &&
           <div className="absolute left-1/2 transform -translate-x-1/2">
             <Link to="">
-              <img alt="Rifas El Tomate Logo" className="h-14 w-14 rounded-full object-cover" src={raffle.logo.url} />
+            {raffle.logo?.url ?
+                <img alt="logo" className="h-14 w-14 rounded-full object-cover"  />
+                : <defaultLogo/> }
             </Link>
           </div>
           }
@@ -30,7 +33,9 @@ const Navbar = ({raffle}) => {
           <div className={`hidden w-full ${raffle.logo_position === "right" && "flex-row-reverse"} md:flex md:items-center md:gap-8`}>
           {raffle.logo_position !== "center" &&
             <Link to="">
-              <img alt="Rifas El Tomate Logo" className="h-14 w-14 rounded-full object-cover" src={raffle.logo.url} />
+              {raffle.logo?.url ?
+                <img alt="logo" className="h-14 w-14 rounded-full object-cover"  />
+                : <defaultLogo/> }
             </Link>
           }
             <div className="text-[15px] hidden md:flex md:items-center md:space-x-4">

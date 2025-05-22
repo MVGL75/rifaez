@@ -172,21 +172,30 @@ export const save = async(req, res)=> {
 
     await user.save();
 
+    const clientUser = await setUserForClient(req, user)
+    console.log("add", clientUser.payment_methods)
+
     const newMethodId = user.payment_methods[user.payment_methods.length - 1]._id;
 
-    res.json({message: "method added", status: 200, id: newMethodId})
+    console.log(newMethodId)
+
+    res.json({message: "method added", status: 200, id: newMethodId, user: clientUser})
   }
 
+
   export const removePaymentMethod = async (req, res) => {
-    const {error, value} = methodSchema.validate(req.body, {stripUnknown: true})
-    if(error){
-      throw new AppError(error);
-    }
+    console.log("id", req.body.id)
     await User.updateOne(
       { _id: req.user._id },
-      { $pull: { payment_methods: value } }
+      { $pull: { payment_methods: { _id: req.body.id } } }
     );
     
+    const user = await User.findById(req.user._id)
 
-    res.json({message: "method removed", status: 200})
+    const clientUser = await setUserForClient(req, user)
+    console.log("remove", clientUser)
+
+    
+
+    res.json({message: "method removed", status: 200, user: clientUser})
   }

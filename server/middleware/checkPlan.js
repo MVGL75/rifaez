@@ -6,6 +6,7 @@ const checkPlan = async (req, res, next) => {
         
     const perm = plans[user?.planId]
     if(!perm) {
+        console.log(req.originalUrl)
         req.session.redirectAfterPayment = {
             url: req.originalUrl,
             frontUrl: "/create",

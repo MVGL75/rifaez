@@ -51,6 +51,7 @@ function RaffleLanding() {
   if(notFound) return <RaffleNotFound />;
   if (!raffleData) return null;
   const Layout = TEMPLATES[raffleData.template] || classicLanding;
+  
   return (
     <Layout raffle={raffleData}/>
   );

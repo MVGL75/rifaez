@@ -35,6 +35,7 @@ router.post('/create-checkout-session', isAuthenticated, async (req, res) => {
     const baseUrl = `${process.env.CLIENT_URL}/checkout/return?session_id={CHECKOUT_SESSION_ID}`;
 
     let extraParams = '';
+    console.log(req.session.redirectAfterPayment)
     if (req.session?.redirectAfterPayment?.url && req.session?.redirectAfterPayment?.frontUrl) {
       const url = encodeURIComponent(req.session.redirectAfterPayment.url);
       const frontUrl = encodeURIComponent(req.session.redirectAfterPayment.frontUrl);
@@ -42,6 +43,7 @@ router.post('/create-checkout-session', isAuthenticated, async (req, res) => {
     }
 
     const return_url = `${baseUrl}${extraParams}`;
+    console.log(return_url)
     const session = await stripe.checkout.sessions.create({
       mode: 'subscription',
       customer_email: customerEmail,

@@ -101,28 +101,33 @@ export const editRaffle = async (req, res) => {
 };
 
   export const findRaffle = async (req, res)=>{
+    console.log("f", req.params.id)
     const raffleID = req.params.id
-    const raffle = await Raffle.findById(raffleID).lean()
-    const user = await User.findOne({ raffles: raffleID });
-
-    if(raffle){
-      if(raffle.isActive){
-        const cleanRaffle = sanitizeRaffle(raffle)
-        const unavailableTickets = raffle.currentParticipants.flatMap(part => part.tickets);
-        const availableTickets = []
-        for (let i = 1; i < raffle.maxParticipants + 1; i++) {
-          if(!unavailableTickets.includes(i)){
-            availableTickets.push(i)
+      try {
+      const raffle = await Raffle.findById(raffleID).lean()
+      const user = await User.findOne({ raffles: raffleID });
+      console.log(raffle)
+      if(raffle){
+        if(raffle.isActive){
+          const cleanRaffle = sanitizeRaffle(raffle)
+          const unavailableTickets = raffle.currentParticipants.flatMap(part => part.tickets);
+          const availableTickets = []
+          for (let i = 1; i < raffle.maxParticipants + 1; i++) {
+            if(!unavailableTickets.includes(i)){
+              availableTickets.push(i)
+            }
           }
+          console.log(cleanRaffle)
+          res.json({message: "Raffle found", status: 200, raffle: {...cleanRaffle, availableTickets: availableTickets, logo: user.logo, phone: user.phone, email: user.username}})
+        } else {
+          return res.json({message: "raffle inactive"})
         }
-        res.json({message: "Raffle found", status: 200, raffle: {...cleanRaffle, availableTickets: availableTickets, logo: user.logo, phone: user.phone, email: user.username}})
       } else {
-        return res.json({message: "raffle inactive"})
+        throw new AppError("Raffle Not Found", 400)
       }
-    } else {
-      throw new AppError("Raffle Not Found", 400)
+    } catch (error) {
+        console.log(error)
     }
-    
   }
   export const contactRaffle = async (req, res)=>{
     const raffleID = req.params.id
