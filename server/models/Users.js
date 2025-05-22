@@ -1,6 +1,7 @@
 import mongoose from 'mongoose';
 import GoogleStrategy from 'passport-google-oauth20';
 import FacebookStrategy from 'passport-facebook';
+import passport from 'passport';
 import passportLocalMongoose from 'passport-local-mongoose';
 
 passport.use(new GoogleStrategy({
