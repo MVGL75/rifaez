@@ -56,7 +56,7 @@ const TicketVerification = () => {
           className="text-center mb-12"
         >
          {raffle.logo?.url ?
-                <img alt="logo" className="h-14 w-14 rounded-full object-cover"  />
+                <img alt="logo" className="rounded-full w-32 h-32 mx-auto mb-6" src={raffle.logo.url}  />
                 : <defaultLogo/>}
           <h1 className="text-3xl font-bold text-colorRaffle mb-4">
             VERIFICADOR DE BOLETOS

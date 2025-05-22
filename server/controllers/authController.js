@@ -134,6 +134,9 @@ export const save = async(req, res)=> {
       });
     });
     if(isValid){
+      if(!req.user?.planId){
+        return res.json({message: `Para crear trabajadores, primero debes contar con una suscripción activa.`, status: 808})
+      }
       const allowedWorkers = plans[req.user?.planId]?.workers;
       if(req.user?.workers?.length >= allowedWorkers){
         return res.json({message: `Tu plan actual no te deja hacer mas de (${allowedWorkers}) trabajadores. Actualiza tu plan para poder hacer mas trabajadores.`, status: 808})
@@ -173,18 +176,15 @@ export const save = async(req, res)=> {
     await user.save();
 
     const clientUser = await setUserForClient(req, user)
-    console.log("add", clientUser.payment_methods)
-
     const newMethodId = user.payment_methods[user.payment_methods.length - 1]._id;
 
-    console.log(newMethodId)
+
 
     res.json({message: "method added", status: 200, id: newMethodId, user: clientUser})
   }
 
 
   export const removePaymentMethod = async (req, res) => {
-    console.log("id", req.body.id)
     await User.updateOne(
       { _id: req.user._id },
       { $pull: { payment_methods: { _id: req.body.id } } }
@@ -193,9 +193,5 @@ export const save = async(req, res)=> {
     const user = await User.findById(req.user._id)
 
     const clientUser = await setUserForClient(req, user)
-    console.log("remove", clientUser)
-
-    
-
     res.json({message: "method removed", status: 200, user: clientUser})
   }

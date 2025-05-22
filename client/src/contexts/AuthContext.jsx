@@ -41,9 +41,8 @@ export const AuthProvider = ({ children }) => {
       const res = await api.post('/auth/logout');
       setUser(null);
       navigate('/login');
-      setMessage(res.data.message || res.data.error);
     } catch (err) {
-      setMessage('Logout failed');
+      setAppError(err)
     }
   };
   

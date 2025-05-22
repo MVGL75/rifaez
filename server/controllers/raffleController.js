@@ -15,7 +15,7 @@ import plans from "../seed/plans.js"
 
 
 export const createRaffle = async(req, res)=>{
-    console.log("/create")
+    console.log(req.files)
       const images = req.files?.map(file => ({url: file.path, public_id: file.filename})); 
       const parsedBody = {
         ...req.body,
@@ -101,12 +101,10 @@ export const editRaffle = async (req, res) => {
 };
 
   export const findRaffle = async (req, res)=>{
-    console.log("f", req.params.id)
     const raffleID = req.params.id
       try {
       const raffle = await Raffle.findById(raffleID).lean()
       const user = await User.findOne({ raffles: raffleID });
-      console.log(raffle)
       if(raffle){
         if(raffle.isActive){
           const cleanRaffle = sanitizeRaffle(raffle)
@@ -117,7 +115,6 @@ export const editRaffle = async (req, res) => {
               availableTickets.push(i)
             }
           }
-          console.log(cleanRaffle)
           res.json({message: "Raffle found", status: 200, raffle: {...cleanRaffle, availableTickets: availableTickets, logo: user.logo, phone: user.phone, email: user.username}})
         } else {
           return res.json({message: "raffle inactive"})

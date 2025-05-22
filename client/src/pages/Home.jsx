@@ -190,7 +190,7 @@ const HomePage = ({ selectedRaffle }) => {
   };
 
   const handleCopyLink = (id) => {
-    navigator.clipboard.writeText(`localhost:3000/raffle/${id}`)
+    navigator.clipboard.writeText(`${import.meta.env.VITE_CURRENT_HOST}/raffle/${id}`)
     setCopiedClip(true);
   }
   useEffect(()=>{

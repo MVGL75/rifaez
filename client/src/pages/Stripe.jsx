@@ -76,11 +76,8 @@ export const Return = () => {
                 newFormData.append(key, value);
               });
               try {
-                console.log(redirectUrl)
                 const res = await api.post(redirectUrl, newFormData, { withCredentials: true });
-                console.log(res)
                 setUser(res.data.user)
-                console.log(`${frontUrl}?success=true&link=${res.data.link}`)
                 return navigate(`${frontUrl}?success=true&link=${res.data.link}`)
               } catch (error) {
                 setAppError(error)

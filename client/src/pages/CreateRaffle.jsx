@@ -275,7 +275,6 @@ const CreateRafflePage = () => {
           setSpinner(false)
         }
       } catch (error) {
-        console.log(error)
         setFormError(error.message)
         setSpinner(false)
       }
