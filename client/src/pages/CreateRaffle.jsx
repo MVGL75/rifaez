@@ -266,9 +266,7 @@ const CreateRafflePage = () => {
           setSpinner(false)
           setShowSuccess(true);
         } else if (res.data.status === 808){
-          sessionStorage.setItem("pendingForm", JSON.stringify({
-            fields: Object.fromEntries(newRaffleData.entries())
-          }));
+          await saveRaffleToSession(value, filesArray)
           navigate("/pricing-plan");
         } else {
           setFormError(res.data.message)
@@ -279,6 +277,48 @@ const CreateRafflePage = () => {
         setSpinner(false)
       }
     }
+  };
+  const saveRaffleToSession = async (value, filesArray) => {
+    const rafflePayload = {};
+  
+    Object.entries(value).forEach(([key, val]) => {
+      if (key === "additionalPrizes" || key === "paymentMethods") {
+        if (key === "paymentMethods") {
+          const cleanPMs = val.map(v => ({
+            bank: v.bank,
+            person: v.person,
+            number: v.number
+          }));
+          rafflePayload[key] = cleanPMs;
+        } else {
+          rafflePayload[key] = val;
+        }
+      } else if (key !== "fileCounter") {
+        rafflePayload[key] = val;
+      }
+    });
+  
+    const serializedFiles = await serializeFiles(filesArray);
+    rafflePayload._files = serializedFiles;
+  
+    sessionStorage.setItem("pendingForm", JSON.stringify(rafflePayload));
+  };
+  const serializeFiles = async (filesArray) => {
+    const promises = filesArray.map(file => new Promise((resolve, reject) => {
+      const reader = new FileReader();
+      reader.onload = () => {
+        resolve({
+          name: file.name,
+          type: file.type,
+          size: file.size,
+          dataUrl: reader.result, // base64
+        });
+      };
+      reader.onerror = reject;
+      reader.readAsDataURL(file);
+    }));
+  
+    return Promise.all(promises);
   };
 
   const handleCopyLink = () => {

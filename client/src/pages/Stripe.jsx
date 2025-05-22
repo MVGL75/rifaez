@@ -69,14 +69,9 @@ export const Return = () => {
           if(redirectUrl && (res.data.status === "complete")){
             const pending = sessionStorage.getItem("pendingForm");
             if (pending) {
-              const parsed = JSON.parse(pending);
-              const newFormData = new FormData();
-        
-              Object.entries(parsed.fields).forEach(([key, value]) => {
-                newFormData.append(key, value);
-              });
+              const formData = rebuildFormDataFromSession()
               try {
-                const res = await api.post(redirectUrl, newFormData, { withCredentials: true });
+                const res = await api.post(redirectUrl, formData, { withCredentials: true });
                 setUser(res.data.user)
                 return navigate(`${frontUrl}?success=true&link=${res.data.link}`)
               } catch (error) {
@@ -91,6 +86,44 @@ export const Return = () => {
       fetchStatus();
     }
   }, [sessionId]);
+
+  const rebuildFormDataFromSession = () => {
+    const stored = sessionStorage.getItem("pendingForm");
+    if (!stored) return null;
+  
+    const data = JSON.parse(stored);
+    const fd = new FormData();
+  
+    Object.entries(data).forEach(([key, val]) => {
+      if (key === "_files") return;
+      if (key === "paymentMethods" || key === "additionalPrizes") {
+        fd.append(key, JSON.stringify(val));
+      } else {
+        fd.append(key, val);
+      }
+    });
+  
+    const fileObjs = deserializeFiles(data._files || []);
+    fileObjs.forEach(file => fd.append("images", file));
+  
+    return fd;
+  };
+  const deserializeFiles = (serializedFiles) => {
+    return serializedFiles.map(file => {
+      const arr = file.dataUrl.split(',');
+      const mime = file.type;
+      const bstr = atob(arr[1]);
+      let n = bstr.length;
+      const u8arr = new Uint8Array(n);
+  
+      while (n--) {
+        u8arr[n] = bstr.charCodeAt(n);
+      }
+  
+      return new File([u8arr], file.name, { type: mime });
+    });
+  };
+  
   if(!checkoutStatus) return null;
   return(
     <div className='w-screen h-screen flex items-center justify-center'>
