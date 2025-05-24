@@ -9,6 +9,7 @@ import RaffleNotFound from "../RaffleNotFound"
 import { useEffect } from "react";
 
 function Landing({raffle}) {
+  console.log("inside landing", raffle)
   return (
     <>
        <Routes>

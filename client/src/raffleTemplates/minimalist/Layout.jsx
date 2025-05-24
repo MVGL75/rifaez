@@ -6,7 +6,7 @@ import { useEffect } from "react";
 function Layout({raffle}) {
     
   return (
-    <div className="min-h-screen bg-backgroundRaffle text-colorRaffle">
+    <div className="min-h-screen bg-backgroundRaffle text-colorRaffle font-fontRaffle">
     <Navbar raffle={raffle} />
     <div className="pt-16">
       <Outlet context={raffle} />

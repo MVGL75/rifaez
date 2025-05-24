@@ -1,41 +1,23 @@
 import mongoose from 'mongoose';
-import GoogleStrategy from 'passport-google-oauth20';
 import FacebookStrategy from 'passport-facebook';
 import passport from 'passport';
 import passportLocalMongoose from 'passport-local-mongoose';
 
-// passport.use(new GoogleStrategy({
-//   clientID: process.env.GOOGLE_CLIENT_ID,
-//   clientSecret: process.env.GOOGLE_CLIENT_SECRET,
-//   callbackURL: '/auth/google/callback'
-// }, async (accessToken, refreshToken, profile, done) => {
-//   let user = await User.findOne({ googleId: profile.id });
-//   if (!user) {
-//     user = await User.create({
-//       googleId: profile.id,
-//       username: profile.displayName,
-//       username: profile.emails?.[0]?.value
-//     });
-//   }
-//   return done(null, user);
-// }));
-
-// // Facebook Strategy
-// passport.use(new FacebookStrategy({
-//   clientID: process.env.FB_CLIENT_ID,
-//   clientSecret: process.env.FB_CLIENT_SECRET,
-//   callbackURL: '/auth/facebook/callback',
-//   profileFields: ['id', 'displayName', 'emails']
-// }, async (accessToken, refreshToken, profile, done) => {
-//   let user = await User.findOne({ facebookId: profile.id });
-//   if (!user) {
-//     user = await User.create({
-//       facebookId: profile.id,
-//       username: profile.emails?.[0]?.value
-//     });
-//   }
-//   return done(null, user);
-// }));
+passport.use(new FacebookStrategy({
+  clientID: process.env.FB_CLIENT_ID,
+  clientSecret: process.env.FB_CLIENT_SECRET,
+  callbackURL: '/auth/facebook/callback',
+  profileFields: ['id', 'displayName', 'emails']
+}, async (accessToken, refreshToken, profile, done) => {
+  let user = await User.findOne({ facebookId: profile.id });
+  if (!user) {
+    user = await User.create({
+      facebookId: profile.id,
+      username: profile.emails?.[0]?.value
+    });
+  }
+  return done(null, user);
+}));
 
 const UserSchema = new mongoose.Schema({
   name: { type: String },
@@ -73,27 +55,28 @@ const UserSchema = new mongoose.Schema({
           type: String,
           required: true
         },
+        isActive: {
+          type: Boolean,
+          default: true,
+        },
         role: {
           type: String,
         }
       }
     ],
-    default: [
-      { email: "worker1@example.com", role: "editor" },
-      { email: "worker2@example.com", role: "editor" }
-    ]
-  },
-  googleId: {
-    type: String,
+    default: []
   },
   facebookId: {
     type: String,
+    unique: true,
   },
   payment_methods: {
     type: [{
       bank: String,
       person: String, 
       number: String,
+      clabe: String,
+      instructions: String,
     }],
     default: [],
   },
@@ -110,7 +93,13 @@ const UserSchema = new mongoose.Schema({
       type: mongoose.Schema.Types.ObjectId,
       ref: 'Raffle'
     }
-  ]
+  ],
+  resetPasswordToken: {
+    type: String,
+  },
+  resetPasswordExpires: {
+    type: String,
+  },
 });
 
 UserSchema.plugin(passportLocalMongoose);

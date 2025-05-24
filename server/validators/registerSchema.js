@@ -39,6 +39,14 @@ export const methodSchema = Joi.object({
       'string.pattern.base': 'Card number must be exactly 16 digits.',
       'string.empty': 'Card number is required.',
     }),
+  clabe: Joi.string()
+    .pattern(/^\d{18}$/)
+    .required()
+    .messages({
+      'string.pattern.base': 'Cuenta clabe must be exactly 18 digits.',
+      'string.empty': 'Cuenta clabe is required.',
+    }),
+  instructions: Joi.string().optional(),
 });
 
 export const saveSchema = Joi.object({
@@ -57,7 +65,7 @@ export const saveSchema = Joi.object({
     public_id: Joi.string().required()   
   }).optional(),
 
-  workers: Joi.array().items(workerSchema).optional(),
+  // workers: Joi.array().items(workerSchema).optional(),
 
   currentPlan: Joi.string().valid('basic', 'premium', 'pro').optional(), 
 

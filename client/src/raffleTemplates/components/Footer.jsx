@@ -24,7 +24,7 @@ const Footer = ({raffle}) => {
     return parts.join('');
   }
   return (
-    <footer className="bg-backgroundRaffle text-[#646464] py-8">
+    <footer className={`${raffle.header === "on" ? "bg-headerRaffle text-colorRaffle-foreground" : "bg-backgroundRaffle text-colorRaffle"} py-8`}>
       <div className="container mx-auto px-4">
         <div className="flex flex-col items-center space-y-4">
           <div className="flex space-x-4">

@@ -21,6 +21,9 @@ module.exports = {
 		},
 		},
 		extend: {
+			fontFamily: {
+				fontRaffle: ['var(--font-raffle)', 'sans-serif'],
+			},
 			colors: {
 				border: 'hsl(var(--border))',
 				input: 'hsl(var(--input))',
@@ -28,7 +31,7 @@ module.exports = {
 				background: 'hsl(var(--background))',
 				foreground: 'hsl(var(--foreground))',
 				primary: {
-					DEFAULT: 'hsl(var(--primary))',
+					DEFAULT: 'var(--primary)',
 					foreground: 'hsl(var(--primary-foreground))',
 				},
 				secondary: {
@@ -70,13 +73,8 @@ module.exports = {
 				borderRaffle: {
 					DEFAULT: 'var(--border-raffle)',
 				},
-				size: {
-					DEFAULT: 'var(--size-raffle)',
-					xs: 'var(--size-raffle-300)',
-					sm: 'var(--size-raffle-400)',
-					md: 'var(--size-raffle-500)',
-					lg: 'var(--size-raffle-600)',
-					xl: 'var(--size-raffle-700)',
+				headerRaffle: {
+					DEFAULT: 'var(--header-raffle)',
 				},
 				colorRaffle: {
 					DEFAULT: 'var(--color-raffle)',

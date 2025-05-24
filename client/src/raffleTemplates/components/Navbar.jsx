@@ -1,14 +1,14 @@
 
 import React, { useState } from "react";
 import { Link } from "react-router-dom";
-import defaultLogo from "./ui/default-logo";
+import DefaultLogo from "./ui/default-logo";
 import { Menu, X } from "lucide-react";
 
 const Navbar = ({raffle}) => {
   const [isOpen, setIsOpen] = useState(false);
 
   return (
-    <nav className={`${raffle.header === "on" ? "bg-primaryRaffle text-colorRaffle-foreground" : "bg-backgroundRaffle text-colorRaffle"} fixed w-full top-0 z-50`}>
+    <nav className={`${raffle.header === "on" ? "bg-headerRaffle text-colorRaffle-foreground" : "bg-backgroundRaffle text-colorRaffle"} fixed w-full top-0 z-50`}>
       <div className="w-[1400px] max-w-[100vw] box-border mx-auto px-4">
         <div className="flex justify-between items-center h-16">
           {/* Mobile menu button */}
@@ -24,8 +24,8 @@ const Navbar = ({raffle}) => {
           <div className="absolute left-1/2 transform -translate-x-1/2">
             <Link to="">
             {raffle.logo?.url ?
-                <img alt="logo" className="h-14 w-14 rounded-full object-cover" src={raffle.logo.url}   />
-                : <defaultLogo/> }
+                <img alt="logo" className="h-12 w-12 rounded-full object-cover" src={raffle.logo.url}   />
+                : <DefaultLogo className="h-12 w-12"/> }
             </Link>
           </div>
           }
@@ -34,8 +34,8 @@ const Navbar = ({raffle}) => {
           {raffle.logo_position !== "center" &&
             <Link to="">
               {raffle.logo?.url ?
-                <img alt="logo" className="h-14 w-14 rounded-full object-cover" src={raffle.logo.url}  />
-                : <defaultLogo/> }
+                <img alt="logo" className="h-12 w-12 rounded-full object-cover" src={raffle.logo.url}  />
+                : <DefaultLogo className="h-12 w-12"/> }
             </Link>
           }
             <div className="text-[15px] hidden md:flex md:items-center md:space-x-4">

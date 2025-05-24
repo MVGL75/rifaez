@@ -15,11 +15,11 @@ import plans from "../seed/plans.js"
 
 
 export const createRaffle = async(req, res)=>{
-    console.log(req.files)
       const images = req.files?.map(file => ({url: file.path, public_id: file.filename})); 
       const parsedBody = {
         ...req.body,
         images,
+        colorPalette: JSON.parse(req.body.colorPalette || '[]'),
         paymentMethods: JSON.parse(req.body.paymentMethods || '[]'),
         additionalPrizes: JSON.parse(req.body.additionalPrizes || '[]'),
       };
@@ -78,6 +78,7 @@ export const editRaffle = async (req, res) => {
   }
     const newRaffle = {
       ...restBody,
+      colorPalette: JSON.parse(req.body.colorPalette || '[]'),
       additionalPrizes: req.body.additionalPrizes ? JSON.parse(req.body.additionalPrizes) : [],
       paymentMethods: req.body.paymentMethods ? JSON.parse(req.body.paymentMethods) : [],
       images: uploadedImages.length > 0 ? uploadedImages : parsedOldIds,

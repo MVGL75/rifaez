@@ -25,6 +25,7 @@ import {
   CircleChevronLeft,
   AlertCircle,
   CircleMinus,
+  ClockArrowDown,
 } from "lucide-react";
 import { raffleValidationSchema } from "../validation/raffleSchemaValidate";
 import axios from 'axios';
@@ -36,11 +37,13 @@ const api = axios.create({
 const RaffleEditPage = ({}) => {
   const { id } = useParams();
   const navigate = useNavigate();
-  const { setUser, user } = useAuth()
+  const { setUser, user, setPopError, } = useAuth()
   const [saveLoader, setSaveLoader] = useState(null)
+  const [successMessage, setSuccessMessage] = useState(null)
   const [raffle, setRaffle] = useState(null); 
   const [errors, setErrors] = useState({})
   const [formError, setFormError] = useState(null)
+  const [initialActive, setInitialActive] = useState(null)
   const [filesArray, setFiles] = useState([])
   const [previews, setPreviews] = useState([])
   const [oldPublicIds, setOldPublicIds] = useState([])
@@ -78,6 +81,7 @@ const RaffleEditPage = ({}) => {
       if (raffle) {
         setOldPublicIds(JSON.stringify(newPub))
         setPreviews(imgPrev)
+        setInitialActive(raffleWithoutId.isActive)
         setRaffle({...raffleWithoutId, fileCounter: raffle.images.length}); 
       }
     } catch (error) {
@@ -112,6 +116,17 @@ const RaffleEditPage = ({}) => {
     setErrors({...errorsObj});
   }
 
+
+  const handlePaletteChange = (e) => {
+    const {name, value} = e.target
+    console.log(name, value)
+    setRaffle(prev => ({...prev, colorPalette: {...prev.colorPalette, [name]: value}}))
+  }
+
+  const submitPalette = () => {
+    document.getElementById("create-palette").close()
+  }
+
   const handleChange = (e) => {
     const { name, value, type, files } = e.target;
     if(type === "file"){
@@ -136,8 +151,23 @@ const RaffleEditPage = ({}) => {
 
   const templates = {
     basic : [["Clasico", "classic"]],
-    pro: [["Clasico", "classic"], ["Moderno", "modern"]],
-    business: [["Clasico", "classic"], ["Moderno", "modern"], ["Minimalista", "minimalist"]],
+    pro: [["Clasico", "classic"], ["Minimalista", "minimalist"]],
+    business: [["Clasico", "classic"], ["Minimalista", "minimalist"], ["Moderno", "modern"]],
+  }
+  const colors = [{id: 'red', name: "Rojo"}, {id: 'blue', name: "Azul"}, {id: 'yellow', name: "Amarillo"}, {id: 'green', name: "Verde"}, {id: 'purple', name: "Púrpura"}, {id: 'black', name: "Negro"}, {id: 'white', name: "Blanco"}]
+  const colorCheck = {
+    red: 'Rojo',
+    blue: 'Azul',
+    yellow: 'Amarillo',
+    green: 'Verde',
+    purple: 'Púrpura',
+    black: 'Negro',
+    white: 'Blanco',
+  }
+  const planRaffleAmount = {
+    basic : 1,
+    pro: 3,
+    business: "unlimited",
   }
 
   useEffect(()=>{
@@ -204,6 +234,17 @@ const RaffleEditPage = ({}) => {
     setRaffle(prev => ({...prev, header: mode}));
   }
   const switchMode = (mode) => {
+    const permission = planRaffleAmount[user.currentPlan]
+    if(permission){
+      if(permission !== "unlimited"){
+        const activeRaffles = user.raffles?.filter(r => r.isActive);
+        const base = initialActive ? 1 : 0;
+        const notAllowed = (activeRaffles.length - base) >= permission;
+        if(!raffle.isActive && notAllowed){
+          return setPopError({message: "Has alcanzado tu límite de rifas activas. Mejora tu plan para crear más o desactiva otra rifa.", status: 808})
+        }
+      }
+    }
     if(mode === "night"){
       setRaffle(prev => ({...prev, nightMode: !prev.nightMode}))   
     }
@@ -215,7 +256,6 @@ const RaffleEditPage = ({}) => {
   const handleSave = async () => {
       setSaveLoader(true)
       const [error, value] = validateForm()
-      console.log(error)
       if(error){
         checkError(error)
         setSaveLoader(false)
@@ -225,23 +265,42 @@ const RaffleEditPage = ({}) => {
           if (key === "additionalPrizes" || key === "paymentMethods") {
             const serialized = value && value.length > 0 ? JSON.stringify(value) : JSON.stringify([]);
             newRaffleData.append(key, serialized);
+          } else if (key === "colorPalette"){
+            const serialized = JSON.stringify(value)
+            newRaffleData.append(key, serialized);
           } else if (key !== "fileCounter") {
             newRaffleData.append(key, value);
           }
         });
         newRaffleData.append("oldPublicIds", oldPublicIds)
         if(filesArray && filesArray.length > 0) filesArray.forEach(image => newRaffleData.append('images', image));
-        console.log(`/raffle/edit/${id}`)
-        const res = await api.post(`/api/raffle/edit/${id}`, newRaffleData)
-        if(res.data.status === 200){
-          setUser(res.data.user)
-          setSaveLoader(false)
-        } else {
-          setSaveLoader(false)
-          setFormError(res.data.message)
+        try {
+            const res = await api.post(`/api/raffle/edit/${id}`, newRaffleData)
+            console.log(res)
+            if(res.data.status === 200){
+              setSaveLoader(false)
+              setSuccessMessage('Rifa actualizada exitosamente.');
+              setUser(res.data.user)
+            } else {
+              setSaveLoader(false)
+              setFormError(res.data.message)
+            }
+          } catch (error) {
+            console.log(error)
+            setFormError(error)
         }
+        
       }
   };
+  useEffect(() => {
+    let timer;
+    if (successMessage) {
+      timer = setTimeout(() => {
+        setSuccessMessage('');
+      }, 4000);
+    }
+    return () => clearTimeout(timer);
+  }, [successMessage]);
 
 
 
@@ -309,6 +368,20 @@ const RaffleEditPage = ({}) => {
               value={raffle.title}
               onChange={handleChange}
               className={`w-full p-2 rounded-md border ${errors.title ? "border-red-500" : "border-input"} bg-background `}
+              placeholder="Ej: iPhone 15 Pro"
+            />
+           
+          </div>
+          <div>
+            <label className={`block text-sm font-medium mb-2 ${errors.description && "text-red-500"}`}>
+              Descripcion
+            </label>
+            <textarea
+              type="text"
+              name="description"
+              value={raffle.description}
+              onChange={handleChange}
+              className={`w-full p-2 rounded-md border ${errors.description ? "border-red-500" : "border-input"} bg-background min-h-fit h-fit`}
               placeholder="Ej: iPhone 15 Pro"
             />
            
@@ -419,18 +492,6 @@ const RaffleEditPage = ({}) => {
             </p>
           </div>
           <div>
-              <label htmlFor="maxPerT" className={`block text-sm font-medium mb-2 ${errors.maxTpT && "text-red-500"}`}>
-                Numero de boletos por transaccion
-              </label>
-              <div className="relative">
-                <input id="maxPerT" name="maxTpT" value={raffle.maxTpT} type="number" onChange={handleChange} 
-                className={`w-full pl-10 p-2 rounded-md border ${errors.maxTpT ? "border-red-500" : "border-input"} bg-background`}
-                min={'0'}
-                max={raffle.maxParticipants} />
-                <Ticket className=" absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground w-4 h-4"/>
-                </div>
-            </div>
-          <div>
               <label htmlFor="timeLimitPay" className={`block text-sm font-medium mb-2 ${errors.timeLimitPay && "text-red-500"}`}>
                   Tiempo limite para pago (dias)
                 </label>
@@ -500,23 +561,101 @@ const RaffleEditPage = ({}) => {
                   )}
                 </select>
               </div>
-          <div>
+              <div>
                 <label className={`block text-sm font-medium mb-2 ${errors.colorPalette && "text-red-500"}`}>
                   Paleta de Colores
                 </label>
-                <select
+                <div
+                  onClick={()=>{document.getElementById("create-palette").showModal()}}
                   name="colorPalette"
-                  value={raffle.colorPalette}
-                  onChange={handleChange}
-                  className={`w-full p-2 rounded-md border ${errors.colorPalette ? "border-red-500" : "border-input"} bg-background`}
+                  className={`w-full p-2 rounded-md border text-muted-foreground ${errors.colorPalette ? "border-red-500" : "border-input"} bg-background`}
                 >
-                  <option value="">Selecciona una paleta</option>
-                  <option value="red">Rojo</option>
-                  <option value="yellow">Amarillo</option>
-                  <option value="blue">Azul</option>
-                  <option value="green">Verde</option>
-                  <option value="purple">Púrpura</option>
-                </select>
+                  { `Encabezado: ${colorCheck[raffle.colorPalette?.header]}, Fondo: ${colorCheck[raffle.colorPalette?.background]}, Detalles: ${colorCheck[raffle.colorPalette?.accent]}, Bordes: ${colorCheck[raffle.colorPalette?.borders]}, Letra: ${colorCheck[raffle.colorPalette?.color]}`}
+                </div>
+                <dialog id="create-palette" className="rounded-md shadow-lg">
+                  <div className="space-y-5 p-5 w-[400px] bg-background">
+                    <h1 className="text-lg">Colores de Rifa</h1>
+                    <div className="space-y-3">
+                      <div className="flex flex-col gap-2">
+                        <label htmlFor="encabezado_color" className={`text-sm ${errors.colorPalette?.header && "text-red-500"}`}>Encabezado</label>
+                        <select 
+                          id="encabezado_color" 
+                          name="header" 
+                          value={raffle.colorPalette.header} 
+                          onChange={handlePaletteChange} 
+                          className={`w-full p-2 rounded-md bg-background border ${errors.colorPalette?.header ? "border-red-500" : "border-input"}`} >
+                            {colors.map((color, index) => (
+                              <option key={index} value={color.id} >{color.name}</option>
+                            ))}
+                        </select>
+                      </div>
+                      <div className="flex flex-col gap-2">
+                        <label htmlFor="fondo_color" className={`text-sm ${errors.colorPalette?.background && "text-red-500"}`}>Fondo</label>
+                        <select 
+                            id="fondo_color" 
+                            name="background" 
+                            value={raffle.colorPalette.background} 
+                            onChange={handlePaletteChange} 
+                            className={`w-full p-2 rounded-md bg-background border ${errors.colorPalette?.background ? "border-red-500" : "border-input"}`} >
+                            {colors.map((color, index) => (
+                              <option key={index} value={color.id} >{color.name}</option>
+                            ))}
+                        </select>
+                      </div>
+                      <div className="flex flex-col gap-2">
+                        <label htmlFor="accento_color" className={`text-sm ${errors.colorPalette?.accent && "text-red-500"}`}>Detalles</label>
+                        <select 
+                        id="accento_color" 
+                        name="accent" 
+                        value={raffle.colorPalette.accent} 
+                        onChange={handlePaletteChange} 
+                        className={`w-full p-2 rounded-md bg-background border ${errors.colorPalette?.accent ? "border-red-500" : "border-input"}`} >
+                            {colors.map((color, index) => (
+                              <option key={index} value={color.id} >{color.name}</option>
+                            ))}
+                        </select>
+                      </div> 
+                      <div className="flex flex-col gap-2">
+                        <label htmlFor="bordes_color" className={`text-sm  ${errors.colorPalette?.borders && "text-red-500"}`}>Bordes</label>
+                        <select 
+                            id="bordes_color" 
+                            name="borders" 
+                            value={raffle.colorPalette.borders} 
+                            onChange={handlePaletteChange} 
+                            className={`w-full p-2 rounded-md bg-background border ${errors.colorPalette?.borders ? "border-red-500" : "border-input"}`} >
+                            {colors.map((color, index) => (
+                              <option key={index} value={color.id} >{color.name}</option>
+                            ))}
+                        </select>
+                      </div>  
+                      <div className="flex flex-col gap-2">
+                        <label htmlFor="color_color" className={`text-sm  ${errors.colorPalette?.color && "text-red-500"}`}>Letra</label>
+                        <select 
+                            id="color_color" 
+                            name="color" 
+                            value={raffle.colorPalette.color} 
+                            onChange={handlePaletteChange} 
+                            className={`w-full p-2 rounded-md bg-background border ${errors.colorPalette?.color ? "border-red-500" : "border-input"}`} >
+                            {colors.map((color, index) => (
+                              <option key={index} value={color.id} >{color.name}</option>
+                            ))}
+                        </select>
+                      </div>  
+                    </div>
+                    <footer className="flex items-center gap-3">
+                    <Button
+                        variant="outline"
+                        onClick={()=>{document.getElementById("create-palette").close()}}
+                      >Cancelar</Button>
+                      <Button
+                       type="button"
+                       onClick={submitPalette}
+                      >
+                        Agregar
+                      </Button>
+                    </footer>   
+                  </div>                                                
+                </dialog>
               </div>
               <div>
                 <label className={`block text-sm font-medium mb-2 ${errors.logo_position && "text-red-500"}`}>
@@ -535,6 +674,44 @@ const RaffleEditPage = ({}) => {
                 </select>
             </div>
             <div>
+                <label className={`block text-sm font-medium mb-2 ${errors.font && "text-red-500"}`}>
+                  Fuentes
+                </label>
+                <select
+                  name="font"
+                  value={raffle.font}
+                  onChange={handleChange}
+                  className={`w-full p-2 rounded-md border ${errors.font ? "border-red-500" : "border-input"} bg-background`}
+                >
+                  <option value="">Selecciona una fuente</option>
+                  <option value="Inter">Inter</option>
+                  <option value="Roboto">Roboto</option>
+                  <option value="Open Sans">Open Sans</option>
+                  <option value="Manrope">Manrope</option>
+                  <option value="IBM Plex Sans">IBM Plex Sans</option>
+                  <option value="Work Sans">Work Sans</option>
+                  <option value="Source Sans 3">Source Sans 3</option>
+                  <option value="Noto Sans">Noto Sans</option>
+                  <option value="Lato">Lato</option>
+                  <option value="DM Sans">DM Sans</option>
+                </select>
+              </div>
+              <div>
+              <label htmlFor="countdown" className={`block text-sm font-medium mb-2 ${errors.countdown && "text-red-500"}`}>
+                  Temporizador de cuenta regresiva
+                </label>
+                <div className="relative">
+                  <select id="countdown" name="countdown" value={raffle.countdown}  onChange={handleChange} 
+                  className={`w-full pl-10 p-2 rounded-md border ${errors.countdown ? "border-red-500" : "border-input"} bg-background `}
+                   >
+                    <option value="on">Si</option>
+                    <option value="off">No</option>
+                    
+                  </select>
+                  <ClockArrowDown className=" absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground w-4 h-4"/>
+                  </div>
+            </div>
+            <div>
               <label className={`block text-sm font-medium mb-2 ${errors.header && "text-red-500"}`}>
                 Encabezado
               </label>
@@ -545,22 +722,6 @@ const RaffleEditPage = ({}) => {
               <div onClick={()=>{switchHeader("off")}} className={`border-[1.5px] rounded-lg cursor-pointer ${raffle.header === "off" ? "border-blue-500 text-blue-500"  : "border-input" } bg-background text-sm h-8 w-8 flex items-center justify-center`}>
                 <CaptionsOff/>
               </div>
-              </div>
-            </div>
-            <div>
-                <label className={`block text-sm font-medium mb-2 ${errors.nightMode && "text-red-500"}`}>
-                  Modo Oscuro
-              </label>
-              <div onClick={()=>{switchMode("night")}} className={`rounded-[100px] w-[60px] py-1 px-1 flex justify-between ${raffle.nightMode ? "bg-purple-200" : "bg-yellow-200"}`}>
-                { raffle.nightMode ? (
-                  <>
-                    <Moon className="w-5 h-5"/>
-                  <div className="h-5 w-5 rounded-full bg-[rgba(0,0,0,0.15)]"></div>
-                  </>
-                ) : ( <>
-                <div className="h-5 w-5 rounded-full bg-[rgba(0,0,0,0.15)]"></div>
-                <Sun className="w-5 h-5"/>
-                </>)}
               </div>
             </div>
             <div>
@@ -627,7 +788,7 @@ const RaffleEditPage = ({}) => {
             onClick={handleSave}
             className="flex items-center space-x-2"
           >
-            { saveLoader ? <span>Guardando... </span> :
+            { saveLoader || successMessage ? <span>{successMessage ||  "Guardando..." }</span> :
               <>
               <Save className="w-4 h-4" />
               <span>Guardar Cambios</span>

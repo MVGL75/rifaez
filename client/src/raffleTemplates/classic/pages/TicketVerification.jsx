@@ -4,7 +4,7 @@ import { motion } from "framer-motion";
 import { Button } from "@/components/ui/button";
 import { useOutletContext, useParams } from "react-router-dom";
 import { Search, TriangleAlert } from "lucide-react";
-import defaultLogo from "../../components/ui/default-logo";
+import DefaultLogo from "../../components/ui/default-logo";
 import axios from "axios";
 const api = axios.create({
   baseURL: import.meta.env.VITE_CURRENT_HOST,
@@ -57,7 +57,7 @@ const TicketVerification = () => {
         >
          {raffle.logo?.url ?
                 <img alt="logo" className="rounded-full w-32 h-32 mx-auto mb-6" src={raffle.logo.url}  />
-                : <defaultLogo/>}
+                : <DefaultLogo className="rounded-full w-32 h-32 mx-auto mb-6"/>}
           <h1 className="text-3xl font-bold text-colorRaffle mb-4">
             VERIFICADOR DE BOLETOS
           </h1>

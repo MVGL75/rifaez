@@ -99,7 +99,15 @@ passport.use('worker-aware', new LocalStrategy({
     }
 
     // 2. Try login as a worker
-    const owner = await User.findOne({ 'workers.email': username });
+    const owner = await User.findOne({
+      workers: {
+        $elemMatch: {
+          email: username,
+          isActive: true
+        }
+      }
+    });
+    
     if (!owner) return done(null, false, { message: 'User not found' });
 
     const match = await owner.authenticate(password);

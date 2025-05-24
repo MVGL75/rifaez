@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef } from "react";
-import { Routes, Route, Navigate } from "react-router-dom";
+import { Routes, Route, Navigate, useNavigate } from "react-router-dom";
 import MainLayout from "./MainLayout";
 import { AuthProvider, useAuth } from "@/contexts/AuthContext";
 
@@ -10,6 +10,7 @@ import CreateRafflePage from "@/pages/CreateRaffle";
 import EditRafflePage from "@/pages/EditRaffle";
 import RaffleEditPage from "@/pages/RaffleEdit";
 import SettingsPage from "@/pages/Settings";
+import NotificationsPage from "./pages/Notifications";
 import RaffleLanding from "@/raffleTemplates/RaffleLanding";
 
 import TicketDetails from "@/pages/TicketDetails";
@@ -22,7 +23,11 @@ import AppError from "./AppError";
 import PopError from "./PopError";
 import AppNotFound from "./AppNotFound";
 import RaffleNotFound from "./raffleTemplates/RaffleNotFound";
+import NoRaffle from "./components/NoRaffle";
 import SpinningLogo from "./components/spinner";
+import RecoverPass from "./pages/RecoverPass";
+import PrivacyPolicy from "./PrivacyPolicy";
+import RaffleFinished from "./components/RaffleFinished";
 const api = axios.create({
   baseURL: import.meta.env.VITE_CURRENT_HOST,
   withCredentials: true, // same as fetch's credentials: 'include'
@@ -36,16 +41,62 @@ const ProtectedRoute = ({ children }) => {
   return children;
 };
 const RaffleSelected = ({ children, selectedRaffle }) => {
-  if (selectedRaffle !== false) {
+  if (selectedRaffle) {
     return children;
+  } else if (selectedRaffle !== false){
+      return <NoRaffle/>
   }
   return null;
+};
+const RaffleFinalizedCheck = ({children, selectedRaffle}) => {
+  const [ viewStatistics, setViewStatistics ] = useState(false)
+  const isExpired = (endDate) => new Date(endDate) < new Date();
+    if(isExpired(selectedRaffle.endDate) && !viewStatistics){
+        return <RaffleFinished setViewStatistics={setViewStatistics}/>
+    }
+    return children;
+}
+const CheckPlan = ({ children, userJustCreated }) => {
+  const {user} = useAuth()
+  const navigate = useNavigate();
+  const [hasPermission, setHasPermission] = useState(false)
+
+  const planRaffleAmount = {
+    basic : 1,
+    pro: 3,
+    business: "unlimited",
+  }
+
+  useEffect(() => {
+    if (!userJustCreated) {
+      const permission = planRaffleAmount[user.currentPlan];
+
+      if (permission && permission !== "unlimited") {
+        const activeRaffles = user.raffles?.filter(r => r.isActive);
+        const notAllowed = activeRaffles.length >= permission;
+
+        if (notAllowed) {
+          return navigate("/pricing-plan", {
+            state: {
+              message: "Has alcanzado tu límite de rifas activas. Mejora tu plan para crear más o desactiva otra rifa.",
+              from: "/create",
+            }
+          });
+        }
+      }
+    }
+    setHasPermission(true)
+  }, []);
+  if(hasPermission){
+    return children;
+  }
 };
 const RedirectHome = () => {
   return <Navigate to="/" />;
 };
 const AppContent = () => {
   const { user, setUser, appError, popError } = useAuth();
+  const [userJustCreated, setUserJustCreated] = useState(false)
   useEffect(() => {
     const themePreference = window.matchMedia("(prefers-color-scheme: dark)");
     if (
@@ -106,11 +157,17 @@ const AppContent = () => {
   if (!user) {
     return (
       <Routes>
+        {appError ? <Route path="*" element={<AppError />} /> : (
+        <>
         <Route path="/login" element={<LoginPage />} />
         <Route path="/register" element={<RegisterPage />} />
+        <Route path="/privacy-policy" element={<PrivacyPolicy/>} />
+        <Route path="/reset-password" element={<RecoverPass/>}/>
         <Route path="/raffle/:id/*" element={<RaffleLanding />}>
         </Route>
         <Route path="*" element={<Navigate to="/login" />} />
+        </>
+        )}
       </Routes>
     );
   }
@@ -135,7 +192,9 @@ const AppContent = () => {
                 element={
                   <ProtectedRoute>
                     <RaffleSelected selectedRaffle={selectedRaffle}>
-                      <HomePage selectedRaffle={selectedRaffle} />
+                      <RaffleFinalizedCheck selectedRaffle={selectedRaffle}>
+                        <HomePage selectedRaffle={selectedRaffle} />
+                        </RaffleFinalizedCheck>
                     </RaffleSelected>
                   </ProtectedRoute>
                 }
@@ -145,7 +204,9 @@ const AppContent = () => {
                 element={
                   <ProtectedRoute>
                     <RaffleSelected selectedRaffle={selectedRaffle}>
+                    <RaffleFinalizedCheck selectedRaffle={selectedRaffle}>
                       <StatsPage selectedRaffle={selectedRaffle} />
+                      </RaffleFinalizedCheck>
                     </RaffleSelected>
                   </ProtectedRoute>
                 }
@@ -154,7 +215,9 @@ const AppContent = () => {
                 path="/create"
                 element={
                   <ProtectedRoute>
-                    <CreateRafflePage />
+                    <CheckPlan userJustCreated={userJustCreated}>
+                      <CreateRafflePage userJustCreated={userJustCreated} setUserJustCreated={setUserJustCreated} />
+                    </CheckPlan>
                   </ProtectedRoute>
                 }
               />
@@ -182,6 +245,7 @@ const AppContent = () => {
                   </ProtectedRoute>
                 }
               />
+              <Route path="/notifications" setSelectedRaffle={setSelectedRaffle} element={<ProtectedRoute><NotificationsPage/></ProtectedRoute>}/>
               <Route
                 path="/ticket/:raffleID/:transactionID"
                 element={
@@ -191,14 +255,17 @@ const AppContent = () => {
                 }
               />
               <Route path="/login" element={<RedirectHome />} />
+              <Route path="/login" element={<RedirectHome />} />
               <Route path="/register" element={<RedirectHome />} />
               <Route path="*" element={<AppNotFound />} />
             </>
           )}
         </Route>
+        <Route path="/privacy-policy" element={<PrivacyPolicy/>} />
+        <Route path="/reset-password" element={<RecoverPass/>}/>
         <Route path="/pricing-plan" element={<PricingPlan />} />
         <Route path="/checkout" element={<CheckoutForm />} />
-        <Route path="/checkout/return" element={<Return />} />
+        <Route path="/checkout/return" element={<Return setUserJustCreated={setUserJustCreated} />} />
         <Route path="/raffle/:id/*" element={<RaffleLanding />}></Route>
       </Routes>
       {popError && <PopError message={popError.message} />}

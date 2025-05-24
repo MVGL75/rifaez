@@ -5,6 +5,7 @@ import { Button } from "@/components/ui/button";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "@/contexts/AuthContext";
 import { saveSchema, workerSchema, passwordSchema, methodSchema } from "../validation/userSchema";
+import Spinner from "../components/spinner"
 import DefaultLogo from "../raffleTemplates/components/ui/default-logo";
 import { 
   User, 
@@ -51,7 +52,7 @@ const api = axios.create({
 
 const SettingsPage = () => {
   const navigate = useNavigate();
-  const { logout, user, setUser, save, setAppError, setPopError, connectDomain, verifyDomain, verifyCNAME } = useAuth();
+  const { logout, deleteUser, user, setUser, save, setAppError, setPopError, connectDomain, verifyDomain, verifyCNAME } = useAuth();
   const [activeSection, setActiveSection] = useState("account");
   const [theme, setTheme] = useState(user.theme ? user.theme : "system");
   const [language, setLanguage] = useState("es");
@@ -59,6 +60,7 @@ const SettingsPage = () => {
   const [paymentInstructions, setPaymentInstructions] = useState("");
   const [newWorker, setNewWorker] = useState({});
   const [newMethod, setNewMethod] = useState({})
+  const [spinner, setSpinner] = useState(null)
   const [domainV, setDomainV] = useState('')
   const [newPhoneNumber, setNewPhoneNumber] = useState(null)
   const [record, setRecord] = useState({step: 0,})
@@ -67,7 +69,6 @@ const SettingsPage = () => {
   const [loading, setLoading] = useState(false)
   const [errors, setErrors] = useState({});
   const [methods, setMethods] = useState(user.payment_methods || [])
-
   const [workers, setWorkers] = useState(user.workers || [])
   const [successMessage, setSuccessMessage] = useState("")
   const [passwordObj, setPasswordObj] = useState({})
@@ -83,6 +84,24 @@ const SettingsPage = () => {
   const handleLogout = () => {
     logout(); // This will handle both state cleanup and navigation
   };
+  const handleDelete = () => {
+    deleteUser();
+  }
+
+  useEffect(()=>{
+    if(user){
+      setFormData({
+        name: user.name || "Juan Pérez",
+        email: user.username || "juan@example.com",
+        companyName: user.companyName,
+        logo: user.logo || undefined,
+        facebook: user.facebook,
+        phone: user.phone,
+      });
+      setMethods(user.payment_methods || [])
+      setWorkers(user.workers || []);
+    }
+  }, [user])
 
   const handleUploadLogo = (e) => {
     const file = e.target.files[0];
@@ -96,6 +115,21 @@ const SettingsPage = () => {
   
     return digits.replace(/(.{4})/g, '$1 ').trim();
   }
+  function formatCLABE(clabe) {
+    if (!clabe) return "";
+  
+    const digits = clabe.replace(/\D/g, '').slice(0, 18);
+    const match = digits.match(/^(\d{0,3})(\d{0,3})(\d{0,11})(\d{0,1})$/);
+  
+    if (!match) return digits;
+  
+    // Destructure the match array and ignore the full match at index 0
+    const [, bank, branch, account, control] = match;
+  
+    return [bank, branch, account, control].filter(Boolean).join(' ');
+  }
+  
+  
   
 
   const addPaymentMethod = async () => {
@@ -153,19 +187,24 @@ const removeMethod = async (methodInp) => {
     if(error){
       return;
     }
+    if(password && email){
+      const res = await api.post("/auth/save_settings/add_worker", {email, password})
 
-    const res = await api.post("/auth/save_settings/add_worker", {email, password})
-
-    if(res.data.status === 200){
-      setWorkers(prev => [...prev, value])
-      setWasSubmitted(prev => ({...prev, worker: undefined}))
-      setErrors(prev => ({...prev, addWorker: undefined}))
-      setNewWorker({email: '', password: ''})
-    } else if (res.data.status === 808){
-      setPopError({message: res.data.message, status: 808})
+      if(res.data.status === 200){
+        setWorkers(prev => [...prev, {...value, isActive: true}])
+        setWasSubmitted(prev => ({...prev, worker: undefined}))
+        setErrors(prev => ({...prev, addWorker: undefined, passwordIncorrect: undefined}))
+        setNewWorker({email: '', password: ''})
+      } else if (res.data.status === 808){
+        setPopError({message: res.data.message, status: 808})
+      } else {
+        setErrors(prev => ({...prev, passwordIncorrect: "Invalid"}))
+      }
     } else {
       setErrors(prev => ({...prev, passwordIncorrect: "Invalid"}))
     }
+
+    
   };
 
   const handleRemoveWorker = async (email) => {
@@ -267,11 +306,18 @@ const removeMethod = async (methodInp) => {
       setNewWorker(prev => ({...prev, [name.slice(7)]: value}));
       return;
     }
-    if(name === "method_person" || name === "method_number" || name === "method_bank"){
+    if(name === "method_person" || name === "method_number" || name === "method_bank" || name === "method_instructions" || name === "method_clabe"){
       if(name === "method_number"){
         let digits = value.replace(/\D/g, '');
         if (digits.length > 16) {
           digits = digits.slice(0, 16);
+        }
+        value = digits
+      }
+      if(name === "method_clabe"){
+        let digits = value.replace(/\D/g, '');
+        if (digits.length > 18) {
+          digits = digits.slice(0, 18);
         }
         value = digits
       }
@@ -360,7 +406,11 @@ const removeMethod = async (methodInp) => {
         const res = await api.post("/auth/change_password", {password: passwordObj.password, password_new: value})
         if(res.data.status === 200){
           setWasSubmitted(prev => ({...prev, password: undefined}));
-          setPasswordObj({});
+          setPasswordObj({
+            password: "",
+            password_new: "",
+            password_new_confirm: "",
+          });
           setChangedPassword(true)
           setErrors(prev => ({...prev, password: undefined, password_new: undefined, password_new_confirm: undefined,}))
         }
@@ -453,13 +503,16 @@ const removeMethod = async (methodInp) => {
       navigate(`/checkout?price_id=${priceId}`);
   }
   const handleSubscribeChange = async (priceId) => {
+    setSpinner(true)
     try {
       const res = await api.post("/stripe/update-plan", {newPriceId: priceId});
       if(res.data){
+        setSpinner(false)
         setUser(res.data)
       }
     } catch (error) {
       console.log(error)
+      setSpinner(false)
       setAppError(error)
     }
   }
@@ -480,59 +533,41 @@ const removeMethod = async (methodInp) => {
       id: "basic",
       name: "Plan Básico",
       price_id: import.meta.env.VITE_PRICE_ID_BASIC, 
-      price: "$9.99",
+      price: "$125",
       features: [
-        "Hasta 5 rifas activas",
-        "Soporte básico",
-        "Estadísticas básicas"
+        "1 Rifas Activas",
+        "1 Plantilla Disponibleo",
+        "2 Trabajadores",
+        "Dominio personalizado",
       ]
     },
     {
       id: "pro",
       name: "Plan Pro",
       price_id: import.meta.env.VITE_PRICE_ID_PRO,
-      price: "$19.99",
+      price: "$250",
       features: [
-        "Rifas ilimitadas",
-        "Soporte prioritario",
-        "Estadísticas avanzadas",
-        "Dominio personalizado"
+        "3 Rifas Activas",
+        "2 Plantilla Disponible",
+        "5 Trabajadores",
+        "Dominio personalizado",
       ]
     },
     {
       id: "business",
       name: "Plan Empresarial",
       price_id: import.meta.env.VITE_PRICE_ID_BUSINESS,
-      price: "$49.99",
+      price: "$500",
       features: [
-        "Todo lo del Plan Pro",
-        "API access",
-        "Soporte 24/7",
-        "Múltiples dominios"
+        "Rifas Ilimitadas",
+        "3 Plantilla Disponible",
+        "10 Trabajadores",
+        "Dominio personalizado",
       ]
     }
   ];
 
-  const paymentGateways = [
-    {
-      id: "stripe",
-      name: "Stripe",
-      commission: "2.9% + $0.30",
-      connected: false
-    },
-    {
-      id: "paypal",
-      name: "PayPal",
-      commission: "3.5% + $0.30",
-      connected: false
-    },
-    {
-      id: "custom",
-      name: "Instrucciones de Pago",
-      commission: "0%",
-      connected: true
-    }
-  ];
+ 
 
   const renderContent = () => {
     switch (activeSection) {
@@ -577,59 +612,92 @@ const removeMethod = async (methodInp) => {
                   className={`w-full p-2 rounded-md border ${errors.email ? "border-red-500" : "border-input"} bg-background`}
                 />
               </div>
-
+            {user.facebookId ? (
+              <div className="w-full px-4 py-4 rounded-md border border-input bg-background text-muted-foreground flex gap-3">
+                <Facebook/>
+                <span>Cuenta fue creado con Facebook</span>
+              </div>
+            ) : (
               <div>
                 <label className="block text-sm font-medium mb-2">
-                  Cambiar Contraseña
+                  Contraseña
                 </label>
               
-                <div className="space-y-2 mb-4">
-                  <input
-                    type="password"
-                    name="password"
-                    placeholder="Contraseña actual"
-                    onChange={handlePasswordChange}
-                    value={passwordObj.password}
-                    className="w-full p-2 rounded-md border border-input bg-background"
-                  />
-                  {errors.password &&
-                    <p className="text-red-500 mb-2 text-sm">
-                      Contraseña actual es incorrecta.
-                    </p>
-                  }
-                  <input
-                    type="password"
-                    name="password_new"
-                    placeholder="Nueva contraseña"
-                    onChange={handlePasswordChange}
-                    value={passwordObj.password_new}
-
-                    className="w-full p-2 rounded-md border border-input bg-background"
-                  />
-                  <input
-                    type="password"
-                    name="password_new_confirm"
-                    placeholder="Confirmar nueva contraseña"
-                    onChange={handlePasswordChange}
-                    value={passwordObj.password_new_confirm}
-                    className="w-full p-2 rounded-md border border-input bg-background"
-                  />
+                <div className="space-y-2 mb-4 " onClick={()=>{document.getElementById("change-password").showModal()}}>
+                <input type="password" readOnly className="w-full p-2 rounded-md border border-input bg-background cursor-pointer
+                    caret-transparent
+                    outline-none
+                    select-none
+                    focus:outline-none
+                    focus:ring-0" value="secret123" />
                 </div>
-                {(errors.password_new || errors.password_new_confirm)  &&
-                    <p className="text-red-500 mb-2 text-sm">
-                      {errors.password_new ? "La contraseña debe tener al menos 8 caracteres, e incluir como mínimo una letra mayúscula, una letra minúscula y un número." : "Contraseñas deben coincidir" }
-                    </p>
+                <dialog id="change-password" className='w-screen h-screen bg-transparent'>
+              <div className="flex justify-center items-center w-full h-full px-8">
+                <div className="bg-background px-7 py-7 rounded-lg max-w-full w-[500px]">
+                <div className="mb-6 space-y-4">
+                  <label className="block text-lg font-medium">
+                    Cambiar Contraseña
+                  </label>
+                
+                  <div className="space-y-3">
+                    <input
+                      type="password"
+                      name="password"
+                      placeholder="Contraseña actual"
+                      onChange={handlePasswordChange}
+                      value={passwordObj.password}
+                      className="w-full p-2 rounded-md border border-input bg-background"
+                    />
+                    {errors.password &&
+                      <p className="text-red-500 mb-2 text-sm">
+                        Contraseña actual es incorrecta.
+                      </p>
+                    }
+                    <input
+                      type="password"
+                      name="password_new"
+                      placeholder="Nueva contraseña"
+                      onChange={handlePasswordChange}
+                      value={passwordObj.password_new}
+
+                      className="w-full p-2 rounded-md border border-input bg-background"
+                    />
+                    <input
+                      type="password"
+                      name="password_new_confirm"
+                      placeholder="Confirmar nueva contraseña"
+                      onChange={handlePasswordChange}
+                      value={passwordObj.password_new_confirm}
+                      className="w-full p-2 rounded-md border border-input bg-background"
+                    />
+                  </div>
+                  {(errors.password_new || errors.password_new_confirm)  &&
+                      <p className="text-red-500 text-sm">
+                        {errors.password_new ? "La contraseña debe tener al menos 8 caracteres, e incluir como mínimo una letra mayúscula, una letra minúscula y un número." : "Contraseñas deben coincidir" }
+                      </p>
+                    }
+                </div>
+                <div className="flex gap-3 items-center">
+                {changedPassword ?
+                    <button className="text-sm px-5 py-2 rounded-md text-primary-foreground bg-primary ">
+                      Contraseña cambiado
+                    </button>
+                    :
+                    <button onClick={passwordChange} className="text-sm px-5 py-2 rounded-md text-primary-foreground bg-primary ">
+                      Cambiar
+                    </button>
                   }
-              </div>
-              {changedPassword ?
-              <button className="text-sm px-5 py-2 rounded-full text-primary-foreground bg-primary ">
-                Contraseña cambiado
-              </button>
-              :
-              <button onClick={passwordChange} className="text-sm px-5 py-2 rounded-full text-primary-foreground bg-primary ">
-                Cambiar
-              </button>
-            }
+                  <Button
+                        variant="outline"
+                        onClick={()=>{document.getElementById("change-password").close()}}
+                      >Cancelar</Button>
+                  </div>
+                  </div>
+                  </div>
+                </dialog>
+              </div>)}
+              
+              
             </div>
           </div>
         );
@@ -755,9 +823,9 @@ const removeMethod = async (methodInp) => {
                   {workers.map((worker, index) => (
                     <div
                       key={index}
-                      className="flex items-center justify-between p-4 rounded-lg border"
+                      className={`flex items-center ${!worker.isActive && "bg-muted text-muted-foreground"} justify-between p-4 rounded-lg border`}
                     >
-                      <div className="flex items-center space-x-3">
+                      <div className="flex items-center space-x-3 ">
                         <Users className="w-5 h-5 text-muted-foreground" />
                         <span>{worker.email}</span>
                       </div>
@@ -830,6 +898,13 @@ const removeMethod = async (methodInp) => {
         );
 
       case "subscription":
+        if(spinner) {
+          return (
+          <div className="flex items-center justify-center p-10 ">
+            <Spinner className="w-40 h-40"/>
+          </div>
+        )
+      }
         return (
           <div className="space-y-6">
             <h2 className="text-2xl font-semibold">Suscripción</h2>
@@ -900,19 +975,28 @@ const removeMethod = async (methodInp) => {
             <h2 className="text-2xl font-semibold">Metodos de Pago</h2>
             
             <div className="space-y-4">
-              <button onClick={()=>{document.getElementById("add-method").showModal()}} className="flex justify-center items-center gap-4 py-3 w-full border rounded-lg border-input hover:bg-gray-100">
+              <button onClick={()=>{document.getElementById("add-method").showModal()}} className="flex justify-center items-center gap-4 py-3 w-full border rounded-lg border-input hover:bg-accent hovertext-foreground">
                 <span>Agregar Metodo</span>
                 <CirclePlus strokeWidth={1.5} className="w-5 h-5"/>
                 </button>
                 {methods && methods.map((method) => (
-                  <div key={method._id} className="bg-white border border-input rounded-lg w-full">
+                  <div key={method._id} className="bg-background border border-input rounded-lg w-full">
                     <div className="flex items-center justify-between px-4 py-3 bg-muted px-4 py-3">
                       <div className="">{method.bank}</div>
                       <div onClick={()=>{removeMethod(method)}} className="bg-red-500 rounded-sm p-2"><Trash2 className="h-4 w-4 text-white"/></div>
                     </div>
-                    <div className="flex items-center justify-between px-4 py-3">
-                      <div>{method.person}</div>
-                      <div>{formatMethodNumber(method.number)}</div>
+                    <div className="flex gap-3 flex-col px-4 py-4">
+                    <div className="flex items-center gap-3">
+                          <span className="text-muted-foreground">Numero de tarjeta</span>
+                          <span>{formatMethodNumber(method.number)}</span>
+                          </div>
+                      <div className="flex items-center justify-between">
+                        <div className="flex items-center gap-3">
+                          <span className="text-muted-foreground">Cuenta Clabe</span>
+                          <span>{formatCLABE(method.clabe)}</span>
+                          </div>
+                        <div>{method.person}</div>
+                      </div>
                     </div>
                   </div>
 
@@ -920,9 +1004,9 @@ const removeMethod = async (methodInp) => {
             </div>
             <dialog id="add-method" className="w-screen h-screen bg-transparent">
               <div className="flex justify-center items-center w-full h-full">
-              <div className="bg-background p-6 shadow-lg rounded-lg w-[300px]">
+              <div className="text-foreground bg-background p-6 shadow-lg rounded-lg w-[500px] max-w-[calc(100vw-24px)] ">
                       <h3 className="text-lg font-medium mb-4">Agregar Metodo de Pago</h3>
-                      <div className="space-y-4">
+                      <div className="flex flex-col gap-4 sm:grid sm:grid-cols-2 sm:gap-x-6 sm:gap-y-2 mb-4">
                         <div>
                           <label className={`block text-sm font-medium mb-2 ${errors.method?.bank && "text-red-500"}`}>
                             Banco
@@ -962,8 +1046,33 @@ const removeMethod = async (methodInp) => {
                             placeholder="1111 2222 3333 4444"
                           />
                         </div>
-                     
-                        <div className="flex justify-end space-x-2">
+                        <div>
+                          <label className={`block text-sm font-medium mb-2 ${errors.method?.clabe && "text-red-500"}`}>
+                            Cuenta Clabe
+                          </label>
+                          <input
+                            name="method_clabe"
+                            type="text"
+                            value={formatCLABE(newMethod.clabe)}
+                            onChange={handleChange}
+                            className={`w-full p-2 rounded-md border ${errors.method?.clabe ? "border-red-500" : "border-input"} bg-background`}
+                            placeholder="002 180 00001183597 9"
+                          />
+                        </div>
+                      </div>
+                      <div className="mb-4">
+                      <label htmlFor="instructions" className={`block text-sm font-medium mb-2 ${errors.method?.instructions && "text-red-500"}`}>
+                            Nota (Opcional)
+                          </label>
+                        <textarea  
+                          onChange={handleChange} 
+                          name="method_instructions" 
+                          value={newMethod.instructions}
+                          id="instructions"
+                          className={`w-full p-2 rounded-md border ${errors.method?.instructions ? "border-red-500" : "border-input"} bg-background`}
+                          ></textarea>
+                      </div>
+                      <div className="flex justify-end space-x-2">
                           <Button
                             variant="outline"
                             onClick={() => document.getElementById("add-method").close()}
@@ -973,7 +1082,6 @@ const removeMethod = async (methodInp) => {
                           <Button onClick={addPaymentMethod}>
                             Agregar
                           </Button>
-                        </div>
                       </div>
                 </div>
               </div>
@@ -1007,14 +1115,14 @@ const removeMethod = async (methodInp) => {
                 </div>
               </div>
               {record.step === 1 && (
-              <div className="p-4 bg-white border rounded">
+              <div className="p-4 bg-background border rounded">
                 <h2 className="text-base font-medium mb-2">Agrega este registro TXT a tu DNS:</h2>
                 <div className="space-y-1 text-sm">
                   <p>Tipo: {record?.type}</p>
                   <p>Nombre: {record?.name}</p>
                   <p>Valor: {record?.value}</p>
                 </div>
-                <p className="mt-4 text-sm text-gray-600">
+                <p className="mt-4 text-sm text-foreground">
                   Una vez que hayas agregado este registro a tu proveedor de dominio (como GoDaddy, Namecheap o Cloudflare),
                   haz clic en “Verificar” para confirmar la propiedad del dominio.
                 </p>
@@ -1048,19 +1156,6 @@ const removeMethod = async (methodInp) => {
                   <h2 className="text-base font-medium mb-2">Exito</h2>
                 </div>
                  )}
-              <div className="p-6 rounded-lg border border-input">
-                <h3 className="font-medium mb-4">Configuración DNS</h3>
-                <div className="space-y-2 text-sm">
-                  <p>1. Agrega un registro CNAME en tu proveedor de dominio:</p>
-                  <code className="block p-2 bg-muted rounded">
-                    CNAME @ yourapp.example.com
-                  </code>
-                  <p>2. Agrega un registro TXT para verificación:</p>
-                  <code className="block p-2 bg-muted rounded">
-                    TXT @ verify=abc123
-                  </code>
-                </div>
-              </div>
             </div>
           </div>
         );
@@ -1264,10 +1359,11 @@ const removeMethod = async (methodInp) => {
           className="bg-card rounded-lg p-6 shadow-lg"
         >
           {renderContent()}
+          <footer className="flex items-center gap-3 mt-10 justify-between flex-row-reverse">
           <button
               key="save"
               onClick={saveSettings}
-              className="ml-auto flex items-center px-4 py-2 space-x-2 mt-10 text-base rounded-lg transition-colors bg-primary text-primary-foreground "
+              className=" flex items-center px-4 py-2 space-x-2 text-base rounded-lg transition-colors bg-primary text-primary-foreground "
             >
             { loading || successMessage ? (<span>{successMessage || "Loading..."}</span>) : 
               (
@@ -1278,6 +1374,35 @@ const removeMethod = async (methodInp) => {
               )
             }
             </button>
+            {activeSection === "account" &&
+            <>
+                <button
+                  key="delete"
+                  onClick={()=>{document.getElementById("confirm-deletion").showModal()}}
+                  className="flex items-center px-4 py-2 space-x-2 text-base rounded-lg transition-colors bg-red-500 text-primary-foreground "
+                >
+                      <X stroke="currentColor" className="h-5 w-5" />
+                      <span>Borrar Cuenta</span>
+                </button>
+                <dialog id="confirm-deletion" className="bg-background px-5 py-5 space-y-7 rounded-lg w-[400px] max-w-[calc(100v-24px)]">
+                  <div className="text-base">
+                      ¿Estás seguro de que deseas eliminar tu cuenta? Esta acción no se puede deshacer.
+                  </div> 
+                    <footer className="flex gap-3  justify-end">
+                    <Button
+                            variant="outline"
+                            onClick={()=>{document.getElementById("confirm-deletion").close()}}
+                          >Cancelar</Button>
+                      <Button
+                        variant="destructive"
+                        onClick={handleDelete}
+                        className="flex items-center"
+                      >Borrar</Button>
+                    </footer>
+                </dialog>
+                </>
+            }
+            </footer>
         </motion.div>
       </div>
     </div>

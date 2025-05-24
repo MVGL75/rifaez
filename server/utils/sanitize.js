@@ -1,4 +1,4 @@
-export default function ({username, payment_methods, name, raffles, phone, facebook, workers, logo, companyName, _id}){
+export default function ({username, payment_methods, name, raffles, phone, facebook, workers, logo, companyName, _id, facebookId}){
     const safeUser = {
         _id,
         username,
@@ -9,7 +9,8 @@ export default function ({username, payment_methods, name, raffles, phone, faceb
         facebook,
         workers,
         logo,
-        companyName
+        companyName,
+        facebookId,
     }
     return safeUser
 }

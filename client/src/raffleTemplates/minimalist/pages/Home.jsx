@@ -305,7 +305,7 @@ const Home = () => {
                 onClick={() => handlePriceClick(quantity)}
                 whileHover={{ scale: 1.05 }}
                 whileTap={{ scale: 0.95 }}
-                className="text-colorRaffle bg-cardRaffle shadow-lg fake-700 p-3 w-full max-w-sm rounded-lg text-center transform transition-all hover:bg-primaryRaffle"
+                className="text-colorRaffle bg-cardRaffle shadow-lg p-3 w-full max-w-sm rounded-lg text-center transform transition-all hover:bg-primaryRaffle hover:text-colorRaffle-foreground"
               >
                 <p className="">{quantity} boleto{quantity > 1 ? 's' : ''}</p>
                 <p className="text-lg">${price} MXN</p>
@@ -384,7 +384,7 @@ const Home = () => {
                 animate={{ y: [0, 10, 0] }}
                 transition={{ duration: 1.5, repeat: Infinity }}
               >
-                <ChevronDown size={32} />
+                <ChevronDown size={32} className="text-colorRaffle-foreground" />
               </motion.button>
             </motion.div>
           )}

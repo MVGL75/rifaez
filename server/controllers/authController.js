@@ -6,6 +6,23 @@ import { v2 as cloudinary } from 'cloudinary';
 import plans from '../seed/plans.js';
 import passport from 'passport';
 import AppError from '../utils/AppError.js';
+import axios from "axios";
+import crypto from 'crypto';
+import Stripe from 'stripe';
+import nodemailer from 'nodemailer';
+const transporter = nodemailer.createTransport({
+    host: 'smtp.gmail.com',
+    port: 465,
+    secure: true,
+    auth: {
+      user: process.env.EMAIL_USER,       // your email address
+      pass: process.env.EMAIL_PASS        // your email password or app password
+    }
+});
+const stripe = new Stripe(process.env.STRIPE_SECRET_KEY, {
+  apiVersion: '2022-11-15'
+});
+
 export const register = async (req, res) => {
     const { error, value } = registerSchema.validate(req.body);
     if (error) {
@@ -19,6 +36,55 @@ export const register = async (req, res) => {
       res.json({ user: clientUser, message: 'Creacion de usuario fue exitosa.', status: 201 });
     });
 }
+export const deleteUser = async (req, res, next) => {
+  try {
+    const user = await User.findById(req.user._id);
+
+    if (!user) {
+      return res.status(404).json({ error: 'User not found' });
+    }
+
+    const logoPublicId = user.logo?.public_id;
+    if (logoPublicId) {
+      await cloudinary.uploader.destroy(logoPublicId);
+    }
+
+    const rafflesToDelete = await Raffle.find({ _id: { $in: user.raffles } });
+    if (rafflesToDelete.length > 0) {
+      await Promise.all(
+        rafflesToDelete.map(async (raffle) => {
+          if (raffle.images && raffle.images.length > 0) {
+            await Promise.all(
+              raffle.images.map(({ public_id }) =>
+                cloudinary.uploader.destroy(public_id)
+              )
+            );
+          }
+        })
+      );
+    }
+
+    await Raffle.deleteMany({ _id: { $in: user.raffles } });
+
+    if (user.stripeCustomerId) {
+      await stripe.customers.del(user.stripeCustomerId);
+    }
+
+    await User.findByIdAndDelete(req.user._id);
+
+    req.logout((err) => {
+      if (err) return next(err);
+      req.session.destroy(() => {
+        res.clearCookie('connect.sid');
+        res.json({ message: 'User account and data deleted successfully' });
+      });
+    });
+  } catch (err) {
+    console.error('Error deleting user:', err);
+    return res.status(500).json({ error: 'Failed to delete user' });
+  }
+};
+
 export const login = (req, res, next) => {
     passport.authenticate('worker-aware', (err, user, info) => {
       if (err) return next(err);
@@ -32,6 +98,90 @@ export const login = (req, res, next) => {
       });
     })(req, res, next);
   }
+
+
+  export const facebookLogin = async (req, res, next) => {
+    const { accessToken, userID } = req.body;
+  
+    if (!accessToken || !userID) {
+      return res.status(400).json({ error: 'Missing accessToken or userID' });
+    }
+  
+    try {
+      const appAccessToken = `${process.env.FB_CLIENT_ID}|${process.env.FB_CLIENT_SECRET}`;
+      const debugRes = await axios.get(`https://graph.facebook.com/debug_token`, {
+        params: {
+          input_token: accessToken,
+          access_token: appAccessToken,
+        },
+      });
+  
+      const isValid = debugRes.data.data?.is_valid && debugRes.data.data.user_id === userID;
+      if (!isValid) {
+        return res.status(401).json({ error: 'Invalid Facebook token' });
+      }
+  
+      const userRes = await axios.get('https://graph.facebook.com/me', {
+        params: {
+          access_token: accessToken,
+          fields: 'id,name,email,picture',
+        },
+      });
+  
+      const fbUser = userRes.data;
+  
+      let user = await User.findOne({ facebookId: fbUser.id });
+  
+      if (!user) {
+        user = await User.findOne({ username: fbUser.email });
+
+        if (user) {
+          return res.json({
+            error: 'Email already registered. Please log in with email/password first to connect Facebook.',
+            email: user.username,
+            facebookId: fbUser.id,
+            status: 409,
+          });
+        }
+        user = await User.create({
+          facebookId: fbUser.id,
+          name: fbUser.name,
+          username: fbUser.email || null,
+          profilePicture: fbUser.picture?.data?.url || null,
+        });
+      }
+  
+      req.login(user, async (err) => {
+        if (err) return next(err);
+  
+        const clientUser = await setUserForClient(req, user);
+        return res.json({ message: 'Login successful!', user: clientUser, status: 200 });
+      });
+  
+    } catch (error) {
+      console.error('Facebook login error:', error);
+      return res.status(500).json({ error: 'Facebook login failed' });
+    }
+  };
+
+  export const linkAccount = async (req, res) => {
+    const {email, facebookId} = req.body
+    const user = await User.findByUsername(email)
+    if (!user) return res.status(404).json({ error: 'User not found' });
+    user.facebookId = facebookId;
+    await user.save();
+    
+    req.login(user, async (err) => {
+      if (err) return res.status(500).json({ error: 'Login failed after linking' });
+      const clientUser = await setUserForClient(req, user)
+      res.json({
+        message: "success",
+        status: 200,
+        user: clientUser,
+      })
+    });
+  }
+  
 export const logout = (req, res, next) => {
     req.logout(function (err) {
       if (err) { 
@@ -62,6 +212,67 @@ export const save = async(req, res)=> {
       } else {
         res.json({message: "Usuario no se encontro", status: 400})
       }
+  }
+
+  export const recoverPass = async (req, res) => {
+    const { email } = req.body;
+    const user = await User.findByUsername(email)
+    if (!user) return res.json({ message: 'Email not found', status: 404 });
+    const resetToken = crypto.randomBytes(32).toString('hex');
+    const resetTokenExpires = Date.now() + 1000 * 60 * 15;
+
+    user.resetPasswordToken = resetToken;
+    user.resetPasswordExpires = resetTokenExpires;
+    await user.save();
+    await transporter.sendMail({
+      to: email,
+      subject: 'Password Reset',
+      html: `<p>Click <a href="${process.env.CLIENT_URL}/reset-password?token=${resetToken}">here</a> to reset your password. This link expires in 15 minutes.</p>`
+    });
+    res.json({message: 'token generated', status: 200})
+  }
+
+  export const verifyPassToken = async (req, res) => {
+    const token = req.query.token
+    console.log(token)
+    const user = await User.findOne({
+      resetPasswordToken: token,
+      resetPasswordExpires: { $gt: Date.now() }
+    })
+    if(!user) return res.json({message: "token is invalid", status: 404})
+    res.json({message: 'token verified', status: 200})
+  }
+
+  export const changeRecoverPass = async (req, res) => {
+    const { password, token} = req.body;
+    console.log(token)
+    const user = await User.findOne({
+      resetPasswordToken: token,
+      resetPasswordExpires: { $gt: Date.now() }
+    })
+    if(!user) return res.json({message: "token is invalid", status: 404})
+      await new Promise((resolve, reject) => {
+        user.setPassword(password, async (err) => {
+          if (err) return reject(err);
+  
+          try {
+            await user.save();
+            resolve();
+          } catch (saveErr) {
+            reject(saveErr);
+          }
+        });
+      });
+  
+      req.login(user, async (err) => {
+        if (err) return res.status(500).json({ error: 'login failed after password changed.' });
+        const clientUser = await setUserForClient(req, user)
+        res.json({
+          message: "password changed",
+          status: 200,
+          user: clientUser,
+        })
+      });
   }
 
   export const checkPass = async (req, res) => {
@@ -195,3 +406,14 @@ export const save = async(req, res)=> {
     const clientUser = await setUserForClient(req, user)
     res.json({message: "method removed", status: 200, user: clientUser})
   }
+
+  // async function deleteUsers(params) {
+  //   await User.updateMany({}, {
+  //     $set: {
+  //       workers: [],
+  //     }
+  //   });
+    
+  // }
+
+  // deleteUsers()

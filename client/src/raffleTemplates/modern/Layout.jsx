@@ -24,7 +24,7 @@ const Layout = ({raffle}) => {
   const inactiveLinkClasses = "text-colorRaffle hover:bg-blue-100 hover:text-primaryRaffle";
 
   return (
-    <div className="min-h-screen flex flex-col bg-gradient-to-br from-backgroundRaffle to-lightColorTint">
+    <div className="min-h-screen flex flex-col bg-gradient-to-br from-backgroundRaffle to-lightColorTint font-fontRaffle">
       <header className="sticky top-0 z-50 bg-lightTint backdrop-blur-md shadow-sm">
         <div className="max-w-[calc(100vw-64px)] w-[1400px] mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex items-center justify-between h-16">

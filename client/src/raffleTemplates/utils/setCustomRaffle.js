@@ -8,62 +8,53 @@ export default function(raffle){
         green: ['#86efac', '#4ade80', '#22c55e', '#16a34a', '#15803d' , "#000b26", "#eff6ff"],
         yellow: ['#fde68a', '#fcd34d', '#fbbf24', '#f59e0b', '#d97706' , "#000b26", "#eff6ff"],
         purple: ['#d8b4fe', '#c084fc', '#a855f7', '#9333ea', '#7e22ce', "#140029", "#eff6ff"],
+        white: [
+            '#FFFFFF', 
+            '#F8F9FA',
+            '#F1F3F5', 
+            '#E9ECEF', 
+            '#DEE2E6' 
+          ],
+        black: [
+            '#000000', 
+            '#121212',
+            '#1E1E1E', 
+            '#2C2F33',
+            '#343A40',
+          ]
+          
         // add more if needed
     };
-    const fontSizes = {
-        xs: ['0.625rem', '0.75rem', '0.875rem'],
-        s: ['0.75rem', '0.875rem', '1rem' ],
-        m: ['0.875rem', '1rem', '1.125rem' ],
-        l: ['1rem', '1.125rem', '1.25rem' ],
-        xl: ['1.125rem', '1.25rem', '1.375rem'],
-        // add more if needed
-    };
-    const nightModeSelector = {
-        true: {
-            background: "#01011f",
-            lightTint: "#232323",
-            lightColorTint: colorShades[raffle.colorPalette][5],
-            color: ["#f7f7f7", "#fff", "#fff", "#fff", "#fff", "#fff"],
-            card: "#242424",
-            border: "#323232",
-        },
-        false: {
-            background: "#ffffff",
-            lightTint: "#f5f5f5",
-            lightColorTint: colorShades[raffle.colorPalette][6],
-            color: ["#333333", "#000", "#000", "#000", "#000", "#fff"],
-            card: "#f7f7f7",
-            border: "#e7e7e7",
-        }
-    }
 
-    const tones = colorShades[raffle.colorPalette] || colorShades['blue'];
-    const sizes = fontSizes[raffle.font] || fontSizes['m'];
-    const nightMode = nightModeSelector[raffle.nightMode]
+
+
+    const header = colorShades[raffle.colorPalette.header];
+    const background = colorShades[raffle.colorPalette.background];
+    const borders = colorShades[raffle.colorPalette.borders];
+    const color = colorShades[raffle.colorPalette.color];
+    const primary = colorShades[raffle.colorPalette.accent];
     // Default palette
     const settings = {
-        '--light-tint': nightMode.lightTint,
-        '--light-color-tint': nightMode.lightColorTint,
-        '--background-raffle': nightMode.background,
-        '--primary-raffle': tones[2], // 500
-        '--primary-raffle-300': tones[0],
-        '--primary-raffle-400': tones[1],
-        '--primary-raffle-500': tones[2],
-        '--primary-raffle-600': tones[3],
-        '--primary-raffle-700': tones[4],
-        '--size-raffle': sizes[2], // 500
-        '--size-raffle-300': sizes[0],
-        '--size-raffle-400': sizes[1],
-        '--size-raffle-500': sizes[2],
-        '--card-raffle': nightMode.card,
-        '--color-raffle': nightMode.color[2],
-        '--color-raffle-foreground': nightMode.color[5],
-        '--color-raffle-300': nightMode.color[0],
-        '--color-raffle-400': nightMode.color[1],
-        '--color-raffle-500': nightMode.color[2],
-        '--color-raffle-600': nightMode.color[3],
-        '--color-raffle-700': nightMode.color[4],
-        '--border-raffle': nightMode.border,
+        '--light-tint': background[1],
+        '--light-color-tint': "#f637f9",
+        '--background-raffle': background[0],
+        '--font-raffle': raffle.font ,
+        '--header-raffle': header[2] ,
+        '--primary-raffle': primary[2], // 500
+        '--primary-raffle-300': primary[0],
+        '--primary-raffle-400': primary[1],
+        '--primary-raffle-500': primary[2],
+        '--primary-raffle-600': primary[3],
+        '--primary-raffle-700': primary[4],
+        '--card-raffle': background[2],
+        '--color-raffle': color[2],
+        '--color-raffle-foreground': "#fff",
+        '--color-raffle-300': color[0],
+        '--color-raffle-400': color[1],
+        '--color-raffle-500': color[2],
+        '--color-raffle-600': color[3],
+        '--color-raffle-700': color[4],
+        '--border-raffle': borders[0],
     };
 
     // Apply user overrides (if any)
@@ -73,4 +64,5 @@ export default function(raffle){
     Object.entries(settings).forEach(([key, value]) => {
         root.style.setProperty(key, value);
     });
+    console.log("a")
 }

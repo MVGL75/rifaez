@@ -12,7 +12,20 @@ function getDate30DaysFromNow() {
   today.setDate(today.getDate() + 30); // Add 30 days to the current date
   return today.toISOString(); // Convert the updated date to ISO format
 }
-const colors = ['red', 'blue', 'yellow', 'green', 'purple']
+const colors = ['red', 'blue', 'yellow', 'green', 'purple', 'white', 'black']
+
+const fonts = [
+  "Inter",
+  "Roboto",
+  "Open Sans",
+  "Manrope",
+  "IBM Plex Sans",
+  "Work Sans",
+  "Source Sans 3",
+  "Noto Sans",
+  "Lato",
+  "DM Sans"
+];
 
 export const methodSchema = Joi.object({
   _id: Joi.string().optional(),
@@ -27,6 +40,14 @@ export const methodSchema = Joi.object({
       'string.pattern.base': 'Card number must be exactly 16 digits.',
       'string.empty': 'Card number is required.',
     }),
+  clabe: Joi.string()
+    .pattern(/^\d{18}$/)
+    .required()
+    .messages({
+      'string.pattern.base': 'Cuenta clabe must be exactly 18 digits.',
+      'string.empty': 'Cuenta clabe is required.',
+    }),
+  instructions: Joi.string().optional(),
 });
 
 export const raffleValidationSchema = Joi.object({
@@ -43,12 +64,19 @@ export const raffleValidationSchema = Joi.object({
         })
     ).default([]),
     template: Joi.string().valid('classic', 'modern', 'minimalist').required(),
-    colorPalette: Joi.string().valid(...colors).required(),
-    font: Joi.string().valid('xs', 's', 'm', 'l', 'xl').required(),
+    colorPalette: Joi.object({
+      header: Joi.string().valid(...colors).required(),
+      background: Joi.string().valid(...colors).required(),
+      accent: Joi.string().valid(...colors).required(),
+      borders: Joi.string().valid(...colors).required(),
+      color: Joi.string().valid(...colors).required(),
+    }).required(),
+    font: Joi.string().valid(...fonts).required(),
     logo_position: Joi.string().valid('left', 'center', 'right').required(),
     header: Joi.string().valid('on', 'off').required(),
-    nightMode: Joi.boolean().required(),
-    maxTpT: Joi.number().greater(0).required(),
+    countdown: Joi.string().valid('on', 'off').required(),
+    // nightMode: Joi.boolean().required(),
+    // maxTpT: Joi.number().greater(0).required(),
     timeLimitPay: Joi.number().greater(0).required(),
     fileCounter: Joi.number().greater(0).required(),
     paymentMethods: Joi.array().items(methodSchema.required()).max(3).required(),
@@ -62,6 +90,6 @@ export const raffleValidationSchema = Joi.object({
         .isoDate()
         .custom(isoDateAfterToday, 'Date must be after today') 
         .default(getDate30DaysFromNow()),
-    extraInfo: Joi.string().max(500).optional(),
+    extraInfo: Joi.string().max(500).allow('').optional(),
 
 });

@@ -7,6 +7,7 @@ import { useToast } from "@/components/ui/use-toast";
 import { useAuth } from "../contexts/AuthContext";
 import { raffleValidationSchema } from "../validation/raffleSchemaValidate";
 import { methodSchema } from "../validation/userSchema";
+import { saveImagesToIndexedDB } from "../lib/indexedDBHelpers";
 import SpinnerLogo from "../components/spinner"
 import axios from "axios";
 const api = axios.create({
@@ -31,11 +32,13 @@ import {
   Ticket,
   CalendarClock,
   Files,
-  PlusIcon
+  PlusIcon,
+  CircleMinus,
+  ClockArrowDown
 } from "lucide-react";
 import { array } from "joi";
 
-const CreateRafflePage = () => {
+const CreateRafflePage = ({userJustCreated, setUserJustCreated}) => {
   const navigate = useNavigate();
   const { toast } = useToast();
   const { user, setUser } = useAuth();
@@ -43,8 +46,8 @@ const CreateRafflePage = () => {
   const [showSuccess, setShowSuccess] = useState(false);
   const [newRaffleId, setNewRaffleId] = useState(null);
   const [searchParams] = useSearchParams();
-  const success = searchParams.get("success") || false;
   const [wasSubmitted, setWasSubmitted] = useState({})
+  const [showPaletteValue, setPaletteValue] = useState(false)
   const [formError, setFormError] = useState(null)
   const [justAddedPrize, setAddedPrize] = useState(false)
   const [newMethod, setNewMethod] = useState({})
@@ -60,11 +63,17 @@ const CreateRafflePage = () => {
     maxParticipants: "",
     font: "",
     header: "on",
-    nightMode: false,
     logo_position: "",
-    colorPalette: "",
+    countdown: "on",
+    colorPalette: {
+      header: "red",
+      background: "red",
+      accent: "red",
+      borders: "red",
+      color: "red",
+    },
     endDate: "",
-    maxTpT: "",
+    extraInfo: "",
     fileCounter: 0,
     timeLimitPay: "",
     paymentMethods: [],
@@ -73,15 +82,30 @@ const CreateRafflePage = () => {
 
   const templates = {
     basic : [["Clasico", "classic"]],
-    pro: [["Clasico", "classic"], ["Moderno", "modern"]],
-    business: [["Clasico", "classic"], ["Moderno", "modern"], ["Minimalista", "minimalist"]],
+    pro: [["Clasico", "classic"], ["Minimalista", "minimalist"]],
+    business: [["Clasico", "classic"], ["Minimalista", "minimalist"], ["Moderno", "modern"]],
   }
+  const colors = [{id: 'red', name: "Rojo"}, {id: 'blue', name: "Azul"}, {id: 'yellow', name: "Amarillo"}, {id: 'green', name: "Verde"}, {id: 'purple', name: "Púrpura"}, {id: 'black', name: "Negro"}, {id: 'white', name: "Blanco"}]
+  const colorCheck = {
+    red: 'Rojo',
+    blue: 'Azul',
+    yellow: 'Amarillo',
+    green: 'Verde',
+    purple: 'Púrpura',
+    black: 'Negro',
+    white: 'Blanco',
+  }
+
 
   const [totalRevenue, setTotalRevenue] = useState(0);
   const newMethods = user.payment_methods?.map(method => {
-    return { id: method._id, bank: method.bank, person: method.person, number: method.number, enabled: false }
+    return { id: method._id, bank: method.bank, person: method.person, number: method.number, clabe: method.clabe, enabled: false }
   })
   const [paymentMethods, setPaymentMethods] = useState(newMethods);
+
+  useEffect(() => {
+    
+  }, []);
 
   const handlePaymentMethodToggle = (methodId) => {
     setPaymentMethods(prev => {
@@ -119,13 +143,13 @@ const CreateRafflePage = () => {
     
   };
   useEffect(()=>{
-    if(success){
-     
+    if(userJustCreated){
       const link = searchParams.get("link");
       setNewRaffleId(link)
       setShowSuccess(true);
+      setUserJustCreated(false)
     }
-  }, [success])
+  }, [])
 
   
   useEffect(()=>{
@@ -147,10 +171,10 @@ const CreateRafflePage = () => {
             keys.push("price", "maxParticipants", "prize");
             break;
         case 3:
-            keys.push("colorPalette", "logo_position", "header", "font", "nightMode");
+            keys.push("template", "colorPalette", "logo_position", "header", "countdown", "font",);
             break;
         case 4:
-            keys.push("endDate", "maxTpT", "timeLimitPay", 'fileCounter');
+            keys.push("endDate", "timeLimitPay", 'fileCounter', 'extraInfo');
             break;
         case 5:
             keys.push("paymentMethods", "payment_instructions");
@@ -172,7 +196,18 @@ const CreateRafflePage = () => {
   
     return digits.replace(/(.{4})/g, '$1 ').trim();
   }
-
+  function formatCLABE(clabe) {
+    if (!clabe) return "";
+  
+    const digits = clabe.replace(/\D/g, '').slice(0, 18);
+    const match = digits.match(/^(\d{0,3})(\d{0,3})(\d{0,11})(\d{0,1})$/);
+  
+    if (!match) return digits;
+  
+    const [, bank, branch, account, control] = match;
+  
+    return [bank, branch, account, control].filter(Boolean).join(' ');
+  }
   const addPaymentMethod = async () => {
     setWasSubmitted(prev => ({...prev, method: true}))
     const {error, value} = methodSchema.validate(newMethod, {abortEarly: false});
@@ -216,9 +251,6 @@ const CreateRafflePage = () => {
     }
     setCurrentStep(currentStep + 1);
   };
-  const setSelected = (size) => {
-    setFormData(prev => ({...prev, font: size}));
-  }
   const switchHeader = (mode) => {
     setFormData(prev => ({...prev, header: mode}));
   }
@@ -236,37 +268,48 @@ const CreateRafflePage = () => {
     const isInvalid = formValidate();
     if(isInvalid) return setSpinner(false);
     const {error, value} = raffleValidationSchema.validate(formData)
-    console.log(error)
     if(error){
       setFormError(error)
       setSpinner(false)
     } else {
       const newRaffleData = new FormData();
+      const formObject = {};
       Object.entries(value).forEach(([key, value]) => {
         if (key === "additionalPrizes" || key === "paymentMethods") {
-          if(key === "paymentMethods"){
-            const diffValue = value.map(v => ({bank: v.bank, person: v.person, number: v.number }))
-            const serialized = value && value.length > 0 ? JSON.stringify(diffValue) : JSON.stringify([]);
-            newRaffleData.append(key, serialized);
-            return;
-          } else {
-            const serialized = value && value.length > 0 ? JSON.stringify(value) : JSON.stringify([]);
-            newRaffleData.append(key, serialized);
-          }
+          const serialized = JSON.stringify(
+            key === "paymentMethods"
+              ? value.map(v => ({
+                  bank: v.bank,
+                  person: v.person,
+                  number: v.number,
+                  clabe: v.clabe,
+                  instructions: v.instructions,
+                }))
+              : value
+          );
+          newRaffleData.append(key, serialized);
+          formObject[key] = serialized;
+        } else if (key === "colorPalette"){
+          const serialized = JSON.stringify(value)
+          newRaffleData.append(key, serialized);
+          formObject[key] = serialized;
         } else if (key !== "fileCounter") {
           newRaffleData.append(key, value);
+          formObject[key] = value;
         }
       });
       filesArray.forEach(image => newRaffleData.append('images', image));
       try {
         const res = await api.post("/api/raffle/create", newRaffleData)
+        console.log(res)
         if(res.data.status === 200){
-          setUser(res.data.user)
           setNewRaffleId(res.data.link)
           setSpinner(false)
           setShowSuccess(true);
+          setUser(res.data.user)
         } else if (res.data.status === 808){
-          await saveRaffleToSession(value, filesArray)
+          sessionStorage.setItem("pendingRaffleForm", JSON.stringify(formObject));
+          await saveImagesToIndexedDB(filesArray);
           navigate("/pricing-plan");
         } else {
           setFormError(res.data.message)
@@ -277,48 +320,6 @@ const CreateRafflePage = () => {
         setSpinner(false)
       }
     }
-  };
-  const saveRaffleToSession = async (value, filesArray) => {
-    const rafflePayload = {};
-  
-    Object.entries(value).forEach(([key, val]) => {
-      if (key === "additionalPrizes" || key === "paymentMethods") {
-        if (key === "paymentMethods") {
-          const cleanPMs = val.map(v => ({
-            bank: v.bank,
-            person: v.person,
-            number: v.number
-          }));
-          rafflePayload[key] = cleanPMs;
-        } else {
-          rafflePayload[key] = val;
-        }
-      } else if (key !== "fileCounter") {
-        rafflePayload[key] = val;
-      }
-    });
-  
-    const serializedFiles = await serializeFiles(filesArray);
-    rafflePayload._files = serializedFiles;
-  
-    sessionStorage.setItem("pendingForm", JSON.stringify(rafflePayload));
-  };
-  const serializeFiles = async (filesArray) => {
-    const promises = filesArray.map(file => new Promise((resolve, reject) => {
-      const reader = new FileReader();
-      reader.onload = () => {
-        resolve({
-          name: file.name,
-          type: file.type,
-          size: file.size,
-          dataUrl: reader.result, // base64
-        });
-      };
-      reader.onerror = reject;
-      reader.readAsDataURL(file);
-    }));
-  
-    return Promise.all(promises);
   };
 
   const handleCopyLink = () => {
@@ -350,15 +351,22 @@ const CreateRafflePage = () => {
       setFiles(Array.from(files));
       return;
     }
-    if(name === "method_person" || name === "method_number" || name === "method_bank"){
-      if(name === "method_number"){
-        let digits = value.replace(/\D/g, '');
-        if (digits.length > 16) {
-          digits = digits.slice(0, 16);
+    if(name === "method_person" || name === "method_number" || name === "method_bank" || name === "method_instructions" || name === "method_clabe"){
+        if(name === "method_number"){
+          let digits = value.replace(/\D/g, '');
+          if (digits.length > 16) {
+            digits = digits.slice(0, 16);
+          }
+          value = digits
         }
-        value = digits
-      }
-      
+        if(name === "method_clabe"){
+          let digits = value.replace(/\D/g, '');
+          if (digits.length > 18) {
+            digits = digits.slice(0, 18);
+          }
+          value = digits
+        }
+        
       setNewMethod(prev => ({...prev, [name.slice(7)]: value}));
       return;
     }
@@ -388,6 +396,18 @@ const CreateRafflePage = () => {
       additionalPrizes: [...prev.additionalPrizes, { place: prev.additionalPrizes.length + 2, prize: "" }]
     }));
   };
+  const removePrize = (indexOld) => {
+    setFormData(prev => {
+      const addPrizes = prev.additionalPrizes?.filter((prize, index) => index !== indexOld)
+      for (let i = 0; i < addPrizes.length; i++) {
+        addPrizes[i].place = i + 2;
+      }
+      return {
+        ...prev,
+        additionalPrizes: addPrizes,
+      }
+    });
+  }
 
   const handlePrizeChange = (index, value) => {
     setFormData(prev => {
@@ -396,6 +416,16 @@ const CreateRafflePage = () => {
       return { ...prev, additionalPrizes: newPrizes };
     });
   };
+
+  const handlePaletteChange = (e) => {
+    const {name, value} = e.target
+    setFormData(prev => ({...prev, colorPalette: {...prev.colorPalette, [name]: value}}))
+  }
+
+  const submitPalette = () => {
+    document.getElementById("create-palette").close()
+    setPaletteValue(true)
+  }
 
   const renderStep = () => {
     switch (currentStep) {
@@ -511,7 +541,7 @@ const CreateRafflePage = () => {
                 </div>
 
                 {formData.additionalPrizes.map((prize, index) => (
-                  <div key={index} className="flex flex-col sm:flex-row sm:items-center gap-4">
+                  <div key={index} className="flex flex-col sm:flex-row sm:items-center gap-4 relative">
                     <span className={`font-medium min-w-[100px] ${errors[`additionalPrizes_${index}`] && "text-red-500"}`}>
                       {prize.place}º Lugar
                     </span>
@@ -522,6 +552,7 @@ const CreateRafflePage = () => {
                       className={`flex-1 p-2 rounded-md border bg-background ${errors[`additionalPrizes_${index}`] ? "border-red-500" : "border-input"}`}
                       placeholder="Describe el premio"
                     />
+                    <CircleMinus onClick={()=>{removePrize(index)}} className="text-red-500 h-5 w-5 absolute top-1/2 -translate-y-1/2 right-3"/>
                   </div>
                 ))}
               </div>
@@ -561,19 +592,97 @@ const CreateRafflePage = () => {
                 <label className={`block text-sm font-medium mb-2 ${errors.colorPalette && "text-red-500"}`}>
                   Paleta de Colores
                 </label>
-                <select
+                <div
+                  onClick={()=>{document.getElementById("create-palette").showModal()}}
                   name="colorPalette"
-                  value={formData.colorPalette}
-                  onChange={handleChange}
-                  className={`w-full p-2 rounded-md border ${errors.colorPalette ? "border-red-500" : "border-input"} bg-background`}
+                  className={`w-full p-2 rounded-md border text-muted-foreground ${errors.colorPalette ? "border-red-500" : "border-input"} bg-background`}
                 >
-                  <option value="">Selecciona una paleta</option>
-                  <option value="red">Rojo</option>
-                  <option value="yellow">Amarillo</option>
-                  <option value="blue">Azul</option>
-                  <option value="green">Verde</option>
-                  <option value="purple">Púrpura</option>
-                </select>
+                  { !showPaletteValue ? "Crear una paleta +" : `Encabezado: ${colorCheck[formData.colorPalette?.header]}, Fondo: ${colorCheck[formData.colorPalette?.background]}, Detalles: ${colorCheck[formData.colorPalette?.accent]}, Bordes: ${colorCheck[formData.colorPalette?.borders]}, Letra: ${colorCheck[formData.colorPalette?.color]},`}
+                </div>
+                <dialog id="create-palette" className="rounded-md shadow-lg">
+                  <div className="space-y-5 px-5 py-5 w-[400px] bg-background">
+                    <h1 className="text-lg">Colores de Rifa</h1>
+                    <div className="space-y-3">
+                      <div className="flex flex-col gap-2">
+                        <label htmlFor="encabezado_color" className={`text-sm ${errors.colorPalette?.header && "text-red-500"}`}>Encabezado</label>
+                        <select 
+                          id="encabezado_color" 
+                          name="header" 
+                          value={formData.colorPalette.header} 
+                          onChange={handlePaletteChange} 
+                          className={`w-full p-2 rounded-md bg-background border ${errors.colorPalette?.header ? "border-red-500" : "border-input"}`} >
+                            {colors.map((color, index) => (
+                              <option key={index} value={color.id} >{color.name}</option>
+                            ))}
+                        </select>
+                      </div>
+                      <div className="flex flex-col gap-2">
+                        <label htmlFor="fondo_color" className={`text-sm ${errors.colorPalette?.background && "text-red-500"}`}>Fondo</label>
+                        <select 
+                            id="fondo_color" 
+                            name="background" 
+                            value={formData.colorPalette.background} 
+                            onChange={handlePaletteChange} 
+                            className={`w-full p-2 rounded-md bg-background border ${errors.colorPalette?.background ? "border-red-500" : "border-input"}`} >
+                            {colors.map((color, index) => (
+                              <option key={index} value={color.id} >{color.name}</option>
+                            ))}
+                        </select>
+                      </div>
+                      <div className="flex flex-col gap-2">
+                        <label htmlFor="accento_color" className={`text-sm ${errors.colorPalette?.accent && "text-red-500"}`}>Detalles</label>
+                        <select 
+                        id="accento_color" 
+                        name="accent" 
+                        value={formData.colorPalette.accent} 
+                        onChange={handlePaletteChange} 
+                        className={`w-full p-2 rounded-md bg-background border ${errors.colorPalette?.accent ? "border-red-500" : "border-input"}`} >
+                            {colors.map((color, index) => (
+                              <option key={index} value={color.id} >{color.name}</option>
+                            ))}
+                        </select>
+                      </div> 
+                      <div className="flex flex-col gap-2">
+                        <label htmlFor="bordes_color" className={`text-sm  ${errors.colorPalette?.borders && "text-red-500"}`}>Bordes</label>
+                        <select 
+                            id="bordes_color" 
+                            name="borders" 
+                            value={formData.colorPalette.borders} 
+                            onChange={handlePaletteChange} 
+                            className={`w-full p-2 rounded-md bg-background border ${errors.colorPalette?.borders ? "border-red-500" : "border-input"}`} >
+                            {colors.map((color, index) => (
+                              <option key={index} value={color.id} >{color.name}</option>
+                            ))}
+                        </select>
+                      </div>  
+                      <div className="flex flex-col gap-2">
+                        <label htmlFor="color_color" className={`text-sm  ${errors.colorPalette?.color && "text-red-500"}`}>Letra</label>
+                        <select 
+                            id="color_color" 
+                            name="color" 
+                            value={formData.colorPalette.color} 
+                            onChange={handlePaletteChange} 
+                            className={`w-full p-2 rounded-md bg-background border ${errors.colorPalette?.color ? "border-red-500" : "border-input"}`} >
+                            {colors.map((color, index) => (
+                              <option key={index} value={color.id} >{color.name}</option>
+                            ))}
+                        </select>
+                      </div>  
+                    </div>
+                    <footer className="flex items-center gap-3">
+                    <Button
+                        variant="outline"
+                        onClick={()=>{document.getElementById("create-palette").close()}}
+                      >Cancelar</Button>
+                      <Button
+                       type="button"
+                       onClick={submitPalette}
+                      >
+                        Agregar
+                      </Button>
+                    </footer>   
+                  </div>                                                
+                </dialog>
               </div>
               <div>
                 <label className={`block text-sm font-medium mb-2 ${errors.logo_position && "text-red-500"}`}>
@@ -585,11 +694,49 @@ const CreateRafflePage = () => {
                   onChange={handleChange}
                   className={`w-full p-2 rounded-md border ${errors.logo_position ? "border-red-500" : "border-input"} bg-background`}
                 >
-                  <option value="">Selecciona una plantilla</option>
+                  <option value="">Selecciona una posicion</option>
                   <option value="left">Izquierdo</option>
                   <option value="center">Centro</option>
                   <option value="right">Derecho</option>
                 </select>
+              </div>
+              <div>
+                <label className={`block text-sm font-medium mb-2 ${errors.font && "text-red-500"}`}>
+                  Fuentes
+                </label>
+                <select
+                  name="font"
+                  value={formData.font}
+                  onChange={handleChange}
+                  className={`w-full p-2 rounded-md border ${errors.font ? "border-red-500" : "border-input"} bg-background`}
+                >
+                  <option value="">Selecciona una fuente</option>
+                  <option value="Inter">Inter</option>
+                  <option value="Roboto">Roboto</option>
+                  <option value="Open Sans">Open Sans</option>
+                  <option value="Manrope">Manrope</option>
+                  <option value="IBM Plex Sans">IBM Plex Sans</option>
+                  <option value="Work Sans">Work Sans</option>
+                  <option value="Source Sans 3">Source Sans 3</option>
+                  <option value="Noto Sans">Noto Sans</option>
+                  <option value="Lato">Lato</option>
+                  <option value="DM Sans">DM Sans</option>
+                </select>
+              </div>
+              <div>
+              <label htmlFor="countdown" className={`block text-sm font-medium mb-2 ${errors.countdown && "text-red-500"}`}>
+                  Temporizador de cuenta regresiva
+                </label>
+                <div className="relative">
+                  <select id="countdown" name="countdown" value={formData.countdown}  onChange={handleChange} 
+                  className={`w-full pl-10 p-2 rounded-md border ${errors.countdown ? "border-red-500" : "border-input"} bg-background `}
+                   >
+                    <option value="on">Si</option>
+                    <option value="off">No</option>
+                    
+                  </select>
+                  <ClockArrowDown className=" absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground w-4 h-4"/>
+                  </div>
               </div>
               <div>
                 <label className={`block text-sm font-medium mb-2 ${errors.header && "text-red-500"}`}>
@@ -604,19 +751,8 @@ const CreateRafflePage = () => {
                 </div>
                 </div>
               </div>
-              <div>
-                <label className={`block text-sm font-medium mb-2 ${errors.font && "text-red-500"}`}>
-                  Letra
-                </label>
-                <div className="flex gap-4">
-                <div onClick={()=>{setSelected('xs')}} className={`border-[1.5px] rounded-lg cursor-pointer ${formData.font ==="xs" ? "border-blue-500 text-blue-500"  : "border-input" } bg-background text-xs h-8 w-8 flex items-center justify-center`}>xs</div>
-                <div onClick={()=>{setSelected('s')}} className={`border-[1.5px] rounded-lg cursor-pointer ${formData.font === "s" ? "border-blue-500 text-blue-500"  : "border-input" } bg-background text-sm h-8 w-8 flex items-center justify-center`}>s</div>
-                <div onClick={()=>{setSelected('m')}} className={`border-[1.5px] rounded-lg cursor-pointer ${formData.font === "m" ? "border-blue-500 text-blue-500"  : "border-input" } bg-background text-base h-8 w-8 flex items-center justify-center`}>m</div>
-                <div onClick={()=>{setSelected('l')}} className={`border-[1.5px] rounded-lg cursor-pointer ${formData.font === "l" ? "border-blue-500 text-blue-500"  : "border-input" } bg-background text-lg h-8 w-8 flex items-center justify-center`}>l</div>
-                <div onClick={()=>{setSelected('xl')}} className={`border-[1.5px] rounded-lg cursor-pointer ${formData.font ==="xl" ? "border-blue-500 text-blue-500"  : "border-input" } bg-background text-xl h-8 w-8 flex items-center justify-center`}>xl</div>
-                </div>
-              </div>
-              <div>
+           
+              {/* <div>
                 <label className={`block text-sm font-medium mb-2 ${errors.nightMode && "text-red-500"}`}>
                   Modo Obscuro
                 </label>
@@ -631,7 +767,7 @@ const CreateRafflePage = () => {
                   <Sun className="w-5 h-5"/>
                   </>)}
                 </div>
-              </div>
+              </div> */}
             </div>
           </motion.div>
         );
@@ -651,18 +787,7 @@ const CreateRafflePage = () => {
                 <input id="date" name="endDate" value={formData.endDate} onChange={handleChange} min={getToday()} type="date" 
                 className={`w-full px-3 py-2 rounded-md border ${errors.endDate ? "border-red-500" : "border-input"} bg-background`} />
               </div>
-              <div>
-              <label htmlFor="maxPerT" className={`block text-sm font-medium mb-2 ${errors.maxTpT && "text-red-500"}`}>
-                  Numero de boletos por transaccion
-                </label>
-                <div className="relative">
-                  <input id="maxPerT" name="maxTpT" value={formData.maxTpT} type="number" onChange={handleChange} 
-                  className={`w-full pl-10 p-2 rounded-md border ${errors.maxTpT ? "border-red-500" : "border-input"} bg-background`}
-                  min={'0'}
-                   max={formData.maxParticipants} />
-                  <Ticket className=" absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground w-4 h-4"/>
-                  </div>
-              </div>
+           
               <div>
               <label htmlFor="timeLimitPay" className={`block text-sm font-medium mb-2 ${errors.timeLimitPay && "text-red-500"}`}>
                   Tiempo limite para pago (dias)
@@ -676,16 +801,29 @@ const CreateRafflePage = () => {
               </div>
               <div>
               <label htmlFor="files" className={`block text-sm font-medium mb-2 ${errors.fileCounter && "text-red-500"}`}>
-                  Imagenes Max(10)
+                  Imagenes Max (10) 
                 </label>
                 <div className="relative">
-                  <input id="fileCounter" accept="image/*" type="file" name="fileCounter" onChange={handleChange} multiple
+                  <input id="fileCounter" accept="image/*" type="file" max="10" name="fileCounter" onChange={handleChange} multiple
                   className="opacity-0 w-full pl-10 p-2 rounded-md border bg-background"/>
                   <div className={`flex items-center  absolute left-0 top-0 w-full h-full rounded-md border ${errors.fileCounter ? "border-red-500" : "border-input"} bg-background`}>
                     <Files className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground w-4 h-4"/>
                     <label htmlFor="fileCounter" className="pl-10 p-2 text-gray-600 w-full">{formData.fileCounter && formData.fileCounter > 0 ? `${formData.fileCounter} archivo(s)` : "Escoge Archivo"}</label>
                   </div>
                 </div>
+              </div>
+              <div>
+                <label className={`block text-sm font-medium mb-2 ${errors.extraInfo && "text-red-500"}`}>
+                  Informacion Adicional (Opcional)
+                </label>
+                <textarea
+                  name="extraInfo"
+                  value={formData.extraInfo}
+                  onChange={handleChange}
+                  className={`w-full p-2 rounded-md border ${errors.extraInfo ? "border-red-500" : "border-input"} bg-background h-32`}
+                  placeholder="Informacion adicional..."
+                />
+                <span className="mt-3 text-sm text-muted-foreground">Max 500 caracteres</span>
               </div>
             </motion.div>
         );
@@ -704,11 +842,12 @@ const CreateRafflePage = () => {
               </div>}
               <div className="space-y-6">
                 <div className="space-y-4">
+                  
                 {paymentMethods.map((method, index) => (
-                      <div key={index} className="bg-white border border-input rounded-lg w-full">
-                      <div className="flex items-center justify-between px-4 py-3 bg-muted px-4 py-3">
-                        <div className="">{method.bank}</div>
-                        <div
+                  <div key={index} className="bg-background border border-input rounded-lg w-full">
+                  <div className="flex items-center justify-between px-4 py-3 bg-muted px-4 py-3">
+                    <div className="">{method.bank}</div>
+                    <div
                             className={`w-12 h-6 rounded-full transition-colors ${
                               method.enabled ? 'bg-primary' : 'bg-gray-200'
                             } cursor-pointer`}
@@ -720,12 +859,21 @@ const CreateRafflePage = () => {
                               } mt-0.5`}
                             />
                         </div>
-                      </div>
-                      <div className="flex items-center justify-between px-4 py-3">
-                        <div>{method.person}</div>
-                        <div>{formatMethodNumber(method.number)}</div>
-                      </div>
+                  </div>
+                  <div className="flex gap-3 flex-col px-4 py-4">
+                  <div className="flex items-center gap-3">
+                        <span className="text-muted-foreground">Numero de tarjeta</span>
+                        <span>{formatMethodNumber(method.number)}</span>
+                        </div>
+                    <div className="flex items-center justify-between">
+                      <div className="flex items-center gap-3">
+                        <span className="text-muted-foreground">Cuenta Clabe</span>
+                        <span>{formatCLABE(method.clabe)}</span>
+                        </div>
+                      <div>{method.person}</div>
                     </div>
+                  </div>
+                </div>
                 ))}
                 </div>
                 <div className="flex justify-end">
@@ -737,11 +885,11 @@ const CreateRafflePage = () => {
 
                 <dialog id="add-method" className="w-screen h-screen bg-transparent">
               <div className="flex justify-center items-center w-full h-full">
-              <div className="bg-background p-6 shadow-lg rounded-lg w-[300px]">
+              <div className="text-foreground bg-background p-6 shadow-lg rounded-lg w-[500px] max-w-[calc(100vw-24px)] ">
                       <h3 className="text-lg font-medium mb-4">Agregar Metodo de Pago</h3>
-                      <div className="space-y-4">
+                      <div className="flex flex-col gap-4 sm:grid sm:grid-cols-2 sm:gap-x-6 sm:gap-y-2 mb-4">
                         <div>
-                          <label className={`block text-sm font-medium mb-2 ${methodErrors?.bank && "text-red-500"}`}>
+                          <label className={`block text-sm font-medium mb-2 ${errors.method?.bank && "text-red-500"}`}>
                             Banco
                           </label>
                           <input
@@ -749,12 +897,12 @@ const CreateRafflePage = () => {
                             type="text"
                             value={newMethod.bank}
                             onChange={handleChange}
-                            className={`w-full p-2 rounded-md border ${methodErrors?.bank ? "border-red-500" : "border-input"} bg-background`}
+                            className={`w-full p-2 rounded-md border ${errors.method?.bank ? "border-red-500" : "border-input"} bg-background`}
                             placeholder="BBVA"
                           />
                         </div>
                         <div>
-                          <label className={`block text-sm font-medium mb-2 ${methodErrors?.person && "text-red-500"}`}>
+                          <label className={`block text-sm font-medium mb-2 ${errors.method?.person && "text-red-500"}`}>
                             Beneficiario
                           </label>
                           <input
@@ -762,12 +910,12 @@ const CreateRafflePage = () => {
                             type="text"
                             value={newMethod.person}
                             onChange={handleChange}
-                            className={`w-full p-2 rounded-md border ${methodErrors?.person ? "border-red-500" : "border-input"} bg-background`}
+                            className={`w-full p-2 rounded-md border ${errors.method?.person ? "border-red-500" : "border-input"} bg-background`}
                             placeholder="Pedro Carreras"
                           />
                         </div>
                         <div>
-                          <label className={`block text-sm font-medium mb-2 ${methodErrors?.number && "text-red-500"}`}>
+                          <label className={`block text-sm font-medium mb-2 ${errors.method?.number && "text-red-500"}`}>
                             Numero de Cuenta
                           </label>
                           <input
@@ -775,12 +923,37 @@ const CreateRafflePage = () => {
                             type="text"
                             value={formatMethodNumber(newMethod.number)}
                             onChange={handleChange}
-                            className={`w-full p-2 rounded-md border ${methodErrors?.number ? "border-red-500" : "border-input"} bg-background`}
+                            className={`w-full p-2 rounded-md border ${errors.method?.number ? "border-red-500" : "border-input"} bg-background`}
                             placeholder="1111 2222 3333 4444"
                           />
                         </div>
-                     
-                        <div className="flex justify-end space-x-2">
+                        <div>
+                          <label className={`block text-sm font-medium mb-2 ${errors.method?.clabe && "text-red-500"}`}>
+                            Cuenta Clabe
+                          </label>
+                          <input
+                            name="method_clabe"
+                            type="text"
+                            value={formatCLABE(newMethod.clabe)}
+                            onChange={handleChange}
+                            className={`w-full p-2 rounded-md border ${errors.method?.clabe ? "border-red-500" : "border-input"} bg-background`}
+                            placeholder="002 180 00001183597 9"
+                          />
+                        </div>
+                      </div>
+                      <div className="mb-4">
+                      <label htmlFor="instructions" className={`block text-sm font-medium mb-2 ${errors.method?.instructions && "text-red-500"}`}>
+                            Nota (Opcional)
+                          </label>
+                        <textarea  
+                          onChange={handleChange} 
+                          name="method_instructions" 
+                          value={newMethod.instructions}
+                          id="instructions"
+                          className={`w-full p-2 rounded-md border ${errors.method?.instructions ? "border-red-500" : "border-input"} bg-background`}
+                          ></textarea>
+                      </div>
+                      <div className="flex justify-end space-x-2">
                           <Button
                             variant="outline"
                             onClick={() => document.getElementById("add-method").close()}
@@ -790,7 +963,6 @@ const CreateRafflePage = () => {
                           <Button onClick={addPaymentMethod}>
                             Agregar
                           </Button>
-                        </div>
                       </div>
                 </div>
               </div>

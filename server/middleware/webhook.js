@@ -58,6 +58,7 @@ router.post('/', bodyParser.raw({ type: 'application/json' }), async (req, res) 
       const user = await User.findOne({ stripeCustomerId: customerId });
   
       if (user) {
+        await deleteUserFeatures(user);
         user.subscriptionId = null;
         user.subscriptionStatus = null;
         user.planId = null;
@@ -76,6 +77,8 @@ router.post('/', bodyParser.raw({ type: 'application/json' }), async (req, res) 
       if(user){
         if(plans[user.planId].rank > plans[priceId].rank){
           await restrictUserFeatures(user, priceId);
+        } else {
+          await updateUserFeatures(user, priceId);
         }
           user.planId = priceId;
           user.subscriptionStatus = "active";
@@ -93,7 +96,7 @@ router.post('/', bodyParser.raw({ type: 'application/json' }), async (req, res) 
 
 const restrictUserFeatures = async (user, newPriceId) => {
   const newPlanRestrictions = plans[newPriceId];
-
+  
   const userWithRaffles = await user.populate('raffles');
   const activeRaffleAmount = newPlanRestrictions.activeRaffles;
 
@@ -119,15 +122,71 @@ const restrictUserFeatures = async (user, newPriceId) => {
     })
   );
   const permittedWorkers = newPlanRestrictions.workers;
-  const currentWorkerCount = user.workers?.length || 0;
-  const workerDiff = currentWorkerCount - permittedWorkers;
-
+  const activeWorkers = user.workers?.filter(worker => worker.isActive) || [];
+  const workerDiff = activeWorkers.length - permittedWorkers;
   if (workerDiff > 0) {
-    user.workers = user.workers.slice(0, permittedWorkers);
-  }
+    await Promise.all(
+      activeWorkers.slice(0, workerDiff).map(worker => {
+          worker.isActive = false;
+          return worker.save();
+      })
+    );
+}
 
   await user.save();
 };
+
+const deleteUserFeatures = async (user) => {
+
+  const userWithRaffles = await user.populate('raffles');
+
+  const userRaffles = userWithRaffles.raffles || [];
+  const activeRaffles = userWithRaffles.raffles?.filter(r => r.isActive) || [];
+  const activeWorkers = user.workers || [];
+
+    await Promise.all(
+      activeRaffles.map(raffle => {
+        raffle.isActive = false;
+        return raffle.save();
+      })
+    );
+
+  await Promise.all(
+    userRaffles.map(raffle => {
+        raffle.template = "classic";
+        return raffle.save();
+    })
+  );
+  await Promise.all(
+    activeWorkers.map(worker => {
+        worker.isActive = false;
+        return worker.save();
+    })
+  );
+    // user.workers = user.workers.slice(0, 0);
+
+  await user.save();
+};
+
+const updateUserFeatures = async (user, newPriceId) => {
+  const newPlanRestrictions = plans[newPriceId];
+  
+  const permittedWorkers = newPlanRestrictions.workers;
+  const activeWorkers = user.workers?.filter(worker => worker.isActive) || [];
+  const inActiveWorkers = user.workers?.filter(worker => !worker.isActive) || [];
+  const workerSlots = permittedWorkers - activeWorkers.length ;
+  const workerSlotDiff = workerSlots > inActiveWorkers.length ? inActiveWorkers.length : workerSlots;
+  if (workerSlotDiff > 0) {
+    await Promise.all(
+      inActiveWorkers.slice(0, workerSlotDiff).map(worker => {
+          worker.isActive = true;
+          return worker.save();
+      })
+    );
+}
+
+  await user.save();
+}
 
 
 

@@ -56,6 +56,7 @@ const Payment = () => {
       bank: method.bank,
       accountHolder: method.person,
       accountNumber: method.number,
+      clabe: method.clabe,
     }
   ));
   const finalizePayment = async () => {
@@ -71,6 +72,24 @@ const Payment = () => {
     const parentPath = "/" + segments.slice(0, -1).join("/"); 
     navigate(parentPath);
   };
+  const formatMethodNumber = (input) => {
+    const digits = String(input).replace(/\D/g, '');
+  
+    return digits.replace(/(.{4})/g, '$1 ').trim();
+  }
+  function formatCLABE(clabe) {
+    if (!clabe) return "";
+  
+    const digits = clabe.replace(/\D/g, '').slice(0, 18);
+    const match = digits.match(/^(\d{0,3})(\d{0,3})(\d{0,11})(\d{0,1})$/);
+  
+    if (!match) return digits;
+  
+    // Destructure the match array and ignore the full match at index 0
+    const [, bank, branch, account, control] = match;
+  
+    return [bank, branch, account, control].filter(Boolean).join(' ');
+  }
 
   const handleCopyNumber = (number) => {
     navigator.clipboard.writeText(number);
@@ -152,7 +171,7 @@ const Payment = () => {
                 </a>
                 {" "}indicando tus números de boleto.
               </p>
-              <p>Cuando ya termines eso presiona donde dice <b>Finalizar Pago</b> para apartar tus boletos.</p>
+              <p>Cuando ya termines eso presiona donde dice <b>Apartar Boletos</b> para apartar tus boletos.</p>
             </div>
           </div>
         </div>
@@ -186,10 +205,22 @@ const Payment = () => {
                     size="sm"
                     className="text-colorRaffle hover:text-colorRaffle-600"
                   >
-                    {method.accountNumber}
+                    {formatMethodNumber(method.accountNumber)}
+                  </div>
+                </div>
+                <div className="flex items-center gap-2">
+                  <p className="font-semibold">Clabe:</p>
+                  <div
+                    onClick={() => handleCopyNumber(method.clabe)}
+                    variant="outline"
+                    size="sm"
+                    className="text-colorRaffle hover:text-colorRaffle-600"
+                  >
+                    {formatCLABE(method.clabe)}
                   </div>
                 </div>
               </div>
+             
             </motion.div>
           ))}
         </div>

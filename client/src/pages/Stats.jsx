@@ -115,7 +115,16 @@ const StatsPage = ({ selectedRaffle }) => {
       now.setHours(now.getHours() + 1); 
     }
     now.setMinutes(0, 0, 0);
-    const hourArray = [now.getHours() - 4 + ':00', now.getHours() - 3 + ':00', now.getHours() - 2 + ':00', now.getHours() - 1 + ':00', now.getHours() + ':00']
+    const nowHours = now.getHours()
+    let hourArray = []
+    for (let i = 0; i < 5; i++) {
+        const hourData = ((nowHours - 4) + i )
+        if(hourData >= 0){
+          hourArray[i] = hourData + ':00'
+        } else {
+          hourArray[i] = (24 + hourData) + ':00'
+        }
+    }
     const todayVisits = selectedRaffle.stats.dailyVisitStats?.find(visit => visit.date === selectedDate)
     const todaySales = selectedRaffle.stats.dailySales?.find(visit => visit.date === selectedDate)
     let dataViewArray = []
@@ -223,9 +232,10 @@ const StatsPage = ({ selectedRaffle }) => {
       }
     }
   };
+
+
   return  (
     <div className="space-y-8">
-      { !selectedRaffle ? <NoRaffle/> : (
         <>
       <motion.div
         initial={{ opacity: 0, y: 20 }}
@@ -488,7 +498,7 @@ const StatsPage = ({ selectedRaffle }) => {
         </div>
       </motion.div>
       </>
-        )}
+  
       </div>
    )
   ;

@@ -1,7 +1,9 @@
 import {Link, useLocation, Outlet} from "react-router-dom";
+import { useState, useEffect } from "react";
 import RaffleSelector from "@/components/RaffleSelector";
 import { useAuth } from "@/contexts/AuthContext";
 import Logo from "@/Logo";
+import LogoName from "@/LogoName";
 import { 
     Home, 
     BarChart2, 
@@ -14,6 +16,14 @@ import {
 export default function({selectedRaffle, setSelectedRaffle}){
     const {user} = useAuth()
     const location = useLocation();
+    const [notificationsLength, setNotificationsLength] = useState([]);
+
+    useEffect(() => {
+    if (user?.raffles) {
+        const all = user.raffles.reduce((acc, value) => acc + (value.notifications?.length || 0 ) ,0)
+        setNotificationsLength(all)
+    }
+    }, [user.raffles]);
     const isActive = (path) => location.pathname === path;
       // Mobile navigation items
     const mobileNavItems = [
@@ -29,7 +39,7 @@ export default function({selectedRaffle, setSelectedRaffle}){
         <nav className="hidden md:flex items-center justify-between px-8 py-4 bg-card border-b">
             <div className="flex items-center space-x-8">
             <Link to="/" className="text-2xl font-bold text-foreground">
-                <Logo className="w-6 h-6" />
+                <LogoName className="w-10 h-10" />
             </Link>
             <div className="flex items-center space-x-4">
                 <NavLink to="/" active={isActive("/")}>
@@ -61,9 +71,9 @@ export default function({selectedRaffle, setSelectedRaffle}){
                 />
                 </div>
             )}
-            <Link to="/" className="p-2 hover:bg-accent rounded-full relative">
+            <Link to="/notifications" className="p-2 hover:bg-accent rounded-full relative">
                 <Bell className="w-5 h-5" />
-                {(selectedRaffle?.notifications && selectedRaffle?.notifications?.length > 0) &&
+                {(notificationsLength > 0) &&
                     <span className="absolute top-0 right-0 w-2 h-2 bg-red-500 rounded-full" />
                 }
             </Link>

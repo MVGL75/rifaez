@@ -35,7 +35,6 @@ router.post('/create-checkout-session', isAuthenticated, async (req, res) => {
     const baseUrl = `${process.env.CLIENT_URL}/checkout/return?session_id={CHECKOUT_SESSION_ID}`;
 
     let extraParams = '';
-    console.log(req.session.redirectAfterPayment)
     if (req.session?.redirectAfterPayment?.url && req.session?.redirectAfterPayment?.frontUrl) {
       const url = encodeURIComponent(req.session.redirectAfterPayment.url);
       const frontUrl = encodeURIComponent(req.session.redirectAfterPayment.frontUrl);
@@ -43,7 +42,6 @@ router.post('/create-checkout-session', isAuthenticated, async (req, res) => {
     }
 
     const return_url = `${baseUrl}${extraParams}`;
-    console.log(return_url)
     const session = await stripe.checkout.sessions.create({
       mode: 'subscription',
       customer_email: customerEmail,
@@ -71,7 +69,7 @@ router.post("/update-plan", isAuthenticated, async (req, res) => {
 
 
     await updateSubscription(user, subscription, newPriceId)
-    res.redirect("/api/user")
+    res.redirect("/auth/user")
 
   } catch (error) {
     throw new AppError(error)
@@ -92,6 +90,8 @@ const updateSubscription = async (user, subscription, newPriceId) => {
   });
   if(plans[user.planId].rank > plans[newPriceId].rank){
     await restrictUserFeatures(user, newPriceId);
+  } else {
+    await updateUserFeatures(user, newPriceId)
   }
   user.planId = newPriceId;
   user.subscriptionStatus = "active";
@@ -115,7 +115,7 @@ router.post('/cancel-subscription', isAuthenticated, async (req, res) => {
     user.subscriptionStatus = 'canceled';
     await user.save();
     
-    res.redirect("/api/user");
+    res.redirect("/auth/user");
     
   } catch (error) {
     throw new AppError(error)
@@ -136,7 +136,7 @@ router.get('/session-status', async (req, res) => {
 
 const restrictUserFeatures = async (user, newPriceId) => {
   const newPlanRestrictions = plans[newPriceId];
-
+  
   const userWithRaffles = await user.populate('raffles');
   const activeRaffleAmount = newPlanRestrictions.activeRaffles;
 
@@ -162,15 +162,38 @@ const restrictUserFeatures = async (user, newPriceId) => {
     })
   );
   const permittedWorkers = newPlanRestrictions.workers;
-  const currentWorkerCount = user.workers?.length || 0;
-  const workerDiff = currentWorkerCount - permittedWorkers;
-
+  const activeWorkers = user.workers?.filter(worker => worker.isActive) || [];
+  const workerDiff = activeWorkers.length - permittedWorkers;
   if (workerDiff > 0) {
-    user.workers = user.workers.slice(0, permittedWorkers);
-  }
+    await Promise.all(
+      activeWorkers.slice(0, workerDiff).map(worker => {
+          worker.isActive = false;
+          return worker.save();
+      })
+    );
+}
 
   await user.save();
 };
+const updateUserFeatures = async (user, newPriceId) => {
+  const newPlanRestrictions = plans[newPriceId];
+  
+  const permittedWorkers = newPlanRestrictions.workers;
+  const activeWorkers = user.workers?.filter(worker => worker.isActive) || [];
+  const inActiveWorkers = user.workers?.filter(worker => !worker.isActive) || [];
+  const workerSlots = permittedWorkers - activeWorkers.length ;
+  const workerSlotDiff = workerSlots > inActiveWorkers.length ? inActiveWorkers.length : workerSlots;
+  if (workerSlotDiff > 0) {
+    await Promise.all(
+      inActiveWorkers.slice(0, workerSlotDiff).map(worker => {
+          worker.isActive = true;
+          return worker.save();
+      })
+    );
+}
+
+  await user.save();
+}
 
 
 

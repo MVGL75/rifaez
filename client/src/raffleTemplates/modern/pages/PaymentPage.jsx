@@ -227,7 +227,7 @@ const PaymentPage = () => {
       </section>
 
       <section className='flex items-center justify-center'>
-        <button onClick={finalizePayment} className='rounded-full px-4 py-2 bg-primaryRaffle text-colorRaffle-foreground'>Finalizar Pago</button>
+        <button onClick={finalizePayment} className='rounded-full px-4 py-2 bg-primaryRaffle text-colorRaffle-foreground'>Apartar Boletos</button>
       </section>
       
       <section className="text-center px-4 pt-6">

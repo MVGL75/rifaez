@@ -35,6 +35,16 @@ export const AuthProvider = ({ children }) => {
       return { error: err.response?.data?.message || 'Login failed' };
     }
   };
+
+  const deleteUser = async () => {
+    try {
+      const res = await api.post('/auth/delete_user');
+      setUser(null);
+      navigate('/login');
+    } catch (err) {
+      setAppError(err)
+    }
+  }
   
   const logout = async () => {
     try {
@@ -58,6 +68,25 @@ export const AuthProvider = ({ children }) => {
       return { error: err.response?.data?.message || 'Registration failed' };
     }
   };
+
+  const linkAccount =  async (email, fbId) => {
+    try {
+      const res = await api.post("/auth/link-account", {email, facebookId: fbId})
+      if (res.data.status === 200) {
+        setUser(res.data.user);
+        navigate('/');
+      }
+    } catch (error) {
+      setAppError(error)
+    }
+  }
+
+  const sendRecoveryEmail = async (email) => {
+    const res = await api.post('/auth/generate-password-token', {email})
+    console.log(res)
+    return res;
+  }
+
 
   const connectDomain = async (domain) => {
     try {
@@ -100,7 +129,8 @@ export const AuthProvider = ({ children }) => {
   }
 
   return (
-    <AuthContext.Provider value={{ user, login, logout, register, save, setUser, connectDomain, verifyDomain, verifyCNAME, appError, setAppError, popError, setPopError}}>
+    <AuthContext.Provider 
+      value={{ user, login, logout, register, save, setUser, connectDomain, verifyDomain, verifyCNAME, appError, setAppError, popError, setPopError, deleteUser, linkAccount, sendRecoveryEmail}}>
       {children}
     </AuthContext.Provider>
   );

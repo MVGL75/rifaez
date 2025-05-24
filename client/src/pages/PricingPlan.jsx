@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import { useAuth } from "../contexts/AuthContext";
-import { Link, useNavigate } from "react-router-dom";
+import { Link, useNavigate, useLocation } from "react-router-dom";
 import Logo from "../Logo";
 import { Button } from "@/components/ui/button";
 import { 
@@ -20,6 +20,9 @@ const api = axios.create({
 
 function PricingPlan(){
     const navigate = useNavigate()
+    const location = useLocation();
+    const message = location.state?.message;
+    const from = location.state?.from;
     const { setAppError, user, setUser } = useAuth()
 
     const handleSubscribe = (priceId) => {
@@ -30,6 +33,7 @@ function PricingPlan(){
         const res = await api.post("/stripe/update-plan", {newPriceId: priceId});
         if(res.data){
           setUser(res.data)
+          if(from) navigate(from);
         }
       } catch (error) {
         console.log(error)
@@ -48,42 +52,43 @@ function PricingPlan(){
       }
     }
     const plans = [
-        {
-          id: "basic",
-          name: "Plan Básico",
-          price_id: import.meta.env.VITE_PRICE_ID_BASIC, 
-          price: "$9.99",
-          features: [
-            "Hasta 5 rifas activas",
-            "Soporte básico",
-            "Estadísticas básicas"
-          ]
-        },
-        {
-          id: "pro",
-          name: "Plan Pro",
-          price_id: import.meta.env.VITE_PRICE_ID_PRO,
-          price: "$19.99",
-          features: [
-            "Rifas ilimitadas",
-            "Soporte prioritario",
-            "Estadísticas avanzadas",
-            "Dominio personalizado"
-          ]
-        },
-        {
-          id: "business",
-          name: "Plan Empresarial",
-          price_id: import.meta.env.VITE_PRICE_ID_BUSINESS,
-          price: "$49.99",
-          features: [
-            "Todo lo del Plan Pro",
-            "API access",
-            "Soporte 24/7",
-            "Múltiples dominios"
-          ]
-        }
-      ];
+      {
+        id: "basic",
+        name: "Plan Básico",
+        price_id: import.meta.env.VITE_PRICE_ID_BASIC, 
+        price: "$125",
+        features: [
+          "1 Rifas Activas",
+          "1 Plantilla Disponibleo",
+          "2 Trabajadores",
+          "Dominio personalizado",
+        ]
+      },
+      {
+        id: "pro",
+        name: "Plan Pro",
+        price_id: import.meta.env.VITE_PRICE_ID_PRO,
+        price: "$250",
+        features: [
+          "3 Rifas Activas",
+          "2 Plantilla Disponible",
+          "5 Trabajadores",
+          "Dominio personalizado",
+        ]
+      },
+      {
+        id: "business",
+        name: "Plan Empresarial",
+        price_id: import.meta.env.VITE_PRICE_ID_BUSINESS,
+        price: "$500",
+        features: [
+          "Rifas Ilimitadas",
+          "3 Plantilla Disponible",
+          "10 Trabajadores",
+          "Dominio personalizado",
+        ]
+      }
+    ];
     return (
         <>
         <header className='mx-auto w-fit mt-12'>
@@ -91,7 +96,8 @@ function PricingPlan(){
                 <Logo className='w-10 h-10'/>
             </Link>
         </header>
-        <div className="max-w-[1400px] mt-[40px] bg-card shadow-lg mx-auto px-8 py-10">
+        {message && <p className="text-center text-lg text-foreground mt-14">{message}</p>}
+        <div className={`max-w-[1400px] ${message ? "mt-6" : "mt-[40px]"} bg-card shadow-lg mx-auto px-8 py-10`}>
         <div className="space-y-6">
             <h2 className="text-2xl font-semibold">Suscripción</h2>
             

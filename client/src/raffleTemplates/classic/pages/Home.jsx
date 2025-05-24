@@ -350,7 +350,7 @@ const Home = () => {
                 className={`p-2 text-sm rounded transition-colors ${
                   selectedTickets.includes(i)
                     ? "bg-primaryRaffle text-colorRaffle-foreground"
-                    : "bg-cardRaffle hover:bg-gray-700"
+                    : "bg-cardRaffle hover:bg-gray-700 hover:text-colorRaffle-foreground"
                 }`}
               >
                 {i}
@@ -372,7 +372,7 @@ const Home = () => {
                 animate={{ y: [0, 10, 0] }}
                 transition={{ duration: 1.5, repeat: Infinity }}
               >
-                <ChevronDown size={32} />
+                <ChevronDown size={32} className="text-colorRaffle-foreground" />
               </motion.button>
             </motion.div>
           )}

@@ -72,6 +72,8 @@ const RaffleSchema = new mongoose.Schema({
                   bank: String,
                   person: String, 
                   number: String,
+                  clabe: String,
+                  instructions: String,
                 }],
                 default: [],
               },
@@ -87,8 +89,14 @@ const RaffleSchema = new mongoose.Schema({
                 required: true,
             },
             colorPalette: {
-                type: String,
-                required: true
+                type: {
+                    header: String,
+                    background: String,
+                    accent: String,
+                    borders: String,
+                    color: String,
+                },
+                required: true,
             },
             logo_position: {
                 type: String,
@@ -98,18 +106,21 @@ const RaffleSchema = new mongoose.Schema({
                 type: String,
                 default: "on"
             },
+            countdown: {
+                type: String,
+                default: "off"
+            },
             font: {
                 type: String,
-                default: "m"
             },
-            nightMode: {
-                type: Boolean,
-                default: false
-            },
-            maxTpT: {
-                type: Number,
-                default: 10
-            },
+            // nightMode: {
+            //     type: Boolean,
+            //     default: false
+            // },
+            // maxTpT: {
+            //     type: Number,
+            //     default: 10
+            // },
             timeLimitPay: {
                 type: Number,
                 min: 1,
@@ -121,6 +132,9 @@ const RaffleSchema = new mongoose.Schema({
                     public_id: String
                 }],
                 default: []
+            },
+            extraInfo: {
+                type: String,
             },
             contact: {
                 type: [{
