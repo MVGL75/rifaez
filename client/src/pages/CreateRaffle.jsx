@@ -599,7 +599,7 @@ const CreateRafflePage = ({userJustCreated, setUserJustCreated}) => {
                 >
                   { !showPaletteValue ? "Crear una paleta +" : `Encabezado: ${colorCheck[formData.colorPalette?.header]}, Fondo: ${colorCheck[formData.colorPalette?.background]}, Detalles: ${colorCheck[formData.colorPalette?.accent]}, Bordes: ${colorCheck[formData.colorPalette?.borders]}, Letra: ${colorCheck[formData.colorPalette?.color]},`}
                 </div>
-                <dialog id="create-palette" className="rounded-md shadow-lg">
+                <dialog id="create-palette" className="rounded-md shadow-lg text-foreground">
                   <div className="space-y-5 px-5 py-5 w-[400px] bg-background">
                     <h1 className="text-lg">Colores de Rifa</h1>
                     <div className="space-y-3">

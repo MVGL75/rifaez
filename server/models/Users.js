@@ -80,7 +80,7 @@ const UserSchema = new mongoose.Schema({
     }],
     default: [],
   },
-  facebook: { 
+  facebookUrl: { 
     type: String,
     default: ""
   },

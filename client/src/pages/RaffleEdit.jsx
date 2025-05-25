@@ -572,7 +572,7 @@ const RaffleEditPage = ({}) => {
                 >
                   { `Encabezado: ${colorCheck[raffle.colorPalette?.header]}, Fondo: ${colorCheck[raffle.colorPalette?.background]}, Detalles: ${colorCheck[raffle.colorPalette?.accent]}, Bordes: ${colorCheck[raffle.colorPalette?.borders]}, Letra: ${colorCheck[raffle.colorPalette?.color]}`}
                 </div>
-                <dialog id="create-palette" className="rounded-md shadow-lg">
+                <dialog id="create-palette" className="rounded-md shadow-lg text-foreground">
                   <div className="space-y-5 p-5 w-[400px] bg-background">
                     <h1 className="text-lg">Colores de Rifa</h1>
                     <div className="space-y-3">

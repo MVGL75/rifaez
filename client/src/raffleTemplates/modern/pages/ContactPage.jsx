@@ -3,7 +3,7 @@ import {useState, useEffect} from 'react';
 import { Button } from '../components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '../components/ui/card';
 import { motion } from 'framer-motion';
-import { Mail, Phone, MapPin, Send } from 'lucide-react';
+import { Mail, Phone, Send } from 'lucide-react';
 import axios from "axios";
 import { useOutletContext, useParams } from 'react-router-dom';
 import { contactValidationSchema } from '../../../validation/contactSchemaValidate';
@@ -145,13 +145,6 @@ const ContactPage = () => {
               <div>
                 <h3 className="font-semibold text-colorRaffle">Teléfono</h3>
                 <p className="text-colorRaffle-300 hover:text-primaryRaffle transition-colors cursor-pointer">{setPhoneFormat(raffle.phone)}</p>
-              </div>
-            </div>
-            <div className="flex items-start space-x-3 p-4 bg-cardRaffle rounded-lg">
-              <MapPin className="h-6 w-6 text-primaryRaffle mt-1" />
-              <div>
-                <h3 className="font-semibold text-colorRaffle">Dirección</h3>
-                <p className="text-colorRaffle-300">123 Calle Falsa, Ciudad Ejemplo, CP 00000</p>
               </div>
             </div>
           </div>

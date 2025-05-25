@@ -95,7 +95,6 @@ const StatsPage = ({ selectedRaffle }) => {
       const localHour = utcDate.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', hour12: false });
       return {hour: localHour, count: visit.count};
     })
-    console.log(localTimeArray)
     for (let i = 0; i < hourArray.length; i++) {
       const found = localTimeArray.find(visit => visit.hour === hourArray[i])
       if(found){

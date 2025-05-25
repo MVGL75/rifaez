@@ -14,9 +14,9 @@ const router = express.Router();
 
 
 // POST /api/raffle
-router.post('/create', isAuthenticated, catchAsync(checkPlan), upload.array('images', 10), catchAsync(rafflePlan), catchAsync(createRaffle));
+router.post('/create', isAuthenticated, catchAsync(checkPlan), upload.array('images', 10), catchAsync(rafflePlan("create")), catchAsync(createRaffle));
 router.post('/delete/:id', isAuthenticated, hasPermission, catchAsync(deleteRaffle));
-router.post('/edit/:id', isAuthenticated, hasPermission, upload.array('images', 10), catchAsync(rafflePlan), catchAsync(editRaffle));
+router.post('/edit/:id', isAuthenticated, hasPermission, upload.array('images', 10), catchAsync(rafflePlan("edit")), catchAsync(editRaffle));
 router.post('/:id/:ticketID/mark_paid', isAuthenticated, hasPermission, catchAsync(markPaid));
 
 router.post('/:id/:ticketID/add_note', isAuthenticated, hasPermission, catchAsync(addNote));

@@ -166,7 +166,11 @@ const Payment = () => {
               </p>
               <p className="mb-5">
                 Una vez realizado el pago, envía tu comprobante por WhatsApp al{" "}
-                <a href={`tel:${raffle.phone}`} className="font-bold underline">
+                <a
+                href={`https://wa.me/521${raffle.phone}`}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="font-bold underline">
                   {setPhoneFormat(raffle.phone)}
                 </a>
                 {" "}indicando tus números de boleto.

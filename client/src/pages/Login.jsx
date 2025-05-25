@@ -87,7 +87,6 @@ const LoginPage = () => {
           console.log('Facebook login response:', response);
 
           window.FB.api('/me', { fields: 'name,email' }, function(userInfo) {
-            console.log('User info:', userInfo);
 
             // Send to server
             fetch(`${import.meta.env.VITE_CURRENT_HOST}/auth/facebook/callback`, {

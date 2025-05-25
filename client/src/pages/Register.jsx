@@ -11,6 +11,7 @@ import { User, Mail, Lock, Unlock, AlertCircle, X } from "lucide-react";
 const RegisterPage = () => {
   const { register} = useAuth();
   const [message, setMessage] = useState({message: null, status: null})
+  const [errorMessage, setErrorMessage] = useState(null)
   const [isLocked, setLock] = useState(true)
   const { toast } = useToast();
   const [formData, setFormData] = useState({
@@ -104,7 +105,9 @@ const RegisterPage = () => {
       email: formData.email,
       password: formData.password
     })
-    setMessage(res)
+    if(res.status === 400){
+      setErrorMessage(res.message)
+    }
   }
   };
  
@@ -232,6 +235,12 @@ const RegisterPage = () => {
             </div>
             }
           </div>
+          {errorMessage &&
+            <div className="mb-3 flex items-center text-xs font-regular text-red-600 gap-2">
+              <AlertCircle className="w-5 h-5"/>
+              {errorMessage}
+            </div>
+          }
 
           <Button type="submit" className="w-full">
             Registrarse

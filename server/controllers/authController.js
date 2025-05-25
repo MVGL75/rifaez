@@ -30,11 +30,22 @@ export const register = async (req, res) => {
     }
     const { email, name, password } = value;
     const user = new User({ username: email, name });
-    await User.register(user, password);
-    req.login(user, async () => {
-      const clientUser = await setUserForClient(req, user)
-      res.json({ user: clientUser, message: 'Creacion de usuario fue exitosa.', status: 201 });
-    });
+    try {
+      await User.register(user, password);
+      req.login(user, async () => {
+        const clientUser = await setUserForClient(req, user);
+        res.json({
+          user: clientUser,
+          message: 'Creación de usuario fue exitosa.',
+          status: 201,
+        });
+      });
+    } catch (err) {
+      if (err.name === 'UserExistsError') {
+        return res.json({ message: 'Ya existe una cuenta con este correo.', status: 400 });
+      }
+      return res.json({ message: 'Error al registrar el usuario.', error: err.message, status: 500 });
+    }
 }
 export const deleteUser = async (req, res, next) => {
   try {
@@ -124,7 +135,7 @@ export const login = (req, res, next) => {
       const userRes = await axios.get('https://graph.facebook.com/me', {
         params: {
           access_token: accessToken,
-          fields: 'id,name,email,picture',
+          fields: 'id,name,email,picture,link',
         },
       });
   
@@ -140,6 +151,7 @@ export const login = (req, res, next) => {
             error: 'Email already registered. Please log in with email/password first to connect Facebook.',
             email: user.username,
             facebookId: fbUser.id,
+            facebookUrl: fbUser.link,
             status: 409,
           });
         }
@@ -193,7 +205,11 @@ export const logout = (req, res, next) => {
 export const save = async(req, res)=> {
       const parsedBody = {
         ...req.body,
-      }
+        facebookUrl:
+          req.body.facebookUrl && req.body.facebookUrl !== 'undefined'
+            ? JSON.parse(req.body.facebookUrl)
+            : null,
+      };
       const { error, value } = saveSchema.validate(parsedBody);
       if (error) {
         return res.json({ message: error.details[0].message, status: 400 });

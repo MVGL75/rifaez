@@ -11,11 +11,24 @@ const api = axios.create({
   withCredentials: true,
 });
 
-const PaymentMethodCard = ({ method }) => {
+const PaymentMethodCard = ({ method, onCopy }) => {
   const formatMethodNumber = (input) => {
     const digits = String(input).replace(/\D/g, '');
   
     return digits.replace(/(.{4})/g, '$1 ').trim();
+  }
+  function formatCLABE(clabe) {
+    if (!clabe) return "";
+  
+    const digits = clabe.replace(/\D/g, '').slice(0, 18);
+    const match = digits.match(/^(\d{0,3})(\d{0,3})(\d{0,11})(\d{0,1})$/);
+  
+    if (!match) return digits;
+  
+    // Destructure the match array and ignore the full match at index 0
+    const [, bank, branch, account, control] = match;
+  
+    return [bank, branch, account, control].filter(Boolean).join(' ');
   }
   return (
     <Card className="shadow-lg hover:shadow-xl transition-shadow duration-300">
@@ -28,30 +41,38 @@ const PaymentMethodCard = ({ method }) => {
           <div  className="text-sm sm:text-base">
             <span className="font-semibold text-colorRaffle">Beneficiario: </span>
             <span className="text-colorRaffle-300 break-all">{method.person}</span>
-            {true && (
               <Button
                 variant="ghost"
                 size="sm"
-                className="ml-2 px-2 py-1 h-auto text-primaryRaffle hover:bg-blue-100"
-                onClick={() => onCopy(detail.value, detail.label)}
+                className="ml-2 px-2 py-1 h-auto text-primaryRaffle hover:bg-blue-100 hover:text-primaryRaffle"
+                onClick={() => onCopy(method.person)}
               >
                 <Copy className="h-4 w-4 mr-1" /> Copiar
               </Button>
-            )}
           </div>
           <div  className="text-sm sm:text-base">
             <span className="font-semibold text-colorRaffle">Numero de Tarjeta: </span>
             <span className="text-colorRaffle-300 break-all">{formatMethodNumber(method.number)}</span>
-            {true && (
               <Button
                 variant="ghost"
                 size="sm"
-                className="ml-2 px-2 py-1 h-auto text-primaryRaffle hover:bg-blue-100"
-                onClick={() => onCopy(detail.value, detail.label)}
+                className="ml-2 px-2 py-1 h-auto text-primaryRaffle hover:bg-blue-100 hover:text-primaryRaffle"
+                onClick={() => onCopy(method.number)}
               >
                 <Copy className="h-4 w-4 mr-1" /> Copiar
               </Button>
-            )}
+          </div>
+          <div  className="text-sm sm:text-base">
+            <span className="font-semibold text-colorRaffle">CLABE: </span>
+            <span className="text-colorRaffle-300 break-all">{formatCLABE(method.clabe)}</span>
+              <Button
+                variant="ghost"
+                size="sm"
+                className="ml-2 px-2 py-1 h-auto text-primaryRaffle hover:bg-blue-100 hover:text-primaryRaffle"
+                onClick={() => onCopy(method.clabe)}
+              >
+                <Copy className="h-4 w-4 mr-1" /> Copiar
+              </Button>
           </div>
       </CardContent>
     </Card>
@@ -96,17 +117,17 @@ const PaymentPage = () => {
     }
   }
 
-  const handleCopyToClipboard = (text, label) => {
+  const handleCopyToClipboard = (text) => {
     navigator.clipboard.writeText(text).then(() => {
       toast({
         title: "Copiado al portapapeles",
-        description: `${label} (${text}) copiado exitosamente.`,
+        description: `(${text}) copiado exitosamente.`,
         action: <CheckCircle className="text-green-500"/>,
       });
     }).catch(err => {
       toast({
         title: "Error al copiar",
-        description: `No se pudo copiar ${label}. Por favor, inténtalo manualmente.`,
+        description: `No se pudo copiar. Por favor, inténtalo manualmente.`,
         variant: "destructive",
       });
     });
@@ -185,7 +206,7 @@ const PaymentPage = () => {
         </p>
       </section>
 
-      <div className="grid md:grid-cols-2 gap-6 px-4">
+      <div className="grid md:grid-cols-1 gap-6 px-4">
         {paymentMethods.map((method, index) => (
           <motion.div
             key={index}
@@ -195,6 +216,7 @@ const PaymentPage = () => {
           >
             <PaymentMethodCard 
              method={method}
+             onCopy={handleCopyToClipboard}
             />
           </motion.div>
         ))}
@@ -215,12 +237,19 @@ const PaymentPage = () => {
               rel="noopener noreferrer"
               className="inline-block"
             >
-              <Button size="lg" className="text-lg sm:text-xl bg-green-500 hover:bg-green-600 text-colorRaffle-foreground">
-                <Smartphone className="mr-2 h-5 w-5 sm:h-6 sm:w-6" /> Enviar Comprobante por WhatsApp
-              </Button>
+              <a
+                href={`https://wa.me/521${raffle.phone}`}
+                target="_blank"
+                rel="noopener noreferrer"
+                className=""
+                >
+                <Button size="lg" className="text-lg sm:text-xl bg-green-500 hover:bg-green-600 text-colorRaffle-foreground">
+                  <Smartphone className="mr-2 h-5 w-5 sm:h-6 sm:w-6" /> Enviar Comprobante por WhatsApp
+                </Button>
+              </a>
             </a>
             <p className="text-sm text-colorRaffle-300 mt-2">
-              Número de contacto: <span className="font-semibold text-primaryRaffle">{WHATSAPP_NUMBER.replace(/(\d{2})(\d{4})(\d{4})/, '$1 $2 $3')}</span>
+              Número de contacto: <span className="font-semibold text-primaryRaffle">{setPhoneFormat(raffle.phone)}</span>
             </p>
           </CardContent>
         </Card>

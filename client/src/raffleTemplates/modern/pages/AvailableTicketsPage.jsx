@@ -9,6 +9,7 @@ import { Ticket, CalendarDays, Award, Info, Gift, Search, Shuffle, ShoppingCart,
 import { cn } from '../lib/utils';
 import PrizeSection from '../components/PrizeSection';
 import TicketSelection from '../components/TicketSelection';
+import Countdown from '../../components/Countdown';
 import SelectedTicketsSummary from '../components/SelectedTicketsSummary';
 import { ticketInfoValidationSchema } from '../../../validation/ticketInfoSchemaValidate';
 import mexicanStates from '../../lib/mexicanStates';
@@ -238,6 +239,9 @@ const AvailableTicketsPage = () => {
       </section>
 
       <PrizeSection raffle={raffle} />
+      {raffle.countdown === "on" &&
+        <Countdown targetDate={raffle.endDate}/>
+      }
       
       <TicketSelection
         tickets={filteredTickets}

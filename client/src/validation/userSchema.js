@@ -57,7 +57,7 @@ export const saveSchema = Joi.object({
 
     payment_methods: Joi.array().items(methodSchema).optional(),
   
-    facebook: Joi.string().uri().allow('', null).optional(),
+    facebookUrl: Joi.string().uri().allow('', null).optional(),
   
     phone: Joi.string().required()
         .pattern(/^[0-9]{10}$/)

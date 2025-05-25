@@ -24,16 +24,20 @@ const Footer = ({raffle}) => {
     return parts.join('');
   }
   return (
-    <footer className={`${raffle.header === "on" ? "bg-headerRaffle text-colorRaffle-foreground" : "bg-backgroundRaffle text-colorRaffle"} py-8`}>
+    <footer className={` py-8`}>
       <div className="container mx-auto px-4">
         <div className="flex flex-col items-center space-y-4">
           <div className="flex space-x-4">
-            <a href="https://facebook.com" className="hover:text-primaryRaffle">
-              <Facebook size={24} />
-            </a>
-            <a href="tel:6673877638" className="hover:text-primaryRaffle">
-              <Phone size={24} />
-            </a>
+            { raffle.facebookUrl &&
+              <a href={raffle.facebookUrl} className="hover:text-primaryRaffle">
+                <Facebook size={24} />
+              </a>
+            }
+            { raffle.phone &&
+              <a href={`tel:${raffle.phone}`} className="hover:text-primaryRaffle">
+                <Phone size={24} />
+              </a>
+            }
           </div>
           <div className="text-center">
             <p className="text-lg font-bold">PREGUNTAS AL WHATSAPP</p>
@@ -41,7 +45,7 @@ const Footer = ({raffle}) => {
               {setPhoneFormat(raffle.phone)}
             </a>
           </div>
-          <div className="flex flex-col items-center gap-5 text-sm text-[#646464] mt-4">
+          <div className="flex flex-col items-center gap-5 text-sm text-colorRaffle-600 mt-4">
             <div className="flex items-center gap-4 ">
               <p>Sitio desarrollado por</p>
               <Link to="/">

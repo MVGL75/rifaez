@@ -4,6 +4,7 @@ import { motion, AnimatePresence } from "framer-motion";
 import { ShoppingCart, ChevronDown, SearchIcon, Shuffle, ArrowDown } from "lucide-react";
 import { useNavigate, useOutletContext } from "react-router-dom";
 import { ticketInfoValidationSchema} from "../../../validation/ticketInfoSchemaValidate"
+import Countdown from "../../components/Countdown";
 import { Button } from "../../components/ui/button";
 import mexicanStates from "../../lib/mexicanStates";
 import { use } from "react";
@@ -98,11 +99,7 @@ const Home = () => {
     if (selectedTickets.includes(ticket)) {
       setSelectedTickets(selectedTickets.filter(t => t !== ticket));
     } else {
-      if (selectedTickets.length >= raffle.maxTpT) {
-        setSelectedTickets(prev => [...prev.slice(1), ticket]); 
-      } else {
         setSelectedTickets(prev => [...prev, ticket]); 
-      }
     }
   };
 
@@ -128,9 +125,6 @@ const Home = () => {
   const randomizeSelection = () => {
     if(!randomNumber) return setRandomNumber(1);
     let newNum = randomNumber
-    if(newNum > raffle.maxTpT){
-      newNum = raffle.maxTpT
-    } 
     if (newNum > raffle.availableTickets.length) {
       newNum = raffle.availableTickets.length
     }
@@ -218,7 +212,6 @@ const Home = () => {
   const scrollToTicketSection = () => {
     ticketSectionRef.current?.scrollIntoView({ behavior: 'smooth' });
   };
-  console.log(raffle.additionalPrizes)
   return (
     <div className="flex flex-col items-center min-h-screen bg-backgroundRaffle">
       <div className=" w-[1400px] max-w-[100vw] mx-auto px-4 py-8 relative">
@@ -233,7 +226,7 @@ const Home = () => {
             <h1 className="text-4xl md:text-6xl font-bold text-colorRaffle mb-14">
             {raffle?.title}
             </h1>
-            <p className="mb-10">Un nuevo iPhone Pro 15 de 256 GB que tiene buena funcionalidad es compatible a bluetooth es modelo nuevo.</p>
+            <p className="mb-10">{raffle.description}</p>
             <div className="flex items-center gap-4 mb-3">
               <span className="text-colorRaffle-300 font-semibold">Precio de Boleto</span>
               <span>${raffle.price}</span>
@@ -293,6 +286,11 @@ const Home = () => {
           </div>
         </motion.div>
       </div>
+      <section className="w-[1400px] max-w-[100vw] px-4 mb-10">
+      {raffle.countdown === "on" &&
+        <Countdown targetDate={raffle.endDate}/>
+      }
+      </section>
 
       {/* Ticket Prices */}
       <div className="w-full bg-lightTint py-8 border-t-2 border-b-2 border-borderRaffle py-20">
@@ -323,7 +321,7 @@ const Home = () => {
           {/* Selected Tickets Display */}
           <div ref={ticketSectionRef} className="mb-8 px-8 py-6 bg-cardRaffle rounded-lg text-left">
             <div className="flex flex-col gap-4 sm:flex-row justify-between sm:items-center mb-4">
-              <h3 className="text-xl">Selecciona tus boletos - max ({raffle.maxTpT})</h3>
+              <h3 className="text-xl">Selecciona tus boletos </h3>
               <div className="relative flex items-center gap-5">
               <div className="relative w-full sm:w-auto">
               <input value={searchTicket} onChange={handleSearch} className="border-2 w-full sm:w-[300px] rounded-full px-4 pl-10 py-2 border-borderRaffle text-sm" type="text" />
@@ -333,7 +331,7 @@ const Home = () => {
                 <Shuffle className="w-5 h-5 sm:w-6 sm:h-6" onClick={randomizeSelection} />
                 {randomNumber &&
                 <div className="absolute right-0 top-full translate-y-1/2 ">
-                  <input onChange={handleRandom} min={1} max={raffle.maxTpT} type="number" className=" w-20 h-12 px-4 py-4 bg-primaryRaffle text-colorRaffle-foreground rounded-xl" />
+                  <input onChange={handleRandom} min={1} type="number" className=" w-20 h-12 px-4 py-4 bg-primaryRaffle text-colorRaffle-foreground rounded-xl" />
                 </div>
 }
               </div>

@@ -3,7 +3,7 @@ import Navbar from "../components/Navbar";
 import Footer from "../components/Footer";
 import { useEffect } from "react";
 import WhatsWidget from "../components/WhatsWidget";
-
+import RifaezWidget from '../components/RifaezWidget';
 function Layout({raffle}) {
     
   return (
@@ -12,6 +12,7 @@ function Layout({raffle}) {
     <div className="pt-16">
       <Outlet context={raffle} />
     </div>
+    <RifaezWidget/>
     <WhatsWidget number={raffle.phone}/>
     <Footer raffle={raffle} />
     </div>

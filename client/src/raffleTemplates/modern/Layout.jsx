@@ -4,7 +4,9 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { Menu, X, Aperture } from 'lucide-react';
 import { Button } from '../components/ui/button';
 import { cn } from '../lib/utils';
-
+import WhatsWidget from "../components/WhatsWidget";
+import RifaezWidget from '../components/RifaezWidget';
+import DefaultLogo from "../components/ui/default-logo";
 const navLinks = [
   { to: ".", label: "Boletos Disponibles" },
   { to: "pago", label: "Pago" },
@@ -20,18 +22,21 @@ const Layout = ({raffle}) => {
   };
 
   const linkClasses = "px-3 py-2 rounded-md text-sm font-medium";
-  const activeLinkClasses = "bg-primaryRaffle text-colorRaffle-foreground";
-  const inactiveLinkClasses = "text-colorRaffle hover:bg-blue-100 hover:text-primaryRaffle";
+  const activeLinkClasses = "bg-headerRaffle-foreground text-headerRaffle";
+  const inactiveLinkClasses = "text-headerRaffle-foreground hover:bg-blue-100 hover:text-primaryRaffle";
+  const activeLinkClassesMenu = "bg-primaryRaffle text-primaryRaffle-foreground";
+  const inactiveLinkClassesMenu = "text-colorRaffle hover:bg-blue-100 hover:text-primaryRaffle";
 
   return (
     <div className="min-h-screen flex flex-col bg-gradient-to-br from-backgroundRaffle to-lightColorTint font-fontRaffle">
-      <header className="sticky top-0 z-50 bg-lightTint backdrop-blur-md shadow-sm">
+      <header className="sticky top-0 z-50 bg-headerRaffle backdrop-blur-md shadow-sm">
         <div className="max-w-[calc(100vw-64px)] w-[1400px] mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex items-center justify-between h-16">
-            <div className="flex items-center">
+          <div className={`relative flex items-center  ${raffle.logo_position === "left" ? "justify-between flex-row" : "flex-row-reverse"}  ${raffle.logo_position === "right" && "gap-4"} h-16`}>
+            <div className={`${raffle.logo_position === "center" && "absolute left-1/2 -translate-x-1/2"} flex items-center`}>
               <NavLink to="" className="flex-shrink-0 flex items-center space-x-2">
-                <Aperture className="h-8 w-8 text-primaryRaffle" />
-                <span className="font-bold text-xl text-primaryRaffle">MiSitioWeb</span>
+              {raffle.logo?.url ?
+                <img alt="logo" className="h-12 w-12 rounded-full object-cover" src={raffle.logo.url}   />
+                : <DefaultLogo className="h-12 w-12"/> }
               </NavLink>
             </div>
             <nav className="hidden md:flex space-x-4">
@@ -50,7 +55,7 @@ const Layout = ({raffle}) => {
             </nav>
             <div className="md:hidden flex items-center">
               <Button variant="ghost" size="icon" onClick={toggleMobileMenu} aria-label="Abrir menú">
-                {isMobileMenuOpen ? <X className="h-6 w-6 text-primaryRaffle" /> : <Menu className="h-6 w-6 text-primaryRaffle" />}
+                {isMobileMenuOpen ? <X className="h-6 w-6 text-headerRaffle-foreground" /> : <Menu className="h-6 w-6 text-headerRaffle-foreground" />}
               </Button>
             </div>
           </div>
@@ -69,9 +74,10 @@ const Layout = ({raffle}) => {
                   <NavLink
                     key={link.to}
                     to={link.to}
+                    end
                     onClick={() => setIsMobileMenuOpen(false)}
                     className={({ isActive }) =>
-                      cn("block px-3 py-2 rounded-md text-base font-medium", isActive ? activeLinkClasses : inactiveLinkClasses)
+                      cn("block px-3 py-2 rounded-md text-base font-medium", isActive ? activeLinkClassesMenu : inactiveLinkClassesMenu)
                     }
                   >
                     {link.label}
@@ -96,7 +102,8 @@ const Layout = ({raffle}) => {
           </motion.div>
         </AnimatePresence>
       </main>
-
+      <RifaezWidget/>
+      <WhatsWidget number={raffle.phone}/>
       <footer className="bg-backgroundRaffle border-t border-borderRaffle">
         <div className="max-w-[1400px] mx-auto px-4 sm:px-6 lg:px-8 py-6 text-center">
           <p className="text-sm text-gray-500">&copy; {new Date().getFullYear()} Rifaez. Todos los derechos reservados.</p>

@@ -148,7 +148,6 @@ const HomePage = ({ selectedRaffle }) => {
     } else {
       dataSaleArray = [0, 0, 0, 0, 0]
     }
-    console.log(dataSaleArray, dataViewArray)
     setChartData({
       labels: hourArray,
       datasets: [
@@ -216,7 +215,7 @@ const HomePage = ({ selectedRaffle }) => {
     <div className="">
       {/* Mobile View */}
       <div className="md:hidden">
-        <div className="bg-white p-4">
+        <div className="bg-background p-4">
           {/* Stats Cards */}
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
             <div className="bg-blue-50 p-4 rounded-lg border border-blue-100">

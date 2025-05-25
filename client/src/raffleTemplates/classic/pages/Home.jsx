@@ -6,6 +6,7 @@ import { useNavigate, useOutletContext } from "react-router-dom";
 import { ticketInfoValidationSchema} from "../../../validation/ticketInfoSchemaValidate"
 import { Button } from "../../components/ui/button";
 import mexicanStates from "../../lib/mexicanStates";
+import Countdown from "../../components/Countdown";
 import { use } from "react";
 
 const Home = () => {
@@ -97,11 +98,7 @@ const Home = () => {
     if (selectedTickets.includes(ticket)) {
       setSelectedTickets(selectedTickets.filter(t => t !== ticket));
     } else {
-      if (selectedTickets.length >= raffle.maxTpT) {
-        setSelectedTickets(prev => [...prev.slice(1), ticket]); 
-      } else {
         setSelectedTickets(prev => [...prev, ticket]); 
-      }
     }
   };
 
@@ -127,9 +124,6 @@ const Home = () => {
   const randomizeSelection = () => {
     if(!randomNumber) return setRandomNumber(1);
     let newNum = randomNumber
-    if(newNum > raffle.maxTpT){
-      newNum = raffle.maxTpT
-    } 
     if (newNum > raffle.availableTickets.length) {
       newNum = raffle.availableTickets.length
     }
@@ -214,7 +208,6 @@ const Home = () => {
   const scrollToPurchaseForm = () => {
     purchaseFormRef.current?.scrollIntoView({ behavior: 'smooth' });
   };
-  console.log(raffle.additionalPrizes)
   return (
     <div className="flex flex-col items-center min-h-screen bg-backgroundRaffle">
       <div className="w-full max-w-4xl mx-auto px-4 py-8 text-center relative">
@@ -256,10 +249,17 @@ const Home = () => {
             </AnimatePresence>
           </div>
 
+          <section className="max-w-[100vw] mb-10 px-5 bg-lightTint rounded-xl">
+            {raffle.countdown === "on" &&
+              <Countdown targetDate={raffle.endDate}/>
+            }
+            </section>
+
           {/* Prize Places */}
           <div className="grid grid-cols-2 gap-4 mb-8">
-            {raffle?.additionalPrizes.map(prize => (
+            {raffle?.additionalPrizes.map((prize, index) => (
             <motion.div
+            key={index}
               whileHover={{ scale: 1.05 }}
               className="bg-cardRaffle p-4 rounded-lg"
             >
@@ -306,7 +306,7 @@ const Home = () => {
       {/* Available Tickets Section */}
       <div id="ticketsSection" className="w-full bg-backgroundRaffle py-12">
         <div className="max-w-4xl mx-auto px-4 text-center">
-          <h2 className="text-2xl font-semi mb-8 flex gap-4 flex-col sm:flex-row text-left"><span>Selecciona tus Boletos</span>   <span className="text-colorRaffle-300 font-medium">Max ({raffle.maxTpT})</span></h2>
+          <h2 className="text-2xl font-semi mb-8 flex gap-4 flex-col sm:flex-row text-left"><span>Selecciona tus Boletos</span> </h2>
           
           {/* Selected Tickets Display */}
           <div className="mb-8 p-6 bg-cardRaffle rounded-lg text-left">
@@ -321,7 +321,7 @@ const Home = () => {
                 <Shuffle className="w-5 h-5 sm:w-6 sm:h-6" onClick={randomizeSelection} />
                 {randomNumber &&
                 <div className="absolute right-0 top-full translate-y-1/2 ">
-                  <input onChange={handleRandom} min={1} max={raffle.maxTpT} type="number" className=" w-20 h-12 px-4 py-4 bg-primaryRaffle text-colorRaffle-foreground rounded-xl" />
+                  <input onChange={handleRandom} min={1} type="number" className=" w-20 h-12 px-4 py-4 bg-primaryRaffle text-colorRaffle-foreground rounded-xl" />
                 </div>
 }
               </div>

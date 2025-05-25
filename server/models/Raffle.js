@@ -237,6 +237,7 @@ RaffleSchema.virtual('notifications').get(function () {
             notifications.push({
                 id: id,
                 type: "contact",
+                contact,
                 message: `Te contactó ${contact.name}`,
                 time: notifyTime
             });

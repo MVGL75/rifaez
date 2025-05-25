@@ -116,7 +116,7 @@ const Contact = () => {
               placeholder="Tu mensaje"
             />
           </div>
-          <Button type="submit" className="w-full bg-primaryRaffle hover:bg-primaryRaffle-dark">
+          <Button type="submit" className="w-full text-primaryRaffle-foreground bg-primaryRaffle hover:bg-primaryRaffle-dark">
             Enviar Mensaje
           </Button>
         </form>

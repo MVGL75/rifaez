@@ -75,6 +75,7 @@ module.exports = {
 				},
 				headerRaffle: {
 					DEFAULT: 'var(--header-raffle)',
+					foreground: 'var(--header-raffle-foreground)',
 				},
 				colorRaffle: {
 					DEFAULT: 'var(--color-raffle)',
@@ -87,6 +88,7 @@ module.exports = {
 				},
 				primaryRaffle: {
 					DEFAULT: 'var(--primary-raffle)',
+					foreground: 'var(--primary-raffle-foreground)',
 					300: 'var(--primary-raffle-300)',
 					400: 'var(--primary-raffle-400)',
 					500: 'var(--primary-raffle-500)',

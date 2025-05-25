@@ -77,7 +77,7 @@ const SettingsPage = () => {
     email: user.username || "juan@example.com",
     companyName: user.companyName,
     logo: user.logo || undefined,
-    facebook: user.facebook,
+    facebookUrl: user.facebookUrl || null,
     phone: user.phone,
   });
 
@@ -95,7 +95,7 @@ const SettingsPage = () => {
         email: user.username || "juan@example.com",
         companyName: user.companyName,
         logo: user.logo || undefined,
-        facebook: user.facebook,
+        facebookUrl: user.facebookUrl,
         phone: user.phone,
       });
       setMethods(user.payment_methods || [])
@@ -149,7 +149,6 @@ const SettingsPage = () => {
     }
 
     const res = await api.post("/auth/save_settings/add_method", value)
-    console.log(res)
     if(res.data.status === 200){
       setUser(res.data.user)
       setMethods(prev => [...prev, {...value, _id: res.data.id}])
@@ -466,6 +465,7 @@ const removeMethod = async (methodInp) => {
       const res = await save(newRaffleData)
       console.log(res)
       if(res.status === 200){
+        setLoading(false);
         setSuccessMessage('Usuario guardado exitosamente.');
       } else {
         console.log('Error saving user');
@@ -511,7 +511,6 @@ const removeMethod = async (methodInp) => {
         setUser(res.data)
       }
     } catch (error) {
-      console.log(error)
       setSpinner(false)
       setAppError(error)
     }
@@ -523,7 +522,6 @@ const removeMethod = async (methodInp) => {
         setUser(res.data)
       }
     } catch (error) {
-      console.log(error)
       setAppError(error)
     }
   }
@@ -757,12 +755,12 @@ const removeMethod = async (methodInp) => {
                 </label>
                 <div className="space-y-4">
                   <div className="relative">
-                    <Facebook className={`absolute left-3 top-1/2 transform -translate-y-1/2 ${errors.facebook ? "text-red-500" : "text-muted-foreground"} w-5 h-5`} />
+                    <Facebook className={`absolute left-3 top-1/2 transform -translate-y-1/2 ${errors.facebookUrl ? "text-red-500" : "text-muted-foreground"} w-5 h-5`} />
                     <input
                       type="text"
-                      value={formData.facebook}
-                      onChange={(e) => setFormData(prev => ({ ...prev, facebook: e.target.value }))}
-                      className={`w-full pl-10 p-2 rounded-md border ${errors.facebook ? "border-red-500" : "border-input"} bg-background`}
+                      value={formData.facebookUrl}
+                      onChange={(e) => setFormData(prev => ({ ...prev, facebookUrl: e.target.value }))}
+                      className={`w-full pl-10 p-2 rounded-md border ${errors.facebookUrl ? "border-red-500" : "border-input"} bg-background`}
                       placeholder="URL de Facebook"
                     />
                   </div>
@@ -841,7 +839,7 @@ const removeMethod = async (methodInp) => {
                 </div>
 
                 {/* Add Worker Dialog */}
-                <dialog id="add-worker" className="z-[100] p-6 rounded-lg shadow-lg bg-background">
+                <dialog id="add-worker" className="z-[100] p-6 rounded-lg shadow-lg bg-card text-card-foreground">
                   <h3 className="text-lg font-medium mb-4">Agregar Trabajador</h3>
                   <div className="space-y-4">
                     <div>

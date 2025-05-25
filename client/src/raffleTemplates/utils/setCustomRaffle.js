@@ -3,17 +3,18 @@ export default function(raffle){
 
     // Tailwind-style shades (manually defined or imported from tailwind/colors)
     const colorShades = {
-        blue: ['#93c5fd', '#60a5fa', '#3b82f6', '#2563eb', '#1d4ed8', "#000b26", "#eff6ff"],
-        red: ['#fca5a5', '#f87171', '#ef4444', '#dc2626', '#b91c1c' , "#000b26", "#eff6ff"],
-        green: ['#86efac', '#4ade80', '#22c55e', '#16a34a', '#15803d' , "#000b26", "#eff6ff"],
-        yellow: ['#fde68a', '#fcd34d', '#fbbf24', '#f59e0b', '#d97706' , "#000b26", "#eff6ff"],
-        purple: ['#d8b4fe', '#c084fc', '#a855f7', '#9333ea', '#7e22ce', "#140029", "#eff6ff"],
+        blue: ['#93c5fd', '#60a5fa', '#3b82f6', '#2563eb', '#1d4ed8', '#F8F9FA',],
+        red: ['#fca5a5', '#f87171', '#ef4444', '#dc2626', '#b91c1c' , '#F8F9FA',],
+        green: ['#86efac', '#4ade80', '#22c55e', '#16a34a', '#15803d' , '#F8F9FA',],
+        yellow: ['#fde68a', '#fcd34d', '#fbbf24', '#f59e0b', '#d97706' , '#1E1E1E',],
+        purple: ['#d8b4fe', '#c084fc', '#a855f7', '#9333ea', '#7e22ce', '#F8F9FA',],
         white: [
             '#FFFFFF', 
             '#F8F9FA',
             '#F1F3F5', 
             '#E9ECEF', 
-            '#DEE2E6' 
+            '#DEE2E6',
+            '#1E1E1E',
           ],
         black: [
             '#000000', 
@@ -21,6 +22,7 @@ export default function(raffle){
             '#1E1E1E', 
             '#2C2F33',
             '#343A40',
+            '#F8F9FA',
           ]
           
         // add more if needed
@@ -36,11 +38,13 @@ export default function(raffle){
     // Default palette
     const settings = {
         '--light-tint': background[1],
-        '--light-color-tint': "#f637f9",
+        '--light-color-tint': background[1],
         '--background-raffle': background[0],
         '--font-raffle': raffle.font ,
         '--header-raffle': header[2] ,
+        '--header-raffle-foreground': header[5] ,
         '--primary-raffle': primary[2], // 500
+        '--primary-raffle-foreground': primary[5], // 500
         '--primary-raffle-300': primary[0],
         '--primary-raffle-400': primary[1],
         '--primary-raffle-500': primary[2],
