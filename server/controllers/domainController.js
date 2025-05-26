@@ -26,9 +26,7 @@ export const createDomain = async (req, res) => {
         domain,
         verificationToken,
     }
-    const custom = await customDomain.create({...domainBody})
-
-
+    const custom = await customDomain.create({...domainBody});
   
     return res.json({
       message: 'Please add the following TXT record to your DNS settings:',
@@ -48,7 +46,6 @@ export const verifyDomain = async (req, res) => {
     if (!entry) return res.status(404).json({ error: 'Domain not found' });
   
     try {
-        console.log(domain)
         console.log('_raffle-verification.' + domain);
       const records = await dns.resolveTxt(`_raffle-verification.${domain}`);
       const flat = records.flat().join('');
@@ -62,7 +59,7 @@ export const verifyDomain = async (req, res) => {
             status: 200,
             record: {
                 domain: entry.domain,
-                ngrokDomain: "https://91b8-2806-269-483-977b-29f2-defd-a235-ceaf.ngrok-free.app",
+                rifaezDomain: process.env.CURRENT_DOMAIN,
                 serverIP: "127.0.0.1:4040",
             },
         });
@@ -77,9 +74,8 @@ export const verifyDomain = async (req, res) => {
   export const verifyCname = async (req, res) => {
     try {
     const {domain} = req.body
-      const records = await dns.resolveCname(domain); // returns an array
-      const match = records.some(record => record === "91b8-2806-269-483-977b-29f2-defd-a235-ceaf.ngrok-free.app");
-      console.log(records)
+      const records = await dns.resolveCname(domain); // returns an array 
+      const match = records.some(record => record === process.env.CURRENT_DOMAIN);
       return match ? res.json({ valid: true, status: 200 }) : res.json({ valid: false, records });
     } catch (err) {
       return res.json({ valid: false, error: err.message });

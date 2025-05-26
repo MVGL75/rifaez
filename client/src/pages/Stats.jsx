@@ -33,7 +33,7 @@ const api = axios.create({
 });
 
 const StatsPage = ({ selectedRaffle }) => {
-  const { setUser } = useAuth()
+  const { user, setUser } = useAuth()
   const navigate = useNavigate();
   const [selectedDate, setSelectedDate] = useState(new Date().toISOString().split('T')[0]);
   const [notesOpen, setNotesOpen] = useState({})
@@ -203,9 +203,17 @@ const StatsPage = ({ selectedRaffle }) => {
   const handleMarkAsPaid = async (ticketId) => {
     const res = await api.post(`/api/raffle/${selectedRaffle._id}/${ticketId}/mark_paid`)
     if(res.data.status === 200){
+      setFilteredTickets(prev => prev.map(ticket => {
+          if(ticketId === ticket._id){
+            ticket.status = "paid";
+          }
+          return ticket
+      }))
       setUser(res.data.user)
     }
   };
+
+  
 
 
 

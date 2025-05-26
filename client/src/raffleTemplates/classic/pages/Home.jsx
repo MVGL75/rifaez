@@ -111,7 +111,6 @@ const Home = () => {
     const errorObj = {}
     let isValid = true
     const {error, value} = ticketInfoValidationSchema.validate(userInfo, { abortEarly: false })
-    console.log(error)
     if(error){
       isValid = false
       error.details.forEach(detail => errorObj[detail.context.key] = detail.message)

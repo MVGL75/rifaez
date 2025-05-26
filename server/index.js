@@ -68,7 +68,7 @@ app.use(
     contentSecurityPolicy: {
       directives: {
         defaultSrc: ["'self'"],
-        scriptSrc: ["'self'", "https://js.stripe.com", "'unsafe-inline'"],
+        scriptSrc: ["'self'", "https://js.stripe.com", "'unsafe-inline'", 'https://connect.facebook.net',],
         imgSrc: ["'self'", "https://res.cloudinary.com", "data:"],
         frameSrc: ["https://js.stripe.com", "https://hooks.stripe.com"],
         connectSrc: ["'self'", "https://api.stripe.com"]

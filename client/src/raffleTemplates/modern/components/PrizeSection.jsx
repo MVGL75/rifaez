@@ -1,6 +1,7 @@
 import React from 'react';
 import { motion } from 'framer-motion';
 import { Card, CardContent, CardHeader, CardTitle } from '../components/ui/card';
+import { useEffect, useState } from 'react';
 import { Award, Gift } from 'lucide-react';
 
 const PrizeInfo = ({ place, title, description, icon }) => {
@@ -28,6 +29,19 @@ const PrizeInfo = ({ place, title, description, icon }) => {
 
 
 const PrizeSection = ({raffle}) => {
+  const [currentImageIndex, setCurrentImageIndex] = useState(0);
+
+  const prizeImages = raffle.images && raffle.images?.length > 0 ? raffle.images.map((value, index) => {
+    return { url: value.url, description: "", alt: `Imagen ${index}` }
+  }) : [{url: '', description: '', alt: ''}]
+ 
+  useEffect(() => {
+    const timer = setInterval(() => {
+      setCurrentImageIndex((prev) => (prev + 1) % prizeImages.length);
+    }, 3000);
+    return () => clearInterval(timer);
+  }, []);
+
   return (
     <section className="px-2">
       <motion.div
@@ -49,7 +63,7 @@ const PrizeSection = ({raffle}) => {
               </p>
             </div>
             <div className="md:w-1/2 h-64 md:h-auto bg-gray-200">
-               <img  className="w-full h-full object-cover" alt="Playa paradisíaca en Cancún con aguas turquesas y arena blanca" src={raffle.images[0].url} />
+               <img  className="w-full h-full object-cover" alt={prizeImages[currentImageIndex].alt} src={prizeImages[currentImageIndex].url} />
             </div>
           </div>
         </Card>

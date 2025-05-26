@@ -207,7 +207,7 @@ export const save = async(req, res)=> {
         ...req.body,
         facebookUrl:
           req.body.facebookUrl && req.body.facebookUrl !== 'undefined'
-            ? JSON.parse(req.body.facebookUrl)
+            ? req.body.facebookUrl
             : null,
       };
       const { error, value } = saveSchema.validate(parsedBody);

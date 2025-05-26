@@ -79,17 +79,102 @@ const HomePage = ({ selectedRaffle }) => {
 
     return () => clearInterval(interval);
   }, []);
+  function convertVisitStatsToLocalTime(dailyVisitStats) {
+    const localStatsMap = new Map();
+  
+    dailyVisitStats.forEach(({ date, time }) => {
+      time.forEach(({ hour, count }) => {
+        const utcDateTimeStr = `${date}T${hour}:00Z`;
+        const localDateTime = new Date(utcDateTimeStr);
+        
+        const localDateStr = localDateTime.toLocaleDateString(undefined, {
+          year: 'numeric', month: '2-digit', day: '2-digit'
+        });
+  
+        const localHourStr = localDateTime.toLocaleTimeString(undefined, {
+          hour: '2-digit', minute: '2-digit', hour12: false
+        }).slice(0, 5); // Format like "14:00"
+  
+        if (!localStatsMap.has(localDateStr)) {
+          localStatsMap.set(localDateStr, {});
+        }
+  
+        const hourMap = localStatsMap.get(localDateStr);
+        hourMap[localHourStr] = (hourMap[localHourStr] || 0) + count;
+      });
+    });
+  
+    // Convert back to array for use
+    return Array.from(localStatsMap.entries()).map(([date, hourMap]) => ({
+      date,
+      time: Object.entries(hourMap).map(([hour, count]) => ({ hour, count }))
+    }));
+  }
+  function processDailyVisitStats(dailyVisitStats) {
+    const localStatsMap = new Map();
+    const now = new Date();
+    
+    // Format for today (e.g., "05/25/2025" depending on locale)
+    const todayStr = now.toLocaleDateString(undefined, {
+      year: 'numeric',
+      month: '2-digit',
+      day: '2-digit'
+    });
+  
+    let todayTotal = 0;
+  
+    dailyVisitStats.forEach(({ date, time }) => {
+      time.forEach(({ hour, count }) => {
+        const utcDateTimeStr = `${date}T${hour}:00Z`;
+        const localDateTime = new Date(utcDateTimeStr);
+  
+        const localDateStr = localDateTime.toLocaleDateString(undefined, {
+          year: 'numeric',
+          month: '2-digit',
+          day: '2-digit'
+        });
+  
+        const localHourStr = localDateTime.toLocaleTimeString(undefined, {
+          hour: '2-digit',
+          minute: '2-digit',
+          hour12: false
+        }).slice(0, 5); // e.g., "14:00"
+  
+        // Track today's total
+        if (localDateStr === todayStr) {
+          todayTotal += count;
+        }
+  
+        // Build grouped structure
+        if (!localStatsMap.has(localDateStr)) {
+          localStatsMap.set(localDateStr, {});
+        }
+  
+        const hourMap = localStatsMap.get(localDateStr);
+        hourMap[localHourStr] = (hourMap[localHourStr] || 0) + count;
+      });
+    });
+  
+    // Convert grouped data back to array
+    const formattedStats = Array.from(localStatsMap.entries()).map(([date, hourMap]) => ({
+      date,
+      time: Object.entries(hourMap).map(([hour, count]) => ({ hour, count }))
+    }));
+  
+    return {
+      formattedStats, // full grouped data
+      todayTotal      // number of visits today in local time
+    };
+  }
+  
   useEffect(() => {
     if (!selectedRaffle) return;
-    const getTodayIso = new Date().toISOString()
+    const date = new Date();
+    const getTodayIso = date.toISOString();
     const getToday = getTodayIso.split("T")[0];
-    const dailyV = selectedRaffle?.stats?.dailyVisitStats?.find(stat => stat.date === getToday)?.count || 0;
-    const dailyS = selectedRaffle?.currentParticipants?.reduce((acc, participant) => {
-      if(participant?.date.split("T")[0] === getToday){
-        return acc + participant.amount;
-      }
-      return acc;
-    }, 0)
+    const dailyArray = selectedRaffle?.stats?.dailyVisitStats;
+    const dailyV = (dailyArray && dailyArray.length > 0) ? processDailyVisitStats(dailyArray).todayTotal : 0;
+    const dailyS = selectedRaffle?.stats?.dailySales?.find(stat => stat.date === getToday)?.count || 0;
     setTodayStats({
       visits: dailyV,
       sales: dailyS,
