@@ -36,7 +36,7 @@ export default function({selectedRaffle, setSelectedRaffle}){
     return(
             <div className="min-h-screen bg-background">
         {/* Desktop Navigation */}
-        <nav className="hidden md:flex items-center justify-between px-8 py-4 bg-card border-b">
+        <nav className="hidden customLg:flex items-center justify-between px-8 py-4 bg-card border-b">
             <div className="flex items-center space-x-8">
             <Link to="/" className="text-2xl font-bold text-foreground">
                 <LogoName className="w-10 h-10" />
@@ -85,7 +85,7 @@ export default function({selectedRaffle, setSelectedRaffle}){
         </nav>
 
         {/* Mobile Navigation */}
-        <nav className="md:hidden fixed bottom-0 left-0 right-0 bg-card border-t z-50">
+        <nav className="customLg:hidden fixed bottom-0 left-0 right-0 bg-card border-t z-50">
             <div className="flex justify-around items-center p-2">
             {mobileNavItems.map((item) => (
                 <Link
@@ -106,7 +106,7 @@ export default function({selectedRaffle, setSelectedRaffle}){
 
         {/* Mobile Raffle Selector */}
         {(location.pathname === "/" || location.pathname === "/stats") && (
-            <div className="md:hidden px-4 py-2 bg-card border-b">
+            <div className="customLg:hidden px-4 py-2 bg-card border-b">
             <RaffleSelector
                 raffles={user.raffles}
                 selectedRaffle={selectedRaffle}
@@ -116,7 +116,7 @@ export default function({selectedRaffle, setSelectedRaffle}){
         )}
 
         {/* Main Content */}
-        <main className="max-w-[1400px] mx-auto px-2 sm:px-4 pt-8 pb-20 md:pb-8">
+        <main className="max-w-[1400px] mx-auto px-2 sm:px-4 pt-8 pb-20 customLg:pb-8">
             <Outlet/>
         </main>
         </div>
