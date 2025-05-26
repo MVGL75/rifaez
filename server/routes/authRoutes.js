@@ -29,19 +29,18 @@ router.post('/change_password', isAuthenticated, isWorker, catchAsync(changePass
 // });
 
 // Facebook
-router.get('/facebook', passport.authenticate('facebook', { scope: ['email'] }));
 router.post('/facebook/callback', catchAsync(facebookLogin));
 router.post('/facebook/deletion', (req, res) => {
-    const signedRequest = req.body.signed_request;
-    const data = parseSignedRequest(signedRequest);
+    // const signedRequest = req.body.signed_request;
+    // const data = parseSignedRequest(signedRequest);
   
-    if (!data || !data.user_id) {
-      return res.status(400).json({ error: 'Invalid signed request' });
-    }
+    // if (!data || !data.user_id) {
+    //   return res.status(400).json({ error: 'Invalid signed request' });
+    // }
   
     // Generate confirmation code and status URL
     const confirmationCode = 'abc123'; // Should be unique per request
-    const statusUrl = `https://www.<your_website>.com/deletion?id=${confirmationCode}`;
+    const statusUrl = `${process.env.CURRENT_DOMAIN}.com/deletion?id=${confirmationCode}`;
   
     res.json({
       url: statusUrl,
