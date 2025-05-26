@@ -124,12 +124,17 @@ const AppContent = () => {
     if (hasFetchedRef.current || user) return;
     hasFetchedRef.current = true;
     try {
-      const res = await api.get("/auth/user");
-      if (res.data?.status === 401) return;
-      const user = res.data;
-      const raffles = user?.raffles?.length > 0 ? user?.raffles : [null];
-      setSelectedRaffle(raffles[0]);
-      setUser(user);
+      try {
+        const res = await api.get("/auth/user");
+        if (res.data?.status === 401) return;
+        const user = res.data;
+        const raffles = user?.raffles?.length > 0 ? user?.raffles : [null];
+        setSelectedRaffle(raffles[0]);
+        setUser(user);
+      } catch (error) {
+        return;
+      }
+      
     } catch (err) {
       console.error(err);
     } finally {

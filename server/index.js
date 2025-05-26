@@ -71,7 +71,7 @@ app.use(
         scriptSrc: ["'self'", "https://js.stripe.com", "'unsafe-inline'", 'https://connect.facebook.net',],
         imgSrc: ["'self'", "https://res.cloudinary.com", "data:"],
         frameSrc: ["https://js.stripe.com", "https://hooks.stripe.com"],
-        connectSrc: ["'self'", "https://api.stripe.com"]
+        connectSrc: ["'self'", "https://api.stripe.com",]
       },
     },
   })
