@@ -68,14 +68,34 @@ app.use(
     contentSecurityPolicy: {
       directives: {
         defaultSrc: ["'self'"],
-        scriptSrc: ["'self'", "https://js.stripe.com", "'unsafe-inline'", 'https://connect.facebook.net',],
-        imgSrc: ["'self'", "https://res.cloudinary.com", "data:"],
-        frameSrc: ["https://js.stripe.com", "https://hooks.stripe.com"],
-        connectSrc: ["'self'", "https://api.stripe.com",]
+        scriptSrc: [
+          "'self'",
+          "'unsafe-inline'",
+          "https://js.stripe.com",
+          "https://connect.facebook.net"
+        ],
+        connectSrc: [
+          "'self'",
+          "https://api.stripe.com",
+          "https://www.facebook.com"
+        ],
+        frameSrc: [
+          "https://js.stripe.com",
+          "https://hooks.stripe.com",
+          "https://www.facebook.com",
+          "https://staticxx.facebook.com"
+        ],
+        imgSrc: [
+          "'self'",
+          "https://res.cloudinary.com",
+          "https://www.facebook.com",
+          "data:"
+        ],
       },
     },
   })
 );
+
 app.use(passport.initialize());
 app.use(passport.session());
 
