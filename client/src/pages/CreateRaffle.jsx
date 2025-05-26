@@ -268,6 +268,7 @@ const CreateRafflePage = ({userJustCreated, setUserJustCreated}) => {
     const isInvalid = formValidate();
     if(isInvalid) return setSpinner(false);
     const {error, value} = raffleValidationSchema.validate(formData)
+    console.log(error)
     if(error){
       setFormError(error)
       setSpinner(false)
@@ -316,6 +317,7 @@ const CreateRafflePage = ({userJustCreated, setUserJustCreated}) => {
           setSpinner(false)
         }
       } catch (error) {
+        console.log(error)
         setFormError(error.message)
         setSpinner(false)
       }

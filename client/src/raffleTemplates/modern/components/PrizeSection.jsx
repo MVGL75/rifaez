@@ -62,8 +62,8 @@ const PrizeSection = ({raffle}) => {
                {raffle.description}
               </p>
             </div>
-            <div className="md:w-1/2 h-64 md:h-auto bg-gray-200">
-               <img  className="w-full h-full object-cover" alt={prizeImages[currentImageIndex].alt} src={prizeImages[currentImageIndex].url} />
+            <div className="md:w-1/2 h-64 md:h-auto bg-gray-200 h-[400px]">
+               <img  className="w-full h-[400px] max-h-[400px] object-cover" alt={prizeImages[currentImageIndex].alt} src={prizeImages[currentImageIndex].url} />
             </div>
           </div>
         </Card>

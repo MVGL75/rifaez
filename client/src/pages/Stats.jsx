@@ -87,77 +87,91 @@ const StatsPage = ({ selectedRaffle }) => {
   }, [selectedRaffle]);
   
   // Mock data for tickets
-  const createDataChart = (hourArray, array) => {
-    let dataArray = []
-    const localTimeArray = array.time?.map(visit => {
-      const utcHour = visit.hour; 
-      const utcDate = new Date(`2023-01-01T${utcHour}:00Z`); 
-      const localHour = utcDate.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', hour12: false });
-      return {hour: localHour, count: visit.count};
-    })
+  
+  const createDataChart = (hourArray, dayStat) => {
+    const dataArray = [];
+  
+    const localTimeArray = dayStat.time?.map(visit => {
+      const utcDateTime = new Date(`${dayStat.date}T${visit.hour}:00Z`);
+      const localHour = utcDateTime.toLocaleTimeString([], {
+        hour: '2-digit',
+        minute: '2-digit',
+        hour12: false
+      }).slice(0, 5); // e.g., "14:00"
+      return { hour: localHour, count: visit.count };
+    });
+  
     for (let i = 0; i < hourArray.length; i++) {
-      const found = localTimeArray.find(visit => visit.hour === hourArray[i])
-      if(found){
-        dataArray.push(found.count)
-      } else {
-        dataArray.push(0)
-      }
+      const found = localTimeArray.find(visit => visit.hour === hourArray[i]);
+      dataArray.push(found ? found.count : 0);
     }
-    return dataArray
-  }
+  
+    return dataArray;
+  };
+  const getTodayVisitStat = (dailyStats, selectedDate) => {
+    return dailyStats?.find(visit => {
+      const utcDate = new Date(`${visit.date}T00:00:00Z`);
+      const localDateStr = utcDate.toLocaleDateString(undefined, {
+        year: 'numeric',
+        month: '2-digit',
+        day: '2-digit'
+      });
+      return localDateStr === selectedDate;
+    });
+  };
 
   useEffect(() => {
-    if(!selectedRaffle) return;
+    if (!selectedRaffle) return;
+  
     const now = new Date();
     const minutes = now.getMinutes();
     if (minutes >= 30) {
-      now.setHours(now.getHours() + 1); 
+      now.setHours(now.getHours() + 1);
     }
     now.setMinutes(0, 0, 0);
-    const nowHours = now.getHours()
-    let hourArray = []
+  
+    const nowHours = now.getHours();
+    const hourArray = [];
+  
     for (let i = 0; i < 5; i++) {
-        const hourData = ((nowHours - 4) + i )
-        if(hourData >= 0){
-          hourArray[i] = hourData + ':00'
-        } else {
-          hourArray[i] = (24 + hourData) + ':00'
-        }
+      const hour = (nowHours - 4 + i + 24) % 24;
+      hourArray.push(hour.toString().padStart(2, '0') + ':00');
     }
-    const todayVisits = selectedRaffle.stats.dailyVisitStats?.find(visit => visit.date === selectedDate)
-    const todaySales = selectedRaffle.stats.dailySales?.find(visit => visit.date === selectedDate)
-    let dataViewArray = []
-    let dataSaleArray = []
-    if(todayVisits){
-      dataViewArray = createDataChart(hourArray, todayVisits)
-    } else {
-      dataViewArray = [0, 0, 0, 0, 0]
-    }
-    if(todaySales){
-      dataSaleArray = createDataChart(hourArray, todaySales)
-    } else {
-      dataSaleArray = [0, 0, 0, 0, 0]
-    }
+
+    const selectedDateNew = new Date(selectedDate);
+    const selectedDateLocal = selectedDateNew.toLocaleDateString(undefined, {
+      year: 'numeric',
+      month: '2-digit',
+      day: '2-digit'
+    });
+  
+    const todayVisits = getTodayVisitStat(selectedRaffle.stats.dailyVisitStats, selectedDateLocal);
+    const todaySales = getTodayVisitStat(selectedRaffle.stats.dailySales, selectedDateLocal);
+  
+    const dataViewArray = todayVisits ? createDataChart(hourArray, todayVisits) : Array(5).fill(0);
+    const dataSaleArray = todaySales ? createDataChart(hourArray, todaySales) : Array(5).fill(0);
+  
     setChartData({
       labels: hourArray,
       datasets: [
         {
           label: "Visitas",
-          data: [...dataViewArray],
+          data: dataViewArray,
           borderColor: "rgb(59, 130, 246)",
           backgroundColor: "rgba(59, 130, 246, 0.5)",
           tension: 0.4
         },
         {
           label: "Ventas ($)",
-          data: [...dataSaleArray],
+          data: dataSaleArray,
           borderColor: "rgb(239, 68, 68)",
           backgroundColor: "rgba(239, 68, 68, 0.5)",
           tension: 0.4
         }
       ]
-  })
+    });
   }, [selectedDate, selectedRaffle]);
+  
 
   const toggleNotes = (id) => {
     setNotesOpen(prev => ({...prev, [id]: !prev[id] }));
