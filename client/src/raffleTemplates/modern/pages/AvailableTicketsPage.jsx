@@ -16,29 +16,31 @@ import mexicanStates from '../../lib/mexicanStates';
 
 
 
-const AvailableTicketsPage = () => {
+const AvailableTicketsPage = ({availableTickets}) => {
   const raffle = useOutletContext()
   const navigate = useNavigate();
   const { toast } = useToast();
-  const [allTickets, setAllTickets] = useState([]);
   const [selectedTickets, setSelectedTickets] = useState([]);
   const newMexicanStates = mexicanStates.filter(state => state !== "Extranjero");
   const [filteredStates, setFilteredStates] = useState([...newMexicanStates, "Extranjero"]);
   const [showSearch, setShowSearch] = useState(false);
   const [buyerInfo, setBuyerInfo] = useState({})
   const [wasSubmitted, setWasSubmitted] = useState(null)
+  const [allTickets, setAllTickets] = useState([]);
   const [buyerPopUp, setBuyerPopUp] = useState(false)
   const [errors, setErrors] = useState([])
   const [searchTerm, setSearchTerm] = useState('');
 
   const TICKET_PRICE = raffle.price;
-  const TOTAL_TICKETS = raffle.availableTickets.length;
+  
 
   useEffect(() => {
+    const TOTAL_TICKETS = availableTickets.length;
+
     const initialTickets = Array.from({ length: TOTAL_TICKETS }, (_, i) => {
       const number = i + 1;
       let status = "purchased"
-      if(raffle.availableTickets.includes(number)) status = "available"
+      if(availableTickets.includes(number)) status = "available"
       return {
         id: number,
         number: String(number).padStart(3, '0'),
@@ -50,7 +52,7 @@ const AvailableTicketsPage = () => {
 
     const storedSelectedTickets = JSON.parse(localStorage.getItem('selectedTickets')) || [];
     setSelectedTickets(storedSelectedTickets.map(id => initialTickets.find(t => t.id === id)).filter(Boolean));
-  }, []);
+  }, [availableTickets]);
 
   function formatSpanishDate(isoDateStr) {
     const date = new Date(isoDateStr);

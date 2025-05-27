@@ -39,7 +39,6 @@ const TicketVerification = () => {
   const handleVerification = async (e) => {
     e.preventDefault();
     const res = await api.post(`/api/raffle/${id}/verify`, { query: ticketNumber })
-    console.log(res)
     if(res.data.status === 200){
       setSuccess({message: 'success', ticket: res.data.ticket})
     } else {

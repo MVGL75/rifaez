@@ -3,7 +3,7 @@ import { Button } from '../components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '../components/ui/card';
 import { motion } from 'framer-motion';
 import { useLocation, useNavigate, useOutletContext, useParams } from 'react-router-dom';
-import { Banknote, CreditCard, Smartphone, Copy, CheckCircle } from 'lucide-react';
+import { Banknote, MessageSquare, Smartphone, Copy, CheckCircle } from 'lucide-react';
 import { useToast } from '../components/ui/use-toast';
 import axios from "axios";
 const api = axios.create({
@@ -12,6 +12,8 @@ const api = axios.create({
 });
 
 const PaymentMethodCard = ({ method, onCopy }) => {
+  const [instructionsToggledOn, setToggle] = useState(false);  
+
   const formatMethodNumber = (input) => {
     const digits = String(input).replace(/\D/g, '');
   
@@ -31,55 +33,73 @@ const PaymentMethodCard = ({ method, onCopy }) => {
     return [bank, branch, account, control].filter(Boolean).join(' ');
   }
   return (
-    <Card className="shadow-lg hover:shadow-xl transition-shadow duration-300">
-      <CardHeader>
-        <CardTitle className="flex items-center text-xl sm:text-2xl text-primaryRaffle">
-          {method.bank}
-        </CardTitle>
-      </CardHeader>
-      <CardContent className="space-y-3">
-          <div  className="text-sm sm:text-base">
-            <span className="font-semibold text-colorRaffle">Beneficiario: </span>
-            <span className="text-colorRaffle-300 break-all">{method.person}</span>
-              <Button
-                variant="ghost"
-                size="sm"
-                className="ml-2 px-2 py-1 h-auto text-primaryRaffle hover:bg-blue-100 hover:text-primaryRaffle"
-                onClick={() => onCopy(method.person)}
-              >
-                <Copy className="h-4 w-4 mr-1" /> Copiar
-              </Button>
-          </div>
-          <div  className="text-sm sm:text-base">
-            <span className="font-semibold text-colorRaffle">Numero de Tarjeta: </span>
-            <span className="text-colorRaffle-300 break-all">{formatMethodNumber(method.number)}</span>
-              <Button
-                variant="ghost"
-                size="sm"
-                className="ml-2 px-2 py-1 h-auto text-primaryRaffle hover:bg-blue-100 hover:text-primaryRaffle"
-                onClick={() => onCopy(method.number)}
-              >
-                <Copy className="h-4 w-4 mr-1" /> Copiar
-              </Button>
-          </div>
-          <div  className="text-sm sm:text-base">
-            <span className="font-semibold text-colorRaffle">CLABE: </span>
-            <span className="text-colorRaffle-300 break-all">{formatCLABE(method.clabe)}</span>
-              <Button
-                variant="ghost"
-                size="sm"
-                className="ml-2 px-2 py-1 h-auto text-primaryRaffle hover:bg-blue-100 hover:text-primaryRaffle"
-                onClick={() => onCopy(method.clabe)}
-              >
-                <Copy className="h-4 w-4 mr-1" /> Copiar
-              </Button>
-          </div>
-      </CardContent>
+    <Card className="shadow-lg hover:shadow-xl transition-shadow duration-300 relative">
+      {method.instructions &&
+      <>
+          <MessageSquare onClick={()=>{setToggle(prev => !prev)}} className='absolute right-8 top-6 text-primaryRaffle' />
+          {instructionsToggledOn &&
+            <div className="space-y-4 p-6 ">
+              <h1 className='text-primaryRaffle'>Instrucciones de Pago</h1>
+              <p >
+                {method.instructions}
+              </p>
+            </div>
+            }
+            </>
+      }
+      {!(method.instructions && instructionsToggledOn) &&
+        <>
+        <CardHeader>
+          <CardTitle className="flex items-center text-xl sm:text-2xl text-primaryRaffle">
+            {method.bank}
+          </CardTitle>
+        </CardHeader>
+        
+        <CardContent className="space-y-3">
+            <div  className="text-sm sm:text-base">
+              <span className="font-semibold text-colorRaffle">Beneficiario: </span>
+              <span className="text-colorRaffle-300 break-all">{method.person}</span>
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  className="ml-2 px-2 py-1 h-auto text-primaryRaffle hover:bg-blue-100 hover:text-primaryRaffle"
+                  onClick={() => onCopy(method.person)}
+                >
+                  <Copy className="h-4 w-4 mr-1" /> Copiar
+                </Button>
+            </div>
+            <div  className="text-sm sm:text-base">
+              <span className="font-semibold text-colorRaffle">Numero de Tarjeta: </span>
+              <span className="text-colorRaffle-300 break-all">{formatMethodNumber(method.number)}</span>
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  className="ml-2 px-2 py-1 h-auto text-primaryRaffle hover:bg-blue-100 hover:text-primaryRaffle"
+                  onClick={() => onCopy(method.number)}
+                >
+                  <Copy className="h-4 w-4 mr-1" /> Copiar
+                </Button>
+            </div>
+            <div  className="text-sm sm:text-base">
+              <span className="font-semibold text-colorRaffle">CLABE: </span>
+              <span className="text-colorRaffle-300 break-all">{formatCLABE(method.clabe)}</span>
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  className="ml-2 px-2 py-1 h-auto text-primaryRaffle hover:bg-blue-100 hover:text-primaryRaffle"
+                  onClick={() => onCopy(method.clabe)}
+                >
+                  <Copy className="h-4 w-4 mr-1" /> Copiar
+                </Button>
+            </div>
+        </CardContent>
+        </>
+        }
     </Card>
   );
 };
 
-const PaymentPage = () => {
+const PaymentPage = ({ setAvailableTickets }) => {
   const { toast } = useToast();
   const WHATSAPP_NUMBER = "5212323232323"; 
   const location = useLocation();
@@ -95,8 +115,8 @@ const PaymentPage = () => {
 
   useEffect(() => {
     const tickets = JSON.parse(localStorage.getItem('selectedTickets') || '[]');
-    const user = JSON.parse(localStorage.getItem('userInfo') || '{}');
-    if (!tickets.length) {
+    const user = JSON.parse(localStorage.getItem('userInfo') || 'null');
+    if (!tickets.length || !user ) {
       return;
     }
     setNoTickets(false)
@@ -107,10 +127,11 @@ const PaymentPage = () => {
   }, []);
 
   const finalizePayment = async () => {
-    const res = await api.post(`/api/raffle/${id}/payment`, {...userInfo, tickets: [...selectedTickets]})
+    const res = await api.post(`/api/raffle/${id}/payment`, {...userInfo, tickets: selectedTickets})
     if(res.data.status === 200){
       localStorage.removeItem('selectedTickets');
       localStorage.removeItem('userInfo');
+      setAvailableTickets(prev => prev.filter(p => !selectedTickets.includes(p)))
       setSuccess(true)
     } else {
       console.log(res)

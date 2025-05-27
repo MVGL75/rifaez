@@ -72,17 +72,27 @@ router.post('/', bodyParser.raw({ type: 'application/json' }), async (req, res) 
       const subscription = event.data.object;
       const customerId = subscription.customer;
       const priceId = subscription.items.data[0].price.id;
+      const previous = event.data.previous_attributes;
+
       
       const user = await User.findOne({ stripeCustomerId: customerId });
+
+      
       if(user){
-        if(plans[user.planId].rank > plans[priceId].rank){
-          await restrictUserFeatures(user, priceId);
+        if (previous.canceled_at !== undefined) {
+          user.subscriptionStatus = 'canceled';
         } else {
-          await updateUserFeatures(user, priceId);
+          if(plans[user.planId].rank > plans[priceId].rank){
+            await restrictUserFeatures(user, priceId);
+            user.subscriptionStatus = "active";
+          } else if (plans[user.planId].rank < plans[priceId].rank) {
+            await updateUserFeatures(user, priceId);
+            user.subscriptionStatus = "active";
+          }
         }
           user.planId = priceId;
-          user.subscriptionStatus = "active";
           await user.save();
+          console.log("webhook", user)
           console.log(`✅ Subscription update for user ${user.username}`);
       }
       

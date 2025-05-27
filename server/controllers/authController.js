@@ -250,7 +250,6 @@ export const save = async(req, res)=> {
 
   export const verifyPassToken = async (req, res) => {
     const token = req.query.token
-    console.log(token)
     const user = await User.findOne({
       resetPasswordToken: token,
       resetPasswordExpires: { $gt: Date.now() }
@@ -261,7 +260,6 @@ export const save = async(req, res)=> {
 
   export const changeRecoverPass = async (req, res) => {
     const { password, token} = req.body;
-    console.log(token)
     const user = await User.findOne({
       resetPasswordToken: token,
       resetPasswordExpires: { $gt: Date.now() }
@@ -332,6 +330,7 @@ export const save = async(req, res)=> {
       const user = await User.findById(req.user._id)
       if(!user) return res.json({ message: 'User not found', status: 401 });
       const clientUser = await setUserForClient(req, user)
+      console.log(clientUser)
       return res.json(clientUser);
  
   }

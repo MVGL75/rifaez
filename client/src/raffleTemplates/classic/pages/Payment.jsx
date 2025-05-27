@@ -3,12 +3,13 @@ import React, { useEffect, useState, useRef} from "react";
 import { motion } from "framer-motion";
 import { useLocation, useNavigate, useOutletContext } from "react-router-dom";
 import axios from "axios";
+import { MessageSquare } from "lucide-react";
 const api = axios.create({
   baseURL: import.meta.env.VITE_CURRENT_HOST,
   withCredentials: true,
 });
 
-const Payment = () => {
+const Payment = ({setAvailableTickets}) => {
   const raffle = useOutletContext();
   const location = useLocation();
   const navigate = useNavigate();
@@ -16,6 +17,7 @@ const Payment = () => {
   const [success, setSuccess] =  useState(false)
   const [noTickets, setNoTickets] = useState(true);
   const [userInfo, setUserInfo] = useState({});
+  const [instructionsToggledOn, setToggle] = useState(false);
   const topRef = useRef(null);
 
   useEffect(() => {
@@ -50,13 +52,13 @@ const Payment = () => {
 
     return parts.join('');
   }
-
   const paymentMethods = raffle.paymentMethods.map(method => (
     {
       bank: method.bank,
       accountHolder: method.person,
       accountNumber: method.number,
       clabe: method.clabe,
+      instructions: method.instructions || null,
     }
   ));
   const finalizePayment = async () => {
@@ -64,6 +66,7 @@ const Payment = () => {
     if(res.data.status === 200){
       localStorage.removeItem('selectedTickets');
       localStorage.removeItem('userInfo');
+      setAvailableTickets(prev => prev.filter(p => !selectedTickets.includes(p)))
       setSuccess(true)
     } 
   }
@@ -192,39 +195,56 @@ const Payment = () => {
               initial={{ opacity: 0, x: -20 }}
               animate={{ opacity: 1, x: 0 }}
               transition={{ delay: index * 0.1 }}
-              className="bg-cardRaffle p-6 rounded-lg text-colorRaffle"
+              className="bg-cardRaffle p-6 rounded-lg text-colorRaffle relative"
             >
-              <h2 className="text-xl font-bold text-colorRaffle mb-4">
-                {method.bank}
-              </h2>
-              <div className="space-y-4">
-                <p>
-                  <span className="font-semibold">Titular:</span>{" "}
-                  {method.accountHolder}
-                </p>
-                <div className="flex items-center gap-2">
-                  <p className="font-semibold">Número de Cuenta:</p>
-                  <div
-                    onClick={() => handleCopyNumber(method.accountNumber)}
-                    variant="outline"
-                    size="sm"
-                    className="text-colorRaffle hover:text-colorRaffle-600"
-                  >
-                    {formatMethodNumber(method.accountNumber)}
+             { method.instructions &&
+              <>
+                <MessageSquare onClick={()=>{setToggle(prev => !prev)}} className="absolute right-8 top-6 text-colorRaffle"/>
+                {instructionsToggledOn &&
+                <div className="space-y-4">
+                  <h1>Instrucciones de Pago</h1>
+                  <p >
+                    {method.instructions}
+                  </p>
+                </div>
+                }
+                </>
+             }
+             {!(method.instructions && instructionsToggledOn) &&
+              <>
+                <h2 className="text-xl font-bold text-colorRaffle mb-4">
+                  {method.bank}
+                </h2>
+                <div className="space-y-4">
+                  <p>
+                    <span className="font-semibold">Titular:</span>{" "}
+                    {method.accountHolder}
+                  </p>
+                  <div className="flex items-center gap-2">
+                    <p className="font-semibold">Número de Cuenta:</p>
+                    <div
+                      onClick={() => handleCopyNumber(method.accountNumber)}
+                      variant="outline"
+                      size="sm"
+                      className="text-colorRaffle hover:text-colorRaffle-600"
+                    >
+                      {formatMethodNumber(method.accountNumber)}
+                    </div>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <p className="font-semibold">Clabe:</p>
+                    <div
+                      onClick={() => handleCopyNumber(method.clabe)}
+                      variant="outline"
+                      size="sm"
+                      className="text-colorRaffle hover:text-colorRaffle-600"
+                    >
+                      {formatCLABE(method.clabe)}
+                    </div>
                   </div>
                 </div>
-                <div className="flex items-center gap-2">
-                  <p className="font-semibold">Clabe:</p>
-                  <div
-                    onClick={() => handleCopyNumber(method.clabe)}
-                    variant="outline"
-                    size="sm"
-                    className="text-colorRaffle hover:text-colorRaffle-600"
-                  >
-                    {formatCLABE(method.clabe)}
-                  </div>
-                </div>
-              </div>
+                </>
+              }
             </motion.div>
           ))}
         </div>

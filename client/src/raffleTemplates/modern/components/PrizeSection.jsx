@@ -70,8 +70,9 @@ const PrizeSection = ({raffle}) => {
       </motion.div>
 
       <div className="flex flex-col md:flex-row gap-4 sm:gap-6 justify-center">
-        {raffle.additionalPrizes && raffle.additionalPrizes?.map(prize => (
+        {raffle.additionalPrizes && raffle.additionalPrizes?.map((prize, index) => (
              <PrizeInfo
+             key={index}
              place={prize.place}
              title={prize.prize}
            />

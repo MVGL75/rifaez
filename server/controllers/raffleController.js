@@ -121,7 +121,7 @@ export const editRaffle = async (req, res) => {
           return res.json({message: "raffle inactive"})
         }
       } else {
-        throw new AppError("Raffle Not Found", 400)
+        return res.json({message: "raffle not found", status: 404})
       }
     } catch (error) {
         console.log(error)
@@ -144,11 +144,18 @@ export const editRaffle = async (req, res) => {
     const raffleID = req.params.id
     const raffle = await Raffle.findById(raffleID)
     const body = req.body
+    let ticketExists = false
+    raffle.currentParticipants?.forEach(participant => {
+      for (const ticket of body.tickets) {
+        if(participant.tickets.includes(ticket)){
+          ticketExists = true
+        }
+      }
+      
+    })
+    if(ticketExists) return res.json({message: "ticket exists", status: 400});
     const transactionId = await getNextTransactionId(raffle._id.toString());
     const amount = raffle.price * body.tickets.length
-    if (body.tickets.length > raffle.maxTpT) {
-      body.tickets = body.tickets.slice(0, raffle.maxTpT);
-    }    
     const newBody = {
       ...body,
       transactionID: transactionId,
@@ -233,20 +240,21 @@ export const editRaffle = async (req, res) => {
     let found = false
     participants.forEach(participant => {
       if(!found){
-        if(participant.phone.toString() === lowerQuery){
-          found = true;
-        } else if (participant.transactionID.toLowerCase() === lowerQuery) {
-          found = true;
-        } else {
-          const ticketNum = participant.tickets.find(ticket => ticket.toString() === lowerQuery)
-          if(ticketNum){
+          if(participant.phone.toString() === lowerQuery){
             found = true;
+          } else if (participant.transactionID.toLowerCase() === lowerQuery) {
+            found = true;
+          } else {
+            const ticketNum = participant.tickets.find(ticket => ticket.toString() === lowerQuery)
+            if(ticketNum){
+              found = true;
+            }
           }
+        if(found){
+          ticket = participant
         }
       }
-      if(found){
-        ticket = participant
-      }
+      
     });
     return ticket
   }
@@ -297,5 +305,11 @@ export const editRaffle = async (req, res) => {
 
   
 
+  async function handleDB(id){
+    const raffle = await Raffle.findById(id);
+    raffle.stats.paidParticipants = 0;
+    raffle.stats.dailySales = [];
+    await raffle.save();
+  }
 
-
+  handleDB("6834cd280edb39785609507e")

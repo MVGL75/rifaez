@@ -148,30 +148,29 @@ function PricingPlan(){
               ))}
             </div>
 
-            {(user.currentPlan && (user.planStatus === "active")) && (
-            
-            <div className="mt-8">
-              <Button
-                variant="destructive"
-                className="flex items-center space-x-2"
-                onClick={()=>{handleCancelSubscription()}}
-              >
-                <X className="w-4 h-4" />
-                <span>Cancelar Suscripción</span>
-              </Button>
-            </div> )}
-            {(user.currentPlan && (user.planStatus === "canceled")) && (
-            
-            <div className="mt-8">
-              <Button
-                variant="destructive"
-                className="flex items-center space-x-2"
-                onClick={null}
-              >
-                <X className="w-4 h-4" />
-                <span>Suscripcion Cancelada</span>
-              </Button>
-            </div> )}
+            {user.currentPlan && <div className="mt-8">
+              { user.planStatus === "canceled" ? (
+                  <div>
+                    <Button
+                      variant="destructive"
+                      className="flex items-center space-x-2"
+                    >
+                      <span>Suscripción cancelada. El plan terminará al final del mes pagado.</span>
+                    </Button>
+                  </div>
+              ) : (
+                <Button
+                  variant="destructive"
+                  className="flex items-center space-x-2"
+                  onClick={()=>{handleCancelSubscription()}}
+                >
+                  <X className="w-4 h-4" />
+                  <span>Cancelar Suscripción</span>
+                </Button>
+
+              )}
+              
+            </div> }
           </div>
         </div>
         </>

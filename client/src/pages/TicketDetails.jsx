@@ -94,7 +94,26 @@ const TicketDetails = () => {
     if (note.trim()) {
       const res = await api.post(`/api/raffle/${raffleID}/${ticket._id}/add_note`, {note})
       if(res.data.status === 200){
-        setUser(res.data.user)
+        setUser(prev => ({
+          ...prev,
+          raffles: prev.raffles.map(raffle => {
+            if (raffle.id === raffleID) {
+              return {
+                ...raffle,
+                currentParticipants: raffle.currentParticipants.map(participant => {
+                  if (participant.id === ticket._id) {
+                    return {
+                      ...participant,
+                      notes: [...(participant.notes || []), note]
+                    };
+                  }
+                  return participant;
+                })
+              };
+            }
+            return raffle;
+          })
+        }));
         setNoteAdded(true)
         setNote("");
       }

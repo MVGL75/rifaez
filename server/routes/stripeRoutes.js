@@ -2,6 +2,7 @@ import express from 'express';
 import Stripe from 'stripe';
 import AppError from '../utils/AppError.js';
 import { User } from "../models/Users.js"
+import sanitizeUser from '../utils/sanitize.js';
 import isAuthenticated from '../middleware/isAuthenticated.js';
 import plans from '../seed/plans.js';
 const stripe = new Stripe(process.env.STRIPE_SECRET_KEY, {
@@ -28,7 +29,7 @@ router.post('/create-checkout-session', isAuthenticated, async (req, res) => {
     const subscription = await stripe.subscriptions.retrieve(user.subscriptionId);
     if(subscription){
       await updateSubscription(user, subscription, priceId)
-      return res.redirect("/api/user")
+      await findUser(req, res)
     }
   }
   try {
@@ -65,11 +66,19 @@ router.post("/update-plan", isAuthenticated, async (req, res) => {
     const {newPriceId} = req.body
     const user = await User.findByUsername(req.user.username)
     const subscription = await stripe.subscriptions.retrieve(user.subscriptionId);
-
-
+    if (subscription.status === 'canceled') {
+      await deleteUserFeatures(user);
+        user.subscriptionId = null;
+        user.subscriptionStatus = null;
+        user.planId = null;
+        await user.save();
+      return res.status(400).json({
+        message: "Your subscription expired before completing payment. Please subscribe again."
+      });
+    }
 
     await updateSubscription(user, subscription, newPriceId)
-    res.redirect("/auth/user")
+    await findUser(req, res)
 
   } catch (error) {
     throw new AppError(error)
@@ -97,7 +106,6 @@ const updateSubscription = async (user, subscription, newPriceId) => {
   user.subscriptionStatus = "active";
   await user.save();
 
-
 }
 
 router.post('/cancel-subscription', isAuthenticated, async (req, res) => {
@@ -114,8 +122,8 @@ router.post('/cancel-subscription', isAuthenticated, async (req, res) => {
 
     user.subscriptionStatus = 'canceled';
     await user.save();
-    
-    res.redirect("/auth/user");
+    await findUser(req, res);
+    console.log("client", user)
     
   } catch (error) {
     throw new AppError(error)
@@ -133,6 +141,38 @@ router.get('/session-status', async (req, res) => {
   }
 });
 
+
+const deleteUserFeatures = async (user) => {
+
+  const userWithRaffles = await user.populate('raffles');
+
+  const userRaffles = userWithRaffles.raffles || [];
+  const activeRaffles = userWithRaffles.raffles?.filter(r => r.isActive) || [];
+  const activeWorkers = user.workers || [];
+
+    await Promise.all(
+      activeRaffles.map(raffle => {
+        raffle.isActive = false;
+        return raffle.save();
+      })
+    );
+
+  await Promise.all(
+    userRaffles.map(raffle => {
+        raffle.template = "classic";
+        return raffle.save();
+    })
+  );
+  await Promise.all(
+    activeWorkers.map(worker => {
+        worker.isActive = false;
+        return worker.save();
+    })
+  );
+    // user.workers = user.workers.slice(0, 0);
+
+  await user.save();
+};
 
 const restrictUserFeatures = async (user, newPriceId) => {
   const newPlanRestrictions = plans[newPriceId];
@@ -193,6 +233,19 @@ const updateUserFeatures = async (user, newPriceId) => {
 }
 
   await user.save();
+}
+
+const findUser = async(req, res) => {
+  const user = await User.findById(req.user._id)
+  if(!user) return res.json({ message: 'User not found', status: 401 });
+  const clientUser = await setUserForClient(req, user)
+  return res.json(clientUser);
+}
+
+async function setUserForClient(req, user){
+  const popUser = await user.populate('raffles')
+  const safeUser = sanitizeUser(popUser)
+  return {...safeUser, currentPlan: plans[user.planId]?.name, planStatus: user.subscriptionStatus,  asWorker: req.user.asWorker,}
 }
 
 

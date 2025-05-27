@@ -99,7 +99,7 @@ const CreateRafflePage = ({userJustCreated, setUserJustCreated}) => {
 
   const [totalRevenue, setTotalRevenue] = useState(0);
   const newMethods = user.payment_methods?.map(method => {
-    return { id: method._id, bank: method.bank, person: method.person, number: method.number, clabe: method.clabe, enabled: false }
+    return { id: method._id, bank: method.bank, person: method.person, number: method.number, clabe: method.clabe, instructions: method.instructions || undefined, enabled: false }
   })
   const [paymentMethods, setPaymentMethods] = useState(newMethods);
 

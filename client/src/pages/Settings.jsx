@@ -506,6 +506,7 @@ const removeMethod = async (methodInp) => {
     setSpinner(true)
     try {
       const res = await api.post("/stripe/update-plan", {newPriceId: priceId});
+      console.log(res)
       if(res.data){
         setSpinner(false)
         setUser(res.data)
@@ -955,14 +956,27 @@ const removeMethod = async (methodInp) => {
             </div>
 
             {user.currentPlan && <div className="mt-8">
-              <Button
-                variant="destructive"
-                className="flex items-center space-x-2"
-                onClick={()=>{handleCancelSubscription()}}
-              >
-                <X className="w-4 h-4" />
-                <span>Cancelar Suscripción</span>
-              </Button>
+              { user.planStatus === "canceled" ? (
+                  <div>
+                    <Button
+                      variant="destructive"
+                      className="flex items-center space-x-2"
+                    >
+                      <span>Suscripción cancelada. El plan terminará al final del mes pagado.</span>
+                    </Button>
+                  </div>
+              ) : (
+                <Button
+                  variant="destructive"
+                  className="flex items-center space-x-2"
+                  onClick={()=>{handleCancelSubscription()}}
+                >
+                  <X className="w-4 h-4" />
+                  <span>Cancelar Suscripción</span>
+                </Button>
+
+              )}
+              
             </div> }
           </div>
         );

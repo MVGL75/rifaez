@@ -33,7 +33,7 @@ const api = axios.create({
 });
 
 const StatsPage = ({ selectedRaffle }) => {
-  const { user, setUser } = useAuth()
+  const { user, setUser, setAppError } = useAuth()
   const navigate = useNavigate();
   const [selectedDate, setSelectedDate] = useState(new Date().toISOString().split('T')[0]);
   const [notesOpen, setNotesOpen] = useState({})
@@ -223,10 +223,15 @@ const StatsPage = ({ selectedRaffle }) => {
           }
           return ticket
       }))
-      setUser(res.data.user)
+    } else {
+      setAppError(true)
     }
   };
 
+
+  useEffect(()=>{
+    setFilteredTickets(selectedRaffle?.currentParticipants)
+  }, [selectedRaffle])
   
 
 

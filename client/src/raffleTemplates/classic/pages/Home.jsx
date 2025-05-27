@@ -9,7 +9,7 @@ import mexicanStates from "../../lib/mexicanStates";
 import Countdown from "../../components/Countdown";
 import { use } from "react";
 
-const Home = () => {
+const Home = ({availableTickets}) => {
   const newMexicanStates = mexicanStates.filter(state => state !== "Extranjero")
   const navigate = useNavigate();
   const raffle = useOutletContext();
@@ -17,7 +17,7 @@ const Home = () => {
   const [selectedTickets, setSelectedTickets] = useState([]);
   const [showSearch, setShowSearch] = useState(false);
   const [filteredStates, setFilteredStates] = useState([...newMexicanStates, "Extranjero"]);
-  const [filteredTickets, setFilteredTickets] = useState([...raffle?.availableTickets])
+  const [filteredTickets, setFilteredTickets] = useState([...availableTickets])
   const [showTicketModal, setShowTicketModal] = useState(false);
   const [randomNumber, setRandomNumber] = useState(null)
   const [wasSubmitted, setWasSubmitted] = useState(false)
@@ -79,7 +79,7 @@ const Home = () => {
   const handleSearch = (e) => {
     const query = e.target.value
     setSearchTicket(query)
-    const filteredArray = raffle?.availableTickets?.filter((item) =>
+    const filteredArray = availableTickets?.filter((item) =>
       item.toString().includes(query)
     );
     setFilteredTickets(filteredArray)
@@ -123,16 +123,16 @@ const Home = () => {
   const randomizeSelection = () => {
     if(!randomNumber) return setRandomNumber(1);
     let newNum = randomNumber
-    if (newNum > raffle.availableTickets.length) {
-      newNum = raffle.availableTickets.length
+    if (newNum > availableTickets.length) {
+      newNum = availableTickets.length
     }
     if (newNum < 1) {
       newNum = 1
     }
     const randomNums = []
     for (let i = 0; i < newNum; i++) {
-      const random = Math.floor(Math.random() * raffle.availableTickets.length);
-      randomNums.push(raffle.availableTickets[random])
+      const random = Math.floor(Math.random() * availableTickets.length);
+      randomNums.push(availableTickets[random])
     }
     setSelectedTickets(randomNums);
     setFilteredTickets(randomNums);
