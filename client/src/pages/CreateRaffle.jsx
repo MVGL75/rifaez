@@ -544,6 +544,7 @@ const CreateRafflePage = ({userJustCreated, setUserJustCreated}) => {
                     <span className={`font-medium min-w-[100px] ${errors[`additionalPrizes_${index}`] && "text-red-500"}`}>
                       {prize.place}º Lugar
                     </span>
+                    <div className="relative">
                     <input
                       type="text"
                       value={prize.prize}
@@ -552,6 +553,7 @@ const CreateRafflePage = ({userJustCreated, setUserJustCreated}) => {
                       placeholder="Describe el premio"
                     />
                     <CircleMinus onClick={()=>{removePrize(index)}} className="text-red-500 h-5 w-5 absolute top-1/2 -translate-y-1/2 right-3"/>
+                    </div>
                   </div>
                 ))}
               </div>
