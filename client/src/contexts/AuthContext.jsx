@@ -28,7 +28,7 @@ export const AuthProvider = ({ children }) => {
       const res = await api.post('/auth/login', { username, password });
       if (res.data.status === 200) {
         setUser(res.data.user);
-        return navigate('/');
+        return navigate('/raffle-admin');
       }
       return res.data;
     } catch (err) {
@@ -61,7 +61,7 @@ export const AuthProvider = ({ children }) => {
       const res = await api.post('/auth/register', { name, email, password });
       if (res.data.status === 201) {
         setUser(res.data.user);
-        navigate('/');
+        navigate('/raffle-admin');
       }
       return res.data;
     } catch (err) {
@@ -74,7 +74,7 @@ export const AuthProvider = ({ children }) => {
       const res = await api.post("/auth/link-account", {email, facebookId: fbId})
       if (res.data.status === 200) {
         setUser(res.data.user);
-        navigate('/');
+        navigate('/raffle-admin');
       }
     } catch (error) {
       setAppError(error)

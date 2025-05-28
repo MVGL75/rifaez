@@ -4,7 +4,7 @@ import { motion } from "framer-motion";
 import { Button } from "@/components/ui/button";
 import axios from 'axios';
 import { useLocation } from "react-router-dom";
-import { MailCheck } from 'lucide-react';
+import ContactSuccess from "../../components/ContactSuccess.jsx";
 import {contactValidationSchema} from '../../../validation/contactSchemaValidate.js'
 const api = axios.create({
   baseURL: import.meta.env.VITE_CURRENT_HOST,
@@ -66,13 +66,8 @@ const Contact = () => {
         className="max-w-md mx-auto bg-cardRaffle p-8 rounded-lg"
       >
         {contactSent ?  (
-          <div className="text-colorRaffle text-center flex flex-col items-center space-y-3">
-            <MailCheck size={45}/>
-            <h1 className="text-3xl">Mensaje Enviado</h1>
-            <p className="text-base text-colorRaffle-300">
-              Tu mensaje ha sido enviado exitosamente.
-            </p>
-          </div>) : 
+          <ContactSuccess/>
+          ) : 
         <>
         <h2 className="text-2xl font-bold text-colorRaffle mb-6">
           Contáctanos

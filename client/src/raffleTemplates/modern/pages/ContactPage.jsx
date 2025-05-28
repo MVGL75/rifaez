@@ -6,6 +6,7 @@ import { motion } from 'framer-motion';
 import { Mail, Phone, Send } from 'lucide-react';
 import axios from "axios";
 import { useOutletContext, useParams } from 'react-router-dom';
+import ContactSuccess from '../../components/ContactSuccess';
 import { contactValidationSchema } from '../../../validation/contactSchemaValidate';
 const api = axios.create({
   baseURL: import.meta.env.VITE_CURRENT_HOST,
@@ -78,6 +79,7 @@ const ContactPage = () => {
       }
     }
   };
+
   return (
     <motion.div 
       className="space-y-10"
@@ -100,28 +102,35 @@ const ContactPage = () => {
           transition={{ duration: 0.5, delay: 0.2 }}
         >
           <Card className="shadow-xl">
-            <CardHeader>
-              <CardTitle className="text-2xl text-primaryRaffle flex items-center">
-                <Send className="mr-2 h-6 w-6" /> Envíanos un Mensaje
-              </CardTitle>
-            </CardHeader>
-            <CardContent className="space-y-4">
-              <div>
-                <label htmlFor="name" className={`block text-sm font-medium ${errors.name ? "text-red-500" : "text-colorRaffle"} mb-1`}>Nombre Completo</label>
-                <input type="text" name="name" onChange={handleChange} value={formData.name} id="name" className={`bg-transparent w-full px-3 py-2 border ${errors.name ? "border-red-400" : "border-borderRaffle"} rounded-md shadow-sm focus:outline-none focus:ring-primaryRaffle focus:border-primaryRaffle`} />
-              </div>
-              <div>
-                <label htmlFor="email" className={`block text-sm font-medium ${errors.email ? "text-red-500" : "text-colorRaffle"} mb-1`}>Correo Electrónico</label>
-                <input type="email" id="email" name="email" onChange={handleChange} value={formData.email} className={`bg-transparent  w-full px-3 py-2 border ${errors.email ? "border-red-400" : "border-borderRaffle"} rounded-md shadow-sm focus:outline-none focus:ring-primaryRaffle focus:border-primaryRaffle`} />
-              </div>
-              <div>
-                <label htmlFor="message" className={`block text-sm font-medium ${errors.message ? "text-red-500" : "text-colorRaffle"} mb-1`}>Mensaje</label>
-                <textarea id="message" rows="4" name="message" onChange={handleChange} value={formData.message} className={`bg-transparent  w-full px-3 py-2 border ${errors.message ? "border-red-400" : "border-borderRaffle"} rounded-md shadow-sm focus:outline-none focus:ring-primaryRaffle focus:border-primaryRaffle`} ></textarea>
-              </div>
-              <Button onClick={handleSubmit} className="w-full">
-                Enviar Mensaje
-              </Button>
-            </CardContent>
+            {contactSent ? (
+              <div className='p-6'>
+                <ContactSuccess/>
+                </div>
+            ) : (
+            <>
+              <CardHeader>
+                <CardTitle className="text-2xl text-primaryRaffle flex items-center">
+                  <Send className="mr-2 h-6 w-6" /> Envíanos un Mensaje
+                </CardTitle>
+              </CardHeader>
+              <CardContent className="space-y-4">
+                <div>
+                  <label htmlFor="name" className={`block text-sm font-medium ${errors.name ? "text-red-500" : "text-colorRaffle"} mb-1`}>Nombre Completo</label>
+                  <input type="text" name="name" onChange={handleChange} value={formData.name} id="name" className={`bg-transparent w-full px-3 py-2 border ${errors.name ? "border-red-400" : "border-borderRaffle"} rounded-md shadow-sm focus:outline-none focus:ring-primaryRaffle focus:border-primaryRaffle`} />
+                </div>
+                <div>
+                  <label htmlFor="email" className={`block text-sm font-medium ${errors.email ? "text-red-500" : "text-colorRaffle"} mb-1`}>Correo Electrónico</label>
+                  <input type="email" id="email" name="email" onChange={handleChange} value={formData.email} className={`bg-transparent  w-full px-3 py-2 border ${errors.email ? "border-red-400" : "border-borderRaffle"} rounded-md shadow-sm focus:outline-none focus:ring-primaryRaffle focus:border-primaryRaffle`} />
+                </div>
+                <div>
+                  <label htmlFor="message" className={`block text-sm font-medium ${errors.message ? "text-red-500" : "text-colorRaffle"} mb-1`}>Mensaje</label>
+                  <textarea id="message" rows="4" name="message" onChange={handleChange} value={formData.message} className={`bg-transparent  w-full px-3 py-2 border ${errors.message ? "border-red-400" : "border-borderRaffle"} rounded-md shadow-sm focus:outline-none focus:ring-primaryRaffle focus:border-primaryRaffle`} ></textarea>
+                </div>
+                <Button onClick={handleSubmit} className="w-full">
+                  Enviar Mensaje
+                </Button>
+              </CardContent>
+            </>)}
           </Card>
         </motion.div>
 

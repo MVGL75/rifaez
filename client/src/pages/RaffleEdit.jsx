@@ -210,6 +210,8 @@ const RaffleEditPage = ({}) => {
     });
   }
 
+ 
+
   const handlePrizeChange = (index, value) => {
     setRaffle(prev => {
       const newPrizes = [...prev.additionalPrizes];
@@ -335,7 +337,7 @@ const RaffleEditPage = ({}) => {
         <Button
           variant="ghost"
           size="sm"
-          onClick={() => navigate("/edit")}
+          onClick={() => navigate("/raffle-admin/edit")}
           className="flex items-center space-x-2"
         >
           <ChevronLeft className="w-4 h-4" />

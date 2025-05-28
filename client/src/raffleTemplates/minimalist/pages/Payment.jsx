@@ -16,7 +16,6 @@ const Payment = ({setAvailableTickets}) => {
   const [selectedTickets, setSelectedTickets] = useState([]);
   const [success, setSuccess] =  useState(false)
   const [noTickets, setNoTickets] = useState(true);
-  const [instructionsToggledOn, setToggle] = useState(false);  
   const [userInfo, setUserInfo] = useState({});
   const topRef = useRef(null);
 
@@ -119,7 +118,10 @@ const Payment = ({setAvailableTickets}) => {
                   ))}
             </div>
         </div>
-        <p className="text-base text-colorRaffle-300">Tus boletos han sido adquiridos, pero el pago sigue pendiente hasta que el organizador de la rifa revise tu comprobante y confirme la transacción.</p>
+        <div className="space-y-3">
+          <p className="text-base text-colorRaffle-300">Tus boletos han sido adquiridos, pero el pago sigue pendiente hasta que el organizador de la rifa revise tu comprobante y confirme la transacción.</p>
+          <p className="">Tienes {raffle.timeLimitPay} días para pagar, si no, tus boletos se liberarán automáticamente.</p>
+        </div>
         <button onClick={goToParent} className="text-colorRaffle-foreground rounded-[50px] w-fit bg-primaryRaffle flex justify-center items-center px-6 py-3">Regresar a pagina de rifa</button>
         </div>
     </div>
@@ -190,63 +192,58 @@ const Payment = ({setAvailableTickets}) => {
         
         <div className="space-y-6 mb-8">
           {paymentMethods.map((method, index) => (
-            <motion.div
-              key={index}
-              initial={{ opacity: 0, x: -20 }}
-              animate={{ opacity: 1, x: 0 }}
-              transition={{ delay: index * 0.1 }}
-              className="bg-cardRaffle p-6 rounded-lg text-colorRaffle relative"
-            >
-             { method.instructions &&
-              <>
-                <MessageSquare onClick={()=>{setToggle(prev => !prev)}} className="absolute right-8 top-6 text-colorRaffle"/>
-                {instructionsToggledOn &&
-                <div className="space-y-4">
-                  <h1>Instrucciones de Pago</h1>
-                  <p >
-                    {method.instructions}
-                  </p>
-                </div>
-                }
-                </>
-             }
-             {!(method.instructions && instructionsToggledOn) &&
-              <>
-                <h2 className="text-xl font-bold text-colorRaffle mb-4">
-                  {method.bank}
-                </h2>
-                <div className="space-y-4">
-                  <p>
-                    <span className="font-semibold">Titular:</span>{" "}
-                    {method.accountHolder}
-                  </p>
-                  <div className="flex items-center gap-2">
-                    <p className="font-semibold">Número de Cuenta:</p>
-                    <div
-                      onClick={() => handleCopyNumber(method.accountNumber)}
-                      variant="outline"
-                      size="sm"
-                      className="text-colorRaffle hover:text-colorRaffle-600"
-                    >
-                      {formatMethodNumber(method.accountNumber)}
+              <motion.div
+                key={index}
+                initial={{ opacity: 0, x: -20 }}
+                animate={{ opacity: 1, x: 0 }}
+                transition={{ delay: index * 0.1 }}
+                className="bg-cardRaffle p-6 rounded-lg text-colorRaffle relative"
+              >
+                  <h2 className="text-xl font-bold text-colorRaffle mb-4">
+                    {method.bank}
+                  </h2>
+                  <div className="space-y-4">
+                    <p>
+                      <span className="font-semibold">Titular:</span>{" "}
+                      {method.accountHolder}
+                    </p>
+                    <div className="flex items-center gap-2">
+                      <p className="font-semibold">Número de Cuenta:</p>
+                      <div
+                        onClick={() => handleCopyNumber(method.accountNumber)}
+                        variant="outline"
+                        size="sm"
+                        className="text-colorRaffle hover:text-colorRaffle-600"
+                      >
+                        {formatMethodNumber(method.accountNumber)}
+                      </div>
                     </div>
-                  </div>
-                  <div className="flex items-center gap-2">
-                    <p className="font-semibold">Clabe:</p>
-                    <div
-                      onClick={() => handleCopyNumber(method.clabe)}
-                      variant="outline"
-                      size="sm"
-                      className="text-colorRaffle hover:text-colorRaffle-600"
-                    >
-                      {formatCLABE(method.clabe)}
+                    <div className="flex items-center gap-2">
+                      <p className="font-semibold">Clabe:</p>
+                      <div
+                        onClick={() => handleCopyNumber(method.clabe)}
+                        variant="outline"
+                        size="sm"
+                        className="text-colorRaffle hover:text-colorRaffle-600"
+                      >
+                        {formatCLABE(method.clabe)}
+                      </div>
                     </div>
+                    {method.instructions &&
+                    <div className="flex items-center gap-2">
+                      <p className="font-semibold">Nota:</p>
+                      <div
+                        variant="outline"
+                        size="sm"
+                        className="text-colorRaffle hover:text-colorRaffle-600"
+                      >
+                        {method.instructions}
+                      </div>
+                    </div>
+                    }
                   </div>
-                </div>
-                </>
-              }
-            </motion.div>
-          ))}
+              </motion.div>
+            ))}
         </div>
         <button onClick={finalizePayment} className="text-colorRaffle-foreground rounded-[50px] w-fit ml-auto mr-auto bg-primaryRaffle flex justify-center items-center px-4 py-2 "><span>Finalizar Pago</span></button>
       </motion.div>

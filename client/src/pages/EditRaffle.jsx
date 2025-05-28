@@ -2,10 +2,11 @@
 import React, { useState } from "react";
 import { motion } from "framer-motion";
 import { Button } from "@/components/ui/button";
-import { Edit2, Trash2, Eye, ChevronLeft } from "lucide-react";
+import { Edit2, Trash2, Eye, ChevronLeft, Download } from "lucide-react";
 import { useAuth } from "@/contexts/AuthContext";
 import { useNavigate } from "react-router-dom";
 import { useToast } from "@/components/ui/use-toast";
+import * as XLSX from 'xlsx';
 import axios from 'axios';
 const api = axios.create({
   baseURL: import.meta.env.VITE_CURRENT_HOST,
@@ -22,7 +23,7 @@ const EditRafflePage = () => {
   };
 
   const handleEdit = (raffle) => {
-    navigate(`/edit/${raffle.id}`);
+    navigate(`/raffle-admin/edit/${raffle.id}`);
   };
 
   const handleDelete = async (raffle) => {
@@ -30,6 +31,53 @@ const EditRafflePage = () => {
     if(res.data.status === 200){
       setUser(res.data.user)
     }
+  };
+
+  const handleDownloadExcel = async (raffle) => {
+    downloadExcel(raffle.currentParticipants, 'raffle_participants.xlsx');
+  };
+
+  const downloadExcel = (data, fileName = 'data.xlsx') => {
+    const refactoredData = data.map(ticket => ({
+        Nombre: ticket.name,
+        Telefono: ticket.phone,
+        Estado: ticket.state,
+        Fecha: new Date(ticket.date).toLocaleString('en-MX', {
+          dateStyle: 'medium',
+          timeStyle: 'short',
+        }),
+        Boletos: ticket.tickets.join(', '),
+        Cantidad: ticket.amount,
+        Status: ticket.status === "paid" ? "pagado" : "pendiente",
+        Identificador: ticket.transactionID,
+        Notas: ticket.notes ? ticket.notes.join(', ') : "",
+    }))
+    const worksheet = XLSX.utils.json_to_sheet(refactoredData);
+  
+    // Create a new workbook and append the worksheet
+    const workbook = XLSX.utils.book_new();
+    XLSX.utils.book_append_sheet(workbook, worksheet, 'Sheet1');
+  
+    // Write the workbook and convert it to a binary string
+    const excelBuffer = XLSX.write(workbook, {
+      bookType: 'xlsx',
+      type: 'array',
+    });
+  
+    // Create a Blob from the binary string
+    const dataBlob = new Blob([excelBuffer], {
+      type:
+        'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet;charset=UTF-8',
+    });
+  
+    // Create a link and trigger the download
+    const url = window.URL.createObjectURL(dataBlob);
+    const link = document.createElement('a');
+    link.href = url;
+    link.setAttribute('download', fileName);
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
   };
 
   return (
@@ -43,7 +91,7 @@ const EditRafflePage = () => {
         <Button
           variant="ghost"
           size="sm"
-          onClick={() => navigate("/")}
+          onClick={() => navigate("/raffle-admin")}
           className="flex items-center space-x-2"
         >
           <ChevronLeft className="w-4 h-4" />
@@ -124,6 +172,15 @@ const EditRafflePage = () => {
                           >
                             <Edit2 className="w-4 h-4" />
                             <span>Editar</span>
+                          </Button>
+                          <Button
+                            variant="outline"
+                            size="sm"
+                            className="flex bg-green-900 items-center space-x-1 text-primary-foreground"
+                            onClick={() => handleDownloadExcel(raffle)}
+                          >
+                            <Download className="w-4 h-4" />
+                            <span>Descargar Excel</span>
                           </Button>
                           <Button
                             variant="destructive"

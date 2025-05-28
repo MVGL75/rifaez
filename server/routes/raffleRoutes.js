@@ -19,13 +19,16 @@ router.post('/delete/:id', isAuthenticated, hasPermission, catchAsync(deleteRaff
 router.post('/edit/:id', isAuthenticated, hasPermission, upload.array('images', 10), catchAsync(rafflePlan("edit")), catchAsync(editRaffle));
 router.post('/:id/:ticketID/mark_paid', isAuthenticated, hasPermission, catchAsync(markPaid));
 
+
 router.post('/:id/:ticketID/add_note', isAuthenticated, hasPermission, catchAsync(addNote));
 router.post('/:id/contact', catchAsync(contactRaffle));
 router.post('/:id/payment', catchAsync(paymentRaffle));
 router.post('/:id/view', catchAsync(viewUpdateRaffle));
 router.post('/:id/verify', catchAsync(verifyRaffle));
 // GET /api/raffle/:id
-router.get('/:id', catchAsync(findRaffle));
+
+
 router.get('/edit/:id', isAuthenticated, hasPermission, catchAsync(editFindRaffle));
+router.get('/:id', catchAsync(findRaffle));
 
 export default router;

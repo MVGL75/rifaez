@@ -33,7 +33,7 @@ function PricingPlan(){
         const res = await api.post("/stripe/update-plan", {newPriceId: priceId});
         if(res.data){
           setUser(res.data)
-          if(from) navigate(from);
+          if(from) navigate(`/raffle-admin${from}`);
         }
       } catch (error) {
         console.log(error)
@@ -92,7 +92,7 @@ function PricingPlan(){
     return (
         <>
         <header className='mx-auto w-fit mt-12'>
-            <Link to="/">
+            <Link to="/raffle-admin">
                 <Logo className='w-10 h-10'/>
             </Link>
         </header>

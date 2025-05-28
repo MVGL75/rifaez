@@ -39,7 +39,7 @@ export const CheckoutForm = () => {
   return (
     <div style={{ padding: '2rem' }}>
       <header className='mx-auto w-fit mb-10'>
-        <Link to="/">
+        <Link to="/raffle-admin">
           <Logo className='w-10 h-10'/>
         </Link>
       </header>
@@ -93,7 +93,7 @@ export const Return = ({setUserJustCreated}) => {
             }
         } 
         setSpinner(false)
-        navigate('/')
+        navigate('/raffle-admin')
 
         } catch (error) {
           setAppError(error)

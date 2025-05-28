@@ -13,7 +13,7 @@ const RaffleFinished = ({setViewStatistics}) => {
                     <button className="px-4 py-3 bg-primary rounded-lg text-primary-foreground text-sm font-medium" onClick={()=>{setViewStatistics(true)}}>
                         <span>Ver estadísticas</span>
                     </button>
-                    <button className="px-4 py-3 bg-red-500 rounded-lg text-primary-foreground text-sm font-medium" onClick={deleteRaffle}>
+                    <button className="px-4 py-3 bg-destructive rounded-lg text-destructive-foreground text-sm font-medium" onClick={deleteRaffle}>
                         <span>Eliminar Rifa</span>
                     </button>
                 </footer>

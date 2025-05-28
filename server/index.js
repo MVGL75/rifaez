@@ -196,4 +196,6 @@ app.use((err, req, res, next) => {
 app.listen(5050, () => {
     console.log('Server is running on port 5050');
   });
+
+  import './jobs/cronPayment.js';
   

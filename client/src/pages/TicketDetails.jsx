@@ -134,7 +134,7 @@ const TicketDetails = () => {
     <div className="flex flex-col items-center h-[500px] justify-center space-y-6">
       <h1 className="text-gray-600 text-3xl font-semibold">Transacción No Encontrada</h1>
       <p className="text-base text-center text-gray-500">La transacción que estás buscando no existe. Verifica que los datos ingresados sean correctos.</p>
-      <button onClick={()=>{navigate("/")}} className="rounded-3xl px-5 py-2 bg-blue-600 text-primary-foreground hover:bg-blue-700 transition duration-200">Regresar a la Página de Inicio</button>
+      <button onClick={()=>{navigate("/raffle-admin")}} className="rounded-3xl px-5 py-2 bg-blue-600 text-primary-foreground hover:bg-blue-700 transition duration-200">Regresar a la Página de Inicio</button>
     </div>
 
   );
@@ -148,7 +148,7 @@ const TicketDetails = () => {
         <Button
           variant="ghost"
           size="sm"
-          onClick={() => navigate("/stats")}
+          onClick={() => navigate("/raffle-admin/stats")}
           className="flex items-center space-x-2"
         >
           <ChevronLeft className="w-4 h-4" />

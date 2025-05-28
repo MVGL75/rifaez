@@ -35,7 +35,7 @@ export const methodSchema = Joi.object({
       'string.pattern.base': 'Cuenta clabe must be exactly 18 digits.',
       'string.empty': 'Cuenta clabe is required.',
     }),
-  instructions: Joi.string().optional(),
+    instructions: Joi.string().empty('').optional(),
 });
 
 export const emailSchema = Joi.string().email({ tlds: { allow: false } }).required()

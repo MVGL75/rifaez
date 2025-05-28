@@ -50,7 +50,7 @@ const CreateRafflePage = ({userJustCreated, setUserJustCreated}) => {
   const [showPaletteValue, setPaletteValue] = useState(false)
   const [formError, setFormError] = useState(null)
   const [justAddedPrize, setAddedPrize] = useState(false)
-  const [newMethod, setNewMethod] = useState({})
+  const [newMethod, setNewMethod] = useState({bank: '', person: '', number: "", instructions: ""})
   const [methodErrors, setMethodErrors] = useState({})
   const [stopSubmit, setStopSubmit] = useState(true)
   const [spinner, setSpinner] = useState(false)
@@ -108,38 +108,12 @@ const CreateRafflePage = ({userJustCreated, setUserJustCreated}) => {
   }, []);
 
   const handlePaymentMethodToggle = (methodId) => {
-    setPaymentMethods(prev => {
-      
-      const isTogglingOn = !prev.find(m => m.id === methodId)?.enabled;
-      if (!isTogglingOn) {
-        return prev.map(method =>
+    setPaymentMethods(prev => prev.map(method =>
           method.id === methodId
-            ? { ...method, enabled: false }
+            ? { ...method, enabled: !method.enabled }
             : method
-        );
-      }
-    
-      const enabled = prev.filter(m => m.enabled);
-    
-      if (enabled.length < 3) {
-        return prev.map(method =>
-          method.id === methodId
-            ? { ...method, enabled: true }
-            : method
-        );
-      }
-      const methodToDisable = enabled[0];
-    
-      return prev.map(method => {
-        if (method.id === methodToDisable.id) {
-          return { ...method, enabled: false };
-        }
-        if (method.id === methodId) {
-          return { ...method, enabled: true };
-        }
-        return method;
-      });
-    });
+        )
+      );
     
   };
   useEffect(()=>{
@@ -225,11 +199,10 @@ const CreateRafflePage = ({userJustCreated, setUserJustCreated}) => {
     }
     const id = Math.random().toString(36).substring(2, 10);
 
-
       setPaymentMethods(prev => [...prev, {...value, id: id, enabled: false,}])
       setWasSubmitted(prev => ({...prev, method: undefined}))
       setMethodErrors(prev => ({...prev, method: undefined}))
-      setNewMethod({bank: '', person: '', number: ""})
+      setNewMethod({bank: '', person: '', number: "", instructions: ""})
   };
   useEffect(() => {
     if(!wasSubmitted.method) return;
@@ -1051,7 +1024,7 @@ const CreateRafflePage = ({userJustCreated, setUserJustCreated}) => {
           <div className="pt-6">
             <Button
               variant="outline"
-              onClick={() => navigate(`/raffle/${newRaffleId}`)}
+              onClick={() => navigate(`/raffle-admin/raffle/${newRaffleId}`)}
               className="flex items-center space-x-2"
             >
               <Share2 className="w-4 h-4" />

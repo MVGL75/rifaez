@@ -11,7 +11,7 @@ export default function NotFoundPage() {
         No pudimos encontrar la página que estabas buscando.
       </p>
       <Link
-        to="/"
+        to="/raffle-admin"
         className="px-5 py-2 bg-primary text-white rounded-lg hover:bg-primary/80 transition flex items-center gap-3"
       >
         <ArrowLeft className="w-5 h-5"/>

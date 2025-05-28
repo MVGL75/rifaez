@@ -6,7 +6,7 @@ export default function AppError({ message = "Hubo un error", status = 500 }) {
     const navigate = useNavigate()
     const removeError = () => {
         setAppError(null)
-        navigate("/");
+        navigate("/raffle-admin");
     }
   return (
     <div className="min-h-[500px] bg-background flex flex-col items-center justify-center px-6 text-center">

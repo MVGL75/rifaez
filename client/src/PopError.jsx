@@ -16,12 +16,12 @@ export default function PopError({ message = "Ocurrio un error."}) {
         setPopError(null)
     }
   return (
-      <dialog id="popError" className="bg-white w-[300px] max-w-screen p-6 rounded-lg">
+      <dialog id="popError" className="bg-background text-foreground w-[300px] max-w-screen p-6 rounded-lg">
         <header className="flex justify-between items-center mb-10">
             <h1 className="text-2xl">Error </h1>
             <button
                 onClick={removeError}
-                className="cursor-pointer p-2 bg-red-400 text-white rounded-full hover:bg-red-300 transition"
+                className="cursor-pointer p-2 bg-destructive text-desctructive-foreground rounded-full hover:bg-red-600 transition"
                 >
                 <X/>
             </button>

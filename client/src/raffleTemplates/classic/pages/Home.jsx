@@ -19,7 +19,6 @@ const Home = ({availableTickets}) => {
   const [filteredStates, setFilteredStates] = useState([...newMexicanStates, "Extranjero"]);
   const [filteredTickets, setFilteredTickets] = useState([...availableTickets])
   const [showTicketModal, setShowTicketModal] = useState(false);
-  const [randomNumber, setRandomNumber] = useState(null)
   const [wasSubmitted, setWasSubmitted] = useState(false)
   const [touchStart, setTouchStart] = useState(null);
   const [searchTicket, setSearchTicket] = useState("")
@@ -121,24 +120,9 @@ const Home = ({availableTickets}) => {
   }
 
   const randomizeSelection = () => {
-    if(!randomNumber) return setRandomNumber(1);
-    let newNum = randomNumber
-    if (newNum > availableTickets.length) {
-      newNum = availableTickets.length
-    }
-    if (newNum < 1) {
-      newNum = 1
-    }
-    const randomNums = []
-    for (let i = 0; i < newNum; i++) {
-      const random = Math.floor(Math.random() * availableTickets.length);
-      randomNums.push(availableTickets[random])
-    }
-    setSelectedTickets(randomNums);
-    setFilteredTickets(randomNums);
-  }
-  const handleRandom = (e) => {
-    setRandomNumber(e.target.value)
+    const availableTicketsFiltered = availableTickets.filter(ticket => !selectedTickets.includes(ticket))
+    const random = Math.floor(Math.random() * availableTicketsFiltered.length);
+    setSelectedTickets(prev => [...prev, availableTicketsFiltered[random]]);
   }
   const handleChange = (e) => {
     const name = e.target.name
@@ -318,11 +302,6 @@ const Home = ({availableTickets}) => {
               </div>
               <div className="absolute right-4 sm:right-auto  sm:relative">
                 <Shuffle className="w-5 h-5 sm:w-6 sm:h-6" onClick={randomizeSelection} />
-                {randomNumber &&
-                <div className="absolute right-0 top-full translate-y-1/2 ">
-                  <input onChange={handleRandom} min={1} type="number" className=" w-20 h-12 px-4 py-4 bg-primaryRaffle text-colorRaffle-foreground rounded-xl" />
-                </div>
-}
               </div>
               </div>
             </div>

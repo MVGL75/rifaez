@@ -12,7 +12,6 @@ const api = axios.create({
 });
 
 const PaymentMethodCard = ({ method, onCopy }) => {
-  const [instructionsToggledOn, setToggle] = useState(false);  
 
   const formatMethodNumber = (input) => {
     const digits = String(input).replace(/\D/g, '');
@@ -34,21 +33,6 @@ const PaymentMethodCard = ({ method, onCopy }) => {
   }
   return (
     <Card className="shadow-lg hover:shadow-xl transition-shadow duration-300 relative">
-      {method.instructions &&
-      <>
-          <MessageSquare onClick={()=>{setToggle(prev => !prev)}} className='absolute right-8 top-6 text-primaryRaffle' />
-          {instructionsToggledOn &&
-            <div className="space-y-4 p-6 ">
-              <h1 className='text-primaryRaffle'>Instrucciones de Pago</h1>
-              <p >
-                {method.instructions}
-              </p>
-            </div>
-            }
-            </>
-      }
-      {!(method.instructions && instructionsToggledOn) &&
-        <>
         <CardHeader>
           <CardTitle className="flex items-center text-xl sm:text-2xl text-primaryRaffle">
             {method.bank}
@@ -92,9 +76,13 @@ const PaymentMethodCard = ({ method, onCopy }) => {
                   <Copy className="h-4 w-4 mr-1" /> Copiar
                 </Button>
             </div>
+            {method.instructions &&
+            <div  className="text-sm sm:text-base">
+              <span className="font-semibold text-colorRaffle">Nota: </span>
+              <span className="text-colorRaffle-300 break-all">{method.instructions}</span>
+            </div>
+            }
         </CardContent>
-        </>
-        }
     </Card>
   );
 };
@@ -196,7 +184,10 @@ const PaymentPage = ({ setAvailableTickets }) => {
                     ))}
               </div>
           </div>
-          <p className="text-base text-colorRaffle-300">Tus boletos han sido adquiridos, pero el pago sigue pendiente hasta que el organizador de la rifa revise tu comprobante y confirme la transacción.</p>
+          <div className="space-y-3">
+              <p className="text-base text-colorRaffle-300">Tus boletos han sido adquiridos, pero el pago sigue pendiente hasta que el organizador de la rifa revise tu comprobante y confirme la transacción.</p>
+              <p className="">Tienes {raffle.timeLimitPay} días para pagar, si no, tus boletos se liberarán automáticamente.</p>
+          </div>
           <button onClick={goToParent} className="text-colorRaffle-foreground rounded-[50px] w-fit bg-primaryRaffle flex justify-center items-center px-6 py-3">Regresar a pagina de rifa</button>
           </div>
       </div>

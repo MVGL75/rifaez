@@ -143,6 +143,11 @@ export const editRaffle = async (req, res) => {
   export const paymentRaffle = async (req, res)=>{
     const raffleID = req.params.id
     const raffle = await Raffle.findById(raffleID)
+    const now = new Date();
+    const endDate = new Date(raffle.endDate);
+    if(now > endDate){
+      return res.json({message: "raffle has finalized", status: 400});
+    }
     const body = req.body
     let ticketExists = false
     raffle.currentParticipants?.forEach(participant => {
@@ -171,15 +176,15 @@ export const editRaffle = async (req, res) => {
     res.json({message: "Contact Sent", status: 200})
   }
   export const editFindRaffle = async (req, res)=>{
-    const raffleID = req.params.id
-    const raffle = await Raffle.findById(raffleID);
-    const cleanRaffle = sanitizeRaffle(raffle.toObject())
-    if(raffle){
-      res.json({message: "Raffle found", status: 200, raffle: {...cleanRaffle}})
-    } else {
-      res.json({message: "Raffle not found", status: 200})
+      const raffleID = req.params.id
+      const raffle = await Raffle.findById(raffleID);
+      const cleanRaffle = sanitizeRaffle(raffle.toObject())
+      if(raffle){
+        res.json({message: "Raffle found", status: 200, raffle: {...cleanRaffle}})
+      } else {
+        res.json({message: "Raffle not found", status: 200})
+      }
     }
-  }
   export const markPaid = async (req, res)=>{
     const {id, ticketID} = req.params
     const raffle = await Raffle.findById(id);

@@ -17,7 +17,6 @@ const Payment = ({setAvailableTickets}) => {
   const [success, setSuccess] =  useState(false)
   const [noTickets, setNoTickets] = useState(true);
   const [userInfo, setUserInfo] = useState({});
-  const [instructionsToggledOn, setToggle] = useState(false);
   const topRef = useRef(null);
 
   useEffect(() => {
@@ -119,7 +118,10 @@ const Payment = ({setAvailableTickets}) => {
                   ))}
             </div>
         </div>
-        <p className="text-base text-colorRaffle-300">Tus boletos han sido adquiridos, pero el pago sigue pendiente hasta que el organizador de la rifa revise tu comprobante y confirme la transacción.</p>
+        <div className="space-y-3">
+          <p className="text-base text-colorRaffle-300">Tus boletos han sido adquiridos, pero el pago sigue pendiente hasta que el organizador de la rifa revise tu comprobante y confirme la transacción.</p>
+          <p className="">Tienes {raffle.timeLimitPay} días para pagar, si no, tus boletos se liberarán automáticamente.</p>
+        </div>
         <button onClick={goToParent} className="text-colorRaffle-foreground rounded-[50px] w-fit bg-primaryRaffle flex justify-center items-center px-6 py-3">Regresar a pagina de rifa</button>
         </div>
     </div>
@@ -197,21 +199,6 @@ const Payment = ({setAvailableTickets}) => {
               transition={{ delay: index * 0.1 }}
               className="bg-cardRaffle p-6 rounded-lg text-colorRaffle relative"
             >
-             { method.instructions &&
-              <>
-                <MessageSquare onClick={()=>{setToggle(prev => !prev)}} className="absolute right-8 top-6 text-colorRaffle"/>
-                {instructionsToggledOn &&
-                <div className="space-y-4">
-                  <h1>Instrucciones de Pago</h1>
-                  <p >
-                    {method.instructions}
-                  </p>
-                </div>
-                }
-                </>
-             }
-             {!(method.instructions && instructionsToggledOn) &&
-              <>
                 <h2 className="text-xl font-bold text-colorRaffle mb-4">
                   {method.bank}
                 </h2>
@@ -242,9 +229,19 @@ const Payment = ({setAvailableTickets}) => {
                       {formatCLABE(method.clabe)}
                     </div>
                   </div>
+                  {method.instructions &&
+                  <div className="flex items-center gap-2">
+                    <p className="font-semibold">Nota:</p>
+                    <div
+                      variant="outline"
+                      size="sm"
+                      className="text-colorRaffle hover:text-colorRaffle-600"
+                    >
+                      {method.instructions}
+                    </div>
+                  </div>
+                  }
                 </div>
-                </>
-              }
             </motion.div>
           ))}
         </div>

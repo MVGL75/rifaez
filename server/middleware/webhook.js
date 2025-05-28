@@ -92,7 +92,6 @@ router.post('/', bodyParser.raw({ type: 'application/json' }), async (req, res) 
         }
           user.planId = priceId;
           await user.save();
-          console.log("webhook", user)
           console.log(`✅ Subscription update for user ${user.username}`);
       }
       

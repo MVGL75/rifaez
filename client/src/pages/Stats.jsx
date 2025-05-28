@@ -475,7 +475,7 @@ const StatsPage = ({ selectedRaffle }) => {
                   <Button
                     variant="outline"
                     size="sm"
-                    onClick={() => navigate(`/ticket/${selectedRaffle._id}/${participant.transactionID}`)}
+                    onClick={() => navigate(`/raffle-admin/ticket/${selectedRaffle._id}/${participant.transactionID}`)}
                   >
                     Ver Detalles
                   </Button>

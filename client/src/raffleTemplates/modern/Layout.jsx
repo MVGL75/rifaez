@@ -29,7 +29,7 @@ const Layout = ({raffle}) => {
 
   return (
     <div className="min-h-screen flex flex-col bg-gradient-to-br from-backgroundRaffle to-lightColorTint font-fontRaffle">
-      <header className="sticky top-0 z-50 bg-headerRaffle backdrop-blur-md shadow-sm">
+      <header className={`sticky top-0 z-50 ${raffle.header === "on" ? "bg-headerRaffle" : "bg-backgroundRaffle"} backdrop-blur-md shadow-sm`}>
         <div className="max-w-[calc(100vw-64px)] w-[1400px] mx-auto px-4 sm:px-6 lg:px-8">
           <div className={`relative flex items-center  ${raffle.logo_position === "left" ? "justify-between flex-row" : "flex-row-reverse"}  ${raffle.logo_position === "right" && "gap-4"} h-16`}>
             <div className={`${raffle.logo_position === "center" && "absolute left-1/2 -translate-x-1/2"} flex items-center`}>
@@ -102,7 +102,7 @@ const Layout = ({raffle}) => {
           </motion.div>
         </AnimatePresence>
       </main>
-      <RifaezWidget/>
+
       <WhatsWidget number={raffle.phone}/>
       <footer className="bg-backgroundRaffle border-t border-borderRaffle">
         <div className="max-w-[1400px] mx-auto px-4 sm:px-6 lg:px-8 py-6 text-center">

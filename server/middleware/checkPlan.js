@@ -8,7 +8,7 @@ const checkPlan = async (req, res, next) => {
     if(!perm) {
         req.session.redirectAfterPayment = {
             url: req.originalUrl,
-            frontUrl: "/create",
+            frontUrl: "/raffle-admin/create",
             method: req.method,
         };
         return res.json({message: "Plan not valid", status: 808})

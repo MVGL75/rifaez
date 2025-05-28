@@ -48,36 +48,7 @@ router.post('/facebook/deletion', (req, res) => {
     });
   });
   
-  // Function to parse and verify the signed_request
-  function parseSignedRequest(signedRequest) {
-    const [encodedSig, payload] = signedRequest.split('.', 2);
-    const secret = 'appsecret'; // Replace with your app secret
-  
-    const sig = base64UrlDecode(encodedSig);
-    const data = JSON.parse(base64UrlDecode(payload));
-  
-    const expectedSig = crypto
-      .createHmac('sha256', secret)
-      .update(payload)
-      .digest();
-  
-    if (!crypto.timingSafeEqual(Buffer.from(sig), Buffer.from(expectedSig))) {
-      console.error('Bad Signed JSON signature!');
-      return null;
-    }
-  
-    return data;
-  }
-  
-  // Helper to decode base64url
-  function base64UrlDecode(str) {
-    str = str.replace(/-/g, '+').replace(/_/g, '/');
-    const pad = 4 - (str.length % 4);
-    if (pad !== 4) {
-      str += '='.repeat(pad);
-    }
-    return Buffer.from(str, 'base64').toString('utf-8');
-  }
+
 
 
 router.post('/login', login);

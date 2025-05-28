@@ -47,7 +47,8 @@ export const methodSchema = Joi.object({
       'string.pattern.base': 'Cuenta clabe must be exactly 18 digits.',
       'string.empty': 'Cuenta clabe is required.',
     }),
-  instructions: Joi.string().optional(),
+    instructions: Joi.string().empty('').optional(),
+
 });
 
 export const raffleValidationSchema = Joi.object({
@@ -79,7 +80,7 @@ export const raffleValidationSchema = Joi.object({
     // maxTpT: Joi.number().greater(0).required(),
     timeLimitPay: Joi.number().greater(0).required(),
     fileCounter: Joi.number().greater(0).required(),
-    paymentMethods: Joi.array().items(methodSchema.required()).max(3).required(),
+    paymentMethods: Joi.array().items(methodSchema.required()).required(),
     
     payment_instructions: Joi.string().when('paymentMethods', {
       is: Joi.array().has('custom'),

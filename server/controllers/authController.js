@@ -330,7 +330,6 @@ export const save = async(req, res)=> {
       const user = await User.findById(req.user._id)
       if(!user) return res.json({ message: 'User not found', status: 401 });
       const clientUser = await setUserForClient(req, user)
-      console.log(clientUser)
       return res.json(clientUser);
  
   }

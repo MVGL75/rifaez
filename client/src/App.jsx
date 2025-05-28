@@ -23,6 +23,7 @@ import AppError from "./AppError";
 import PopError from "./PopError";
 import AppNotFound from "./AppNotFound";
 import RaffleNotFound from "./raffleTemplates/RaffleNotFound";
+import HomePromotional from "./HomePromotional";
 import NoRaffle from "./components/NoRaffle";
 import SpinningLogo from "./components/spinner";
 import RecoverPass from "./pages/RecoverPass";
@@ -92,7 +93,7 @@ const CheckPlan = ({ children, userJustCreated }) => {
   }
 };
 const RedirectHome = () => {
-  return <Navigate to="/" />;
+  return <Navigate to="/raffle-admin" />;
 };
 const AppContent = () => {
   const { user, setUser, appError, popError } = useAuth();
@@ -164,6 +165,7 @@ const AppContent = () => {
       <Routes>
         {appError ? <Route path="*" element={<AppError />} /> : (
         <>
+        <Route path="/" element={<HomePromotional/>} />
         <Route path="/login" element={<LoginPage />} />
         <Route path="/register" element={<RegisterPage />} />
         <Route path="/privacy-policy" element={<PrivacyPolicy/>} />
@@ -180,7 +182,9 @@ const AppContent = () => {
   return (
     <>
       <Routes>
+      <Route path="/" element={<HomePromotional/>} />
         <Route
+          path="/raffle-admin"
           element={
             <MainLayout
               selectedRaffle={selectedRaffle}
@@ -193,7 +197,7 @@ const AppContent = () => {
           ) : (
             <>
               <Route
-                path="/"
+                index
                 element={
                   <ProtectedRoute>
                     <RaffleSelected selectedRaffle={selectedRaffle}>
@@ -205,7 +209,7 @@ const AppContent = () => {
                 }
               />
               <Route
-                path="/stats"
+                path="stats"
                 element={
                   <ProtectedRoute>
                     <RaffleSelected selectedRaffle={selectedRaffle}>
@@ -217,7 +221,7 @@ const AppContent = () => {
                 }
               />
               <Route
-                path="/create"
+                path="create"
                 element={
                   <ProtectedRoute>
                     <CheckPlan userJustCreated={userJustCreated}>
@@ -227,7 +231,7 @@ const AppContent = () => {
                 }
               />
               <Route
-                path="/edit"
+                path="edit"
                 element={
                   <ProtectedRoute>
                     <EditRafflePage />
@@ -235,7 +239,7 @@ const AppContent = () => {
                 }
               />
               <Route
-                path="/edit/:id"
+                path="edit/:id"
                 element={
                   <ProtectedRoute>
                     <RaffleEditPage />
@@ -243,29 +247,29 @@ const AppContent = () => {
                 }
               />
               <Route
-                path="/settings"
+                path="settings"
                 element={
                   <ProtectedRoute>
                     <SettingsPage />
                   </ProtectedRoute>
                 }
               />
-              <Route path="/notifications" setSelectedRaffle={setSelectedRaffle} element={<ProtectedRoute><NotificationsPage/></ProtectedRoute>}/>
+              <Route path="notifications" setSelectedRaffle={setSelectedRaffle} element={<ProtectedRoute><NotificationsPage/></ProtectedRoute>}/>
               <Route
-                path="/ticket/:raffleID/:transactionID"
+                path="ticket/:raffleID/:transactionID"
                 element={
                   <ProtectedRoute>
                     <TicketDetails />
                   </ProtectedRoute>
                 }
               />
-              <Route path="/login" element={<RedirectHome />} />
-              <Route path="/login" element={<RedirectHome />} />
-              <Route path="/register" element={<RedirectHome />} />
+              
               <Route path="*" element={<AppNotFound />} />
             </>
           )}
         </Route>
+        <Route path="/login" element={<RedirectHome />} />
+        <Route path="/register" element={<RedirectHome />} />
         <Route path="/privacy-policy" element={<PrivacyPolicy/>} />
         <Route path="/reset-password" element={<RecoverPass/>}/>
         <Route path="/pricing-plan" element={<PricingPlan />} />

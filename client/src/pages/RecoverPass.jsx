@@ -67,7 +67,7 @@ export default function RecoverPass(){
                     if(res.data.status === 200){
                         setLoading(false)
                         setUser(res.data.user)
-                        navigate("/")
+                        navigate("/raffle-admin")
                     } else {
                         setAppError(truw)
                     }
@@ -115,7 +115,7 @@ export default function RecoverPass(){
     if(!seeForm) return <NotFoundPage/>;
     return (
         <div className="w-screen h-screen flex items-center justify-center">
-            <div className="shadow-lg bg-background rounded-lg p-5 w-[400px] max-w-[calc(100vw-24px)]">
+            <div className="shadow-lg bg-card rounded-lg p-5 w-[400px] max-w-[calc(100vw-24px)]">
                 <h1 className="text-xl mb-5">Cambiar Contraseña</h1>
                 
           <div className="min-h-[94px]">

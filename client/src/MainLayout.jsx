@@ -12,6 +12,7 @@ import {
     Settings, 
     Bell
   } from "lucide-react";
+import RifaezWidget from "./raffleTemplates/components/RifaezWidget";
 
 export default function({selectedRaffle, setSelectedRaffle}){
     const {user} = useAuth()
@@ -27,34 +28,34 @@ export default function({selectedRaffle, setSelectedRaffle}){
     const isActive = (path) => location.pathname === path;
       // Mobile navigation items
     const mobileNavItems = [
-        { icon: <Home className="w-6 h-6" />, path: "/", label: "Inicio" },
-        { icon: <BarChart2 className="w-6 h-6" />, path: "/stats", label: "Estadísticas" },
-        { icon: <PlusCircle className="w-6 h-6" />, path: "/create", label: "Crear" },
-        { icon: <Edit className="w-6 h-6" />, path: "/edit", label: "Editar" },
-        { icon: <Settings className="w-6 h-6" />, path: "/settings", label: "Ajustes" }
+        { icon: <Home className="w-6 h-6" />, path: "/raffle-admin", label: "Inicio" },
+        { icon: <BarChart2 className="w-6 h-6" />, path: "/raffle-admin/stats", label: "Estadísticas" },
+        { icon: <PlusCircle className="w-6 h-6" />, path: "/raffle-admin/create", label: "Crear" },
+        { icon: <Edit className="w-6 h-6" />, path: "/raffle-admin/edit", label: "Editar" },
+        { icon: <Settings className="w-6 h-6" />, path: "/raffle-admin/settings", label: "Ajustes" }
     ];
     return(
             <div className="min-h-screen bg-background">
         {/* Desktop Navigation */}
         <nav className="hidden customLg:flex items-center justify-between px-8 py-4 bg-card border-b">
             <div className="flex items-center space-x-8">
-            <Link to="/" className="text-2xl font-bold text-foreground">
+            <Link to="/raffle-admin" className="text-2xl font-bold text-foreground">
                 <LogoName className="w-10 h-10" />
             </Link>
             <div className="flex items-center space-x-4">
-                <NavLink to="/" active={isActive("/")}>
+                <NavLink to="/raffle-admin" active={isActive("/raffle-admin")}>
                 <Home className="w-4 h-4" />
                 <span>Inicio</span>
                 </NavLink>
-                <NavLink to="/stats" active={isActive("/stats")}>
+                <NavLink to="/raffle-admin/stats" active={isActive("/raffle-admin/stats")}>
                 <BarChart2 className="w-4 h-4" />
                 <span>Estadísticas</span>
                 </NavLink>
-                <NavLink to="/create" active={isActive("/create")}>
+                <NavLink to="/raffle-admin/create" active={isActive("/raffle-admin/create")}>
                 <PlusCircle className="w-4 h-4" />
                 <span>Crear</span>
                 </NavLink>
-                <NavLink to="/edit" active={isActive("/edit")}>
+                <NavLink to="/raffle-admin/edit" active={isActive("/raffle-admin/edit")}>
                 <Edit className="w-4 h-4" />
                 <span>Editar</span>
                 </NavLink>
@@ -62,7 +63,7 @@ export default function({selectedRaffle, setSelectedRaffle}){
             </div>
 
             <div className="flex items-center space-x-4">
-            {(location.pathname === "/" || location.pathname === "/stats") && (
+            {(location.pathname === "/raffle-admin" || location.pathname === "/raffle-admin/stats") && (
                 <div className="w-64">
                 <RaffleSelector
                     raffles={user.raffles}
@@ -71,13 +72,13 @@ export default function({selectedRaffle, setSelectedRaffle}){
                 />
                 </div>
             )}
-            <Link to="/notifications" className="p-2 hover:bg-accent rounded-full relative">
+            <Link to="/raffle-admin/notifications" className="p-2 hover:bg-accent rounded-full relative">
                 <Bell className="w-5 h-5" />
                 {(notificationsLength > 0) &&
                     <span className="absolute top-0 right-0 w-2 h-2 bg-red-500 rounded-full" />
                 }
             </Link>
-            <NavLink to="/settings" active={isActive("/settings")}>
+            <NavLink to="/raffle-admin/settings" active={isActive("/raffle-admin/settings")}>
                 <Settings className="w-4 h-4" />
                 <span>Ajustes</span>
             </NavLink>
@@ -105,7 +106,7 @@ export default function({selectedRaffle, setSelectedRaffle}){
         </nav>
 
         {/* Mobile Raffle Selector */}
-        {(location.pathname === "/" || location.pathname === "/stats") && (
+        {(location.pathname === "/raffle-admin" || location.pathname === "/raffle-admin/stats") && (
             <div className="customLg:hidden px-4 py-2 bg-card border-b">
             <RaffleSelector
                 raffles={user.raffles}
@@ -118,6 +119,7 @@ export default function({selectedRaffle, setSelectedRaffle}){
         {/* Main Content */}
         <main className="max-w-[1400px] mx-auto px-2 sm:px-4 pt-8 pb-20 customLg:pb-8">
             <Outlet/>
+            <RifaezWidget/>
         </main>
         </div>
     )

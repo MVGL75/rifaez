@@ -59,7 +59,7 @@ const SettingsPage = () => {
   const [wasSubmitted, setWasSubmitted] = useState({})
   const [paymentInstructions, setPaymentInstructions] = useState("");
   const [newWorker, setNewWorker] = useState({});
-  const [newMethod, setNewMethod] = useState({})
+  const [newMethod, setNewMethod] = useState({bank: '', person: '', number: "", instructions: ""})
   const [spinner, setSpinner] = useState(null)
   const [domainV, setDomainV] = useState('')
   const [newPhoneNumber, setNewPhoneNumber] = useState(null)
@@ -154,7 +154,7 @@ const SettingsPage = () => {
       setMethods(prev => [...prev, {...value, _id: res.data.id}])
       setWasSubmitted(prev => ({...prev, method: undefined}))
       setErrors(prev => ({...prev, method: undefined}))
-      setNewMethod({bank: '', person: '', number: ""})
+      setNewMethod({bank: '', person: '', number: "", instructions: ""})
     } else {
       setAppError({message: "error creating method"})
     }
@@ -632,7 +632,7 @@ const removeMethod = async (methodInp) => {
                 </div>
                 <dialog id="change-password" className='w-screen h-screen bg-transparent'>
               <div className="flex justify-center items-center w-full h-full px-8">
-                <div className="bg-background px-7 py-7 rounded-lg max-w-full w-[500px]">
+                <div className="bg-background text-foreground px-7 py-7 rounded-lg max-w-full w-[500px]">
                 <div className="mb-6 space-y-4">
                   <label className="block text-lg font-medium">
                     Cambiar Contraseña
@@ -773,7 +773,7 @@ const removeMethod = async (methodInp) => {
                     >{ setPhoneFormat(formData.phone) }</div>
                   </div>
                 </div>
-                <dialog id="change-phone" className="p-6 rounded-lg shadow-lg bg-background">
+                <dialog id="change-phone" className="p-6 rounded-lg shadow-lg bg-background text-foreground">
                   <h3 className="text-lg font-medium mb-4">Cambiar telefono</h3>
                   <div className="space-y-6">
                     <div>
@@ -1396,7 +1396,7 @@ const removeMethod = async (methodInp) => {
                       <X stroke="currentColor" className="h-5 w-5" />
                       <span>Borrar Cuenta</span>
                 </button>
-                <dialog id="confirm-deletion" className="bg-background px-5 py-5 space-y-7 rounded-lg w-[400px] max-w-[calc(100v-24px)]">
+                <dialog id="confirm-deletion" className="bg-background px-5 py-5 space-y-7 rounded-lg w-[400px] max-w-[calc(100v-24px)] text-foreground">
                   <div className="text-base">
                       ¿Estás seguro de que deseas eliminar tu cuenta? Esta acción no se puede deshacer.
                   </div> 

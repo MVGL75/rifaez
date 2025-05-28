@@ -105,7 +105,7 @@ const LoginPage = () => {
                 console.log('Server response:', data);
                 if(data.status === 200){
                   setUser(data.user)
-                  return navigate("/")
+                  return navigate("/raffle-admin")
                 } else if (data.status === 409){
                   document.getElementById("link-account").showModal();
                   setLinkAccountData({
@@ -170,7 +170,7 @@ const LoginPage = () => {
           </div>
           <div className="space-y-3">
             <label htmlFor="email_recovery" className={`text-sm font-medium ${errors.recovery_email && "text-red-500"}`}>Correo Electronico</label>
-            <input onChange={handleRecChange} value={recoveryEmail} type="text" id="email_recovery" className={`w-full text-base px-4 py-2 rounded-xl border ${errors.recovery_email ? "border-red-500" : "border-input"}`} />
+            <input onChange={handleRecChange} value={recoveryEmail} type="text" id="email_recovery" className={`w-full text-base px-4 py-2 rounded-xl bg-background border ${errors.recovery_email ? "border-red-500" : "border-input"}`} />
           </div>
           <button onClick={sendEmailRecovery} className="w-full bg-primary py-3 text-base rounded-lg text-center text-primary-foreground" >Recuperar</button>
           </div>

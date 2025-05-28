@@ -52,9 +52,6 @@ const Footer = ({raffle}) => {
                 <Logo/>
               </Link>
             </div>
-            <a href="/privacy" className="hover:text-primaryRaffle">
-              Aviso de Privacidad
-            </a>
           </div>
         </div>
       </div>
