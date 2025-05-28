@@ -62,6 +62,7 @@ const SettingsPage = () => {
   const [newMethod, setNewMethod] = useState({bank: '', person: '', number: "", instructions: ""})
   const [spinner, setSpinner] = useState(null)
   const [domainV, setDomainV] = useState('')
+  const [emailExists, setEmailExists] = useState(false)
   const [newPhoneNumber, setNewPhoneNumber] = useState(null)
   const [record, setRecord] = useState({step: 0,})
   const [fileState, setFileState] = useState(null)
@@ -196,6 +197,8 @@ const removeMethod = async (methodInp) => {
         setNewWorker({email: '', password: ''})
       } else if (res.data.status === 808){
         setPopError({message: res.data.message, status: 808})
+      } else if (res.data.status === 401) {
+        setPopError({message: res.data.message, status: 401})
       } else {
         setErrors(prev => ({...prev, passwordIncorrect: "Invalid"}))
       }
@@ -467,6 +470,8 @@ const removeMethod = async (methodInp) => {
       if(res.status === 200){
         setLoading(false);
         setSuccessMessage('Usuario guardado exitosamente.');
+      } else if (res.status === 401){
+        setEmailExists(true)
       } else {
         console.log('Error saving user');
       }
@@ -610,6 +615,9 @@ const removeMethod = async (methodInp) => {
                   onChange={handleChange}
                   className={`w-full p-2 rounded-md border ${errors.email ? "border-red-500" : "border-input"} bg-background`}
                 />
+                {emailExists &&
+                  <p className="mt-2 block text-destructive">Este correo ya esta asociada a otra cuenta or trabajador.</p>
+                }
               </div>
             {user.facebookId ? (
               <div className="w-full px-4 py-4 rounded-md border border-input bg-background text-muted-foreground flex gap-3">
@@ -998,12 +1006,12 @@ const removeMethod = async (methodInp) => {
                       <div onClick={()=>{removeMethod(method)}} className="bg-red-500 rounded-sm p-2"><Trash2 className="h-4 w-4 text-white"/></div>
                     </div>
                     <div className="flex gap-3 flex-col px-4 py-4">
-                    <div className="flex items-center gap-3">
+                    <div className="flex flex-col gap-1 xs:gap-3 xs:flex-row xs:items-center">
                           <span className="text-muted-foreground">Numero de tarjeta</span>
                           <span>{formatMethodNumber(method.number)}</span>
                           </div>
-                      <div className="flex items-center justify-between">
-                        <div className="flex items-center gap-3">
+                      <div className="flex flex-col gap-5 xs:flex-row xs:items-center justify-between">
+                        <div className="flex flex-col gap-1 xs:gap-3 xs:flex-row xs:items-center">
                           <span className="text-muted-foreground">Cuenta Clabe</span>
                           <span>{formatCLABE(method.clabe)}</span>
                           </div>
@@ -1371,11 +1379,12 @@ const removeMethod = async (methodInp) => {
           className="bg-card rounded-lg p-6 shadow-lg"
         >
           {renderContent()}
-          <footer className="flex items-center gap-3 mt-10 justify-between flex-row-reverse">
+          <footer className="flex flex-col xs:items-center gap-3 mt-10 justify-between xs:flex-row-reverse">
+            
           <button
               key="save"
               onClick={saveSettings}
-              className=" flex items-center px-4 py-2 space-x-2 text-base rounded-lg transition-colors bg-primary text-primary-foreground "
+              className=" flex w-fit items-center px-4 py-2 space-x-2 text-base rounded-lg transition-colors bg-primary text-primary-foreground "
             >
             { loading || successMessage ? (<span>{successMessage || "Loading..."}</span>) : 
               (
@@ -1391,12 +1400,12 @@ const removeMethod = async (methodInp) => {
                 <button
                   key="delete"
                   onClick={()=>{document.getElementById("confirm-deletion").showModal()}}
-                  className="flex items-center px-4 py-2 space-x-2 text-base rounded-lg transition-colors bg-red-500 text-primary-foreground "
+                  className="flex w-fit items-center px-4 py-2 space-x-2 text-base rounded-lg transition-colors bg-destructive text-destructive-foreground "
                 >
                       <X stroke="currentColor" className="h-5 w-5" />
                       <span>Borrar Cuenta</span>
                 </button>
-                <dialog id="confirm-deletion" className="bg-background px-5 py-5 space-y-7 rounded-lg w-[400px] max-w-[calc(100v-24px)] text-foreground">
+                <dialog id="confirm-deletion" className="bg-background px-5 py-5 space-y-7 rounded-lg w-[400px] max-w-[calc(100vw-18px)] text-foreground">
                   <div className="text-base">
                       ¿Estás seguro de que deseas eliminar tu cuenta? Esta acción no se puede deshacer.
                   </div> 

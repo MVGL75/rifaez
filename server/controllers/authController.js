@@ -29,6 +29,10 @@ export const register = async (req, res) => {
         return res.json({ message: error.details[0].message, status: 400 });
     }
     const { email, name, password } = value;
+    const userWithWorker = await User.findOne({ "workers.email": email });
+    if(userWithWorker){
+      return res.json({ message: 'Ya existe una cuenta con este correo.', status: 400 })
+    }
     const user = new User({ username: email, name });
     try {
       await User.register(user, password);
@@ -210,6 +214,16 @@ export const save = async(req, res)=> {
             ? req.body.facebookUrl
             : null,
       };
+
+      const userWithUsername = await User.findOne({ username: req.body.email });
+      const userWithWorker = await User.findOne({ "workers.email": req.body.email });
+
+      if (userWithUsername || userWithWorker) {
+        if(req.file){
+          await cloudinary.uploader.destroy(req.file.filename);
+        }
+        return res.json({ message: "Este correo ya está registrado como usuario.", status: 401  });
+      }
       const { error, value } = saveSchema.validate(parsedBody);
       if (error) {
         return res.json({ message: error.details[0].message, status: 400 });
@@ -351,6 +365,15 @@ export const save = async(req, res)=> {
     const user = await User.findByUsername(req.user.username);
     if (!user) {
       return res.json({ error: 'User not found', status: 400 });
+    }
+    const userWithUsername = await User.findOne({ username: value.email });
+    if (userWithUsername) {
+      return res.json({ message: "Este correo ya está registrado como usuario.", status: 401  });
+    }
+
+    const userWithWorker = await User.findOne({ "workers.email": value.email });
+    if (userWithWorker) {
+      return res.json({ message: "Este correo ya pertenece a otro trabajador." , status: 401 });
     }
     const isValid = await new Promise((resolve) => {
       user.authenticate(password, (err, thisUser, passwordErr) => {

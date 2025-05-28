@@ -1,5 +1,5 @@
 
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import { useAuth } from "@/contexts/AuthContext"
 import { motion } from "framer-motion";
 import NoRaffle from "../components/NoRaffle";
@@ -34,6 +34,7 @@ const api = axios.create({
 
 const StatsPage = ({ selectedRaffle }) => {
   const { user, setUser, setAppError } = useAuth()
+  const dateRef = useRef(null)
   const navigate = useNavigate();
   const [selectedDate, setSelectedDate] = useState(new Date().toISOString().split('T')[0]);
   const [notesOpen, setNotesOpen] = useState({})
@@ -277,14 +278,17 @@ const StatsPage = ({ selectedRaffle }) => {
       </motion.div>
 
       <div className="flex justify-end">
-        <div className="relative">
-          <Calendar className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground w-4 h-4" />
-          <input
-            type="date"
-            value={selectedDate}
-            onChange={(e) => setSelectedDate(e.target.value)}
-            className="pl-10 p-2 rounded-md border border-input bg-background"
-          />
+        <div
+        onClick={() => dateRef.current?.showPicker?.()}
+         className="relative">
+              <Calendar className="absolute left-4 sm:left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground w-4 h-4" />
+              <input
+                ref={dateRef}
+                type="date"
+                value={selectedDate}
+                onChange={(e) => setSelectedDate(e.target.value)}
+                className="pl-4 sm:pl-10 pr-2 py-2 appearance-none text-sm w-[150px] rounded-md border border-input bg-background"
+              />
         </div>
       </div>
 

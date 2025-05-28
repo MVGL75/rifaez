@@ -55,6 +55,12 @@
     --ring: 224.3 76.3% 48%;
   }
 
+  input[type="date"]::-webkit-calendar-picker-indicator {
+    opacity: 0;
+    cursor: pointer;
+    display: none; /* fully removes it */
+  }
+
 
 @layer base {
   * {

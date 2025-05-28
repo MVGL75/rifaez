@@ -1,5 +1,5 @@
 
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState, useRef } from "react";
 import { motion } from "framer-motion";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import { Button } from "@/components/ui/button";
@@ -34,7 +34,8 @@ import {
   Files,
   PlusIcon,
   CircleMinus,
-  ClockArrowDown
+  ClockArrowDown,
+  Calendar
 } from "lucide-react";
 import { array } from "joi";
 
@@ -43,6 +44,7 @@ const CreateRafflePage = ({userJustCreated, setUserJustCreated}) => {
   const { toast } = useToast();
   const { user, setUser } = useAuth();
   const [currentStep, setCurrentStep] = useState(1);
+  const dateRef = useRef(null)
   const [showSuccess, setShowSuccess] = useState(false);
   const [newRaffleId, setNewRaffleId] = useState(null);
   const [searchParams] = useSearchParams();
@@ -85,6 +87,11 @@ const CreateRafflePage = ({userJustCreated, setUserJustCreated}) => {
     pro: [["Clasico", "classic"], ["Minimalista", "minimalist"]],
     business: [["Clasico", "classic"], ["Minimalista", "minimalist"], ["Moderno", "modern"]],
   }
+  const methods = {
+    basic: 3,
+    pro: 10,
+    business: 15,
+  }
   const colors = [{id: 'red', name: "Rojo"}, {id: 'blue', name: "Azul"}, {id: 'yellow', name: "Amarillo"}, {id: 'green', name: "Verde"}, {id: 'purple', name: "Púrpura"}, {id: 'black', name: "Negro"}, {id: 'white', name: "Blanco"}]
   const colorCheck = {
     red: 'Rojo',
@@ -103,17 +110,33 @@ const CreateRafflePage = ({userJustCreated, setUserJustCreated}) => {
   })
   const [paymentMethods, setPaymentMethods] = useState(newMethods);
 
-  useEffect(() => {
-    
-  }, []);
 
   const handlePaymentMethodToggle = (methodId) => {
-    setPaymentMethods(prev => prev.map(method =>
-          method.id === methodId
-            ? { ...method, enabled: !method.enabled }
-            : method
-        )
-      );
+    setPaymentMethods(prev => {
+      for (const method of prev) {
+        if(method.id === methodId){
+          if(method.enabled){
+            return prev.map(method => method.id === methodId ? {...method, enabled: false} : {...method})
+          }
+        }
+       }
+          const amountEnabled = prev.filter(method => method.enabled)
+          const currAll = methods[user.currentPlan] || 3
+          if(amountEnabled.length >= currAll){
+            return prev.map(method => {
+              if(method.id === amountEnabled[0].id){
+                return {...method, enabled: false}
+              }
+              if(method.id === methodId){
+                return {...method, enabled: true}
+              }
+              return method
+            } )
+          } else {
+            return prev.map(method => method.id === methodId ? {...method, enabled: true} : {...method})
+          }
+        } 
+    );
     
   };
   useEffect(()=>{
@@ -322,8 +345,9 @@ const CreateRafflePage = ({userJustCreated, setUserJustCreated}) => {
   const handleChange = (e) => {
     let { name, value, type, files } = e.target;
     if(type === "file"){
-      setFormData(prev => ({...prev, fileCounter: files.length}))
-      setFiles(Array.from(files));
+      const limitedFiles = files.length > 10 ? Array.from(files).slice(0, 10) : Array.from(files);
+      setFormData(prev => ({...prev, fileCounter: limitedFiles.length}))
+      setFiles(limitedFiles);
       return;
     }
     if(name === "method_person" || name === "method_number" || name === "method_bank" || name === "method_instructions" || name === "method_clabe"){
@@ -759,8 +783,11 @@ const CreateRafflePage = ({userJustCreated, setUserJustCreated}) => {
               <label htmlFor="date" className={`block text-sm font-medium mb-2 ${errors.endDate && "text-red-500"}`}>
                   Fecha de rifa
                 </label>
-                <input id="date" name="endDate" value={formData.endDate} onChange={handleChange} min={getToday()} type="date" 
-                className={`w-full px-3 py-2 rounded-md border ${errors.endDate ? "border-red-500" : "border-input"} bg-background`} />
+                <div onClick={() => dateRef.current?.showPicker?.()} className="relative">
+                  <Calendar className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground w-4 h-4"/>
+                  <input ref={dateRef}  id="date" name="endDate" value={formData.endDate} onChange={handleChange} min={getToday()} type="date" 
+                  className={`w-full pl-10 pr-3 py-2 rounded-md border ${errors.endDate ? "border-red-500" : "border-input"} bg-background`} />
+                </div>
               </div>
            
               <div>
@@ -813,7 +840,7 @@ const CreateRafflePage = ({userJustCreated, setUserJustCreated}) => {
               {errors.paymentMethods && 
               <div className="text-red-500 flex items-center space-x-2">
                 <AlertCircle></AlertCircle>
-                <span>Deberas elegir un metodo de pago. Maximo (3)</span>
+                <span>Deberas elegir un metodo de pago. Maximo ({methods[user.currentPlan] || 3})</span>
               </div>}
               <div className="space-y-6">
                 <div className="space-y-4">
@@ -836,12 +863,12 @@ const CreateRafflePage = ({userJustCreated, setUserJustCreated}) => {
                         </div>
                   </div>
                   <div className="flex gap-3 flex-col px-4 py-4">
-                  <div className="flex items-center gap-3">
+                  <div className="flex flex-col gap-1 xs:flex-row xs:items-center xs:gap-3">
                         <span className="text-muted-foreground">Numero de tarjeta</span>
                         <span>{formatMethodNumber(method.number)}</span>
                         </div>
-                    <div className="flex items-center justify-between">
-                      <div className="flex items-center gap-3">
+                    <div className="flex flex-col gap-5 xs:flex-row xs:items-center justify-between">
+                      <div className="flex flex-col gap-1 xs:flex-row xs:items-center xs:gap-3">
                         <span className="text-muted-foreground">Cuenta Clabe</span>
                         <span>{formatCLABE(method.clabe)}</span>
                         </div>

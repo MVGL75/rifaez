@@ -1,5 +1,5 @@
 
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import NoRaffle from "../components/NoRaffle";
 import { motion } from "framer-motion";
 import { 
@@ -43,6 +43,7 @@ const HomePage = ({ selectedRaffle }) => {
   const [selectedDate, setSelectedDate] = useState(new Date().toISOString().split('T')[0]);
   const [activeVisitors, setActiveVisitors] = useState(42);
   const [copiedClip, setCopiedClip] = useState(false);
+  const dateRef = useRef(null)
   const [chartData, setChartData] = useState({
       labels: ["9:00", "10:00", "11:00", "12:00", "13:00", "14:00"],
       datasets: [
@@ -304,17 +305,17 @@ const HomePage = ({ selectedRaffle }) => {
           </div>
 
           <div className="flex flex-col gap-3 sm:flex-row xs:justify-between xs:items-center mb-4">
-            <div className="flex items-center space-x-2">
-              <Eye className="w-4 h-4 text-primary" />
-              <span className="text-sm font-medium">Visitas Activas: {activeVisitors}</span>
-            </div>
+          <div className="items-center px-3 space-x-3 py-2 rounded-md border border-input bg-background max-w-full flex">
+            <Copy onClick={()=>{handleCopyLink(selectedRaffle._id)}} className="w-4 h-4 min-w-4"/>
+            <span className="text-muted-foreground min-w-[10px] overflow-hidden">{copiedClip ? "Copied to clipboard" : `/raffle/${selectedRaffle._id}`}</span>
+          </div>
             <div className="relative">
-              <Calendar className="absolute left-2 top-1/2 transform -translate-y-1/2 text-muted-foreground w-4 h-4" />
+              <Calendar className="absolute left-4 top-1/2 transform -translate-y-1/2 text-muted-foreground w-4 h-4" />
               <input
                 type="date"
                 value={selectedDate}
                 onChange={(e) => setSelectedDate(e.target.value)}
-                className="pl-8 p-1 text-sm rounded-md border border-input bg-background"
+                className="pl-4 py-2 appearance-none text-sm w-[160px] rounded-md border border-input bg-background"
               />
             </div>
           </div>
@@ -335,7 +336,7 @@ const HomePage = ({ selectedRaffle }) => {
                   className={`p-2 rounded-lg ${
                     notification.type === "pending"
                       ? "bg-yellow-50 border border-yellow-200"
-                      : "bg-muted/50 border border-gray-200"
+                      : "bg-muted/50 border border-muted"
                   }`}
                 >
                   <div className="flex items-center justify-between">
@@ -414,15 +415,18 @@ const HomePage = ({ selectedRaffle }) => {
             <Copy onClick={()=>{handleCopyLink(selectedRaffle._id)}} className="w-4 h-4"/>
             <span className="text-muted-foreground">{copiedClip ? "Copied to clipboard" : `/raffle/${selectedRaffle._id}`}</span>
           </div>
-          <div className="relative">
-            <Calendar className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground w-4 h-4" />
-            <input
-              type="date"
-              value={selectedDate}
-              onChange={(e) => setSelectedDate(e.target.value)}
-              className="pl-10 p-2 rounded-md border border-input bg-background"
-            />
-          </div>
+          <div
+            onClick={() => dateRef.current?.showPicker?.()}
+            className="relative">
+                  <Calendar className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground w-4 h-4" />
+                  <input
+                    ref={dateRef}
+                    type="date"
+                    value={selectedDate}
+                    onChange={(e) => setSelectedDate(e.target.value)}
+                    className="pl-10 pr-2 py-2 appearance-none text-sm w-[150px] rounded-md border border-input bg-background"
+                  />
+            </div>
         </div>
 
         <motion.div

@@ -1,5 +1,5 @@
 
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import { motion } from "framer-motion";
 import { useNavigate, useParams } from "react-router-dom";
 import { useToast } from "@/components/ui/use-toast";
@@ -39,6 +39,7 @@ const RaffleEditPage = ({}) => {
   const navigate = useNavigate();
   const { setUser, user, setPopError, } = useAuth()
   const [saveLoader, setSaveLoader] = useState(null)
+  const dateRef = useRef(null)
   const [successMessage, setSuccessMessage] = useState(null)
   const [raffle, setRaffle] = useState(null); 
   const [errors, setErrors] = useState({})
@@ -130,10 +131,11 @@ const RaffleEditPage = ({}) => {
   const handleChange = (e) => {
     const { name, value, type, files } = e.target;
     if(type === "file"){
-      setRaffle(prev => ({...prev, fileCounter: files.length}))
-      const objectUrls = Array.from(files).map(file => URL.createObjectURL(file));
+      const limitedFiles = files.length > 10 ? Array.from(files).slice(0, 10) : Array.from(files);
+      setRaffle(prev => ({...prev, fileCounter: limitedFiles.length}))
+      const objectUrls = limitedFiles.map(file => URL.createObjectURL(file));
       setPreviews(objectUrls);
-      setFiles(Array.from(files));
+      setFiles(limitedFiles);
       return;
     }
     setRaffle((prev) => {
@@ -327,6 +329,7 @@ const RaffleEditPage = ({}) => {
     </div>
   );
   return (
+    
     <div className="max-w-3xl mx-auto space-y-8">
       {/* Back Button */}
       <motion.div
@@ -744,9 +747,12 @@ const RaffleEditPage = ({}) => {
               <label className={`block text-sm font-medium mb-2 ${errors.endDate && "text-red-500"}`}>
                 Fecha de Finalización
               </label>
-              <div className="relative">
+              <div 
+              onClick={() => dateRef.current?.showPicker?.()}
+              className="relative">
                 <Calendar className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground w-4 h-4" />
                 <input
+                ref={dateRef}
                   type="date"
                   name="endDate"
                   min={minDate}

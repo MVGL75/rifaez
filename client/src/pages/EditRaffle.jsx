@@ -176,7 +176,7 @@ const EditRafflePage = () => {
                           <Button
                             variant="outline"
                             size="sm"
-                            className="flex bg-green-900 items-center space-x-1 text-primary-foreground"
+                            className="flex bg-green-900 items-center space-x-1 text-destructive-foreground"
                             onClick={() => handleDownloadExcel(raffle)}
                           >
                             <Download className="w-4 h-4" />

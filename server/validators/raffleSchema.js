@@ -75,7 +75,7 @@ export const raffleValidationSchema = Joi.object({
     images: Joi.array().items( Joi.object({
       url: Joi.string().required(),  
       public_id: Joi.string().required()   
-    })).required(),
+    })).max(10).required(),
     template: Joi.string().valid('classic', 'modern', 'minimalist').required(),
     colorPalette: Joi.object({
       header: Joi.string().valid(...colors).required(),

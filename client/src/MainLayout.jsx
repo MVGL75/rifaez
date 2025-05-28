@@ -119,6 +119,7 @@ export default function({selectedRaffle, setSelectedRaffle}){
         {/* Main Content */}
         <main className="max-w-[1400px] mx-auto px-2 sm:px-4 pt-8 pb-20 customLg:pb-8">
             <Outlet/>
+            <div className="h-[72px] customLg:hidden"></div>
             <RifaezWidget/>
         </main>
         </div>

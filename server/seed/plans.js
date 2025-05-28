@@ -5,6 +5,7 @@ const plans = {
         templates: ["classic"],
         workers: 2,
         rank: 1,
+        methods: 3,
     },
     [process.env.PRICE_ID_PRO]: {
         name: "pro",
@@ -12,6 +13,8 @@ const plans = {
         templates: ["classic", "minimalist"],
         workers: 5,
         rank: 2,
+        methods: 10,
+
 
     },
     [process.env.PRICE_ID_BUSINESS]: {
@@ -20,6 +23,8 @@ const plans = {
         templates: ["classic", "modern", "minimalist"],
         workers: 10,
         rank: 3,
+        methods: 15,
+
 
     },
 }

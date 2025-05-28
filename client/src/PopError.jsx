@@ -2,7 +2,7 @@ import { X } from "lucide-react";
 import { useAuth } from "./contexts/AuthContext";
 import { useNavigate } from "react-router-dom";
 import { useEffect } from "react";
-export default function PopError({ message = "Ocurrio un error."}) {
+export default function PopError({ message = "Ocurrio un error.", status = 400}) {
   useEffect(() => {
     document.getElementById("popError").showModal()
     document.body.style.overflow = "hidden";
@@ -28,7 +28,7 @@ export default function PopError({ message = "Ocurrio un error."}) {
         </header>
 
         <p className="mb-10">{message}</p>
-        <button className="px-4 py-2 rounded-lg bg-primary text-primary-foreground" onClick={()=>{navigate("/pricing-plan")}}>Actualizar</button>
+        <button className="px-4 py-2 rounded-lg bg-primary text-primary-foreground" onClick={status === 808 ? ()=>{navigate("/pricing-plan")} : removeError}>Actualizar</button>
 
       
     </dialog>

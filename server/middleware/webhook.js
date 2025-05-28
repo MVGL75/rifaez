@@ -130,6 +130,18 @@ const restrictUserFeatures = async (user, newPriceId) => {
       }
     })
   );
+  const permittedMethods = newPlanRestrictions.methods;
+
+await Promise.all(
+  userWithRaffles.raffles.map(raffle => {
+    if (raffle.paymentMethods.length > permittedMethods) {
+      raffle.paymentMethods = raffle.paymentMethods.slice(0, permittedMethods);
+      return raffle.save();
+    }
+    return Promise.resolve(); // Ensure Promise.all doesn't get undefined
+  })
+);
+
   const permittedWorkers = newPlanRestrictions.workers;
   const activeWorkers = user.workers?.filter(worker => worker.isActive) || [];
   const workerDiff = activeWorkers.length - permittedWorkers;

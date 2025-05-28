@@ -79,7 +79,7 @@ export const raffleValidationSchema = Joi.object({
     // nightMode: Joi.boolean().required(),
     // maxTpT: Joi.number().greater(0).required(),
     timeLimitPay: Joi.number().greater(0).required(),
-    fileCounter: Joi.number().greater(0).required(),
+    fileCounter: Joi.number().greater(0).less(11).required(),
     paymentMethods: Joi.array().items(methodSchema.required()).required(),
     
     payment_instructions: Joi.string().when('paymentMethods', {
