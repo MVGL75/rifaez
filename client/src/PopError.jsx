@@ -21,7 +21,7 @@ export default function PopError({ message = "Ocurrio un error.", status = 400})
             <h1 className="text-2xl">Error </h1>
             <button
                 onClick={removeError}
-                className="cursor-pointer p-2 bg-destructive text-desctructive-foreground rounded-full hover:bg-red-600 transition"
+                className="cursor-pointer p-2 bg-destructive text-destructive-foreground rounded-full hover:bg-red-600 transition"
                 >
                 <X/>
             </button>
