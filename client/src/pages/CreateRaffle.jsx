@@ -601,17 +601,17 @@ const CreateRafflePage = ({userJustCreated, setUserJustCreated}) => {
                   { !showPaletteValue ? "Crear una paleta +" : `Encabezado: ${colorCheck[formData.colorPalette?.header]}, Fondo: ${colorCheck[formData.colorPalette?.background]}, Detalles: ${colorCheck[formData.colorPalette?.accent]}, Bordes: ${colorCheck[formData.colorPalette?.borders]}, Letra: ${colorCheck[formData.colorPalette?.color]},`}
                 </div>
                 <dialog id="create-palette" className="rounded-md shadow-lg text-foreground">
-                  <div className="space-y-5 px-5 py-5 w-[400px] bg-background">
+                  <div className="space-y-5 px-5 py-5 w-[400px] max-w-full bg-background">
                     <h1 className="text-lg">Colores de Rifa</h1>
                     <div className="space-y-3">
-                      <div className="flex flex-col gap-2">
+                      <div className="flex flex-col w-full gap-2">
                         <label htmlFor="encabezado_color" className={`text-sm ${errors.colorPalette?.header && "text-red-500"}`}>Encabezado</label>
                         <select 
                           id="encabezado_color" 
                           name="header" 
                           value={formData.colorPalette.header} 
                           onChange={handlePaletteChange} 
-                          className={`w-full p-2 rounded-md bg-background border ${errors.colorPalette?.header ? "border-red-500" : "border-input"}`} >
+                          className={`w-full max-w-full p-2 rounded-md bg-background border ${errors.colorPalette?.header ? "border-red-500" : "border-input"}`} >
                             {colors.map((color, index) => (
                               <option key={index} value={color.id} >{color.name}</option>
                             ))}
@@ -624,7 +624,7 @@ const CreateRafflePage = ({userJustCreated, setUserJustCreated}) => {
                             name="background" 
                             value={formData.colorPalette.background} 
                             onChange={handlePaletteChange} 
-                            className={`w-full p-2 rounded-md bg-background border ${errors.colorPalette?.background ? "border-red-500" : "border-input"}`} >
+                            className={`w-full max-w-full p-2 rounded-md bg-background border ${errors.colorPalette?.background ? "border-red-500" : "border-input"}`} >
                             {colors.map((color, index) => (
                               <option key={index} value={color.id} >{color.name}</option>
                             ))}
@@ -637,7 +637,7 @@ const CreateRafflePage = ({userJustCreated, setUserJustCreated}) => {
                         name="accent" 
                         value={formData.colorPalette.accent} 
                         onChange={handlePaletteChange} 
-                        className={`w-full p-2 rounded-md bg-background border ${errors.colorPalette?.accent ? "border-red-500" : "border-input"}`} >
+                        className={`w-full max-w-full p-2 rounded-md bg-background border ${errors.colorPalette?.accent ? "border-red-500" : "border-input"}`} >
                             {colors.map((color, index) => (
                               <option key={index} value={color.id} >{color.name}</option>
                             ))}
@@ -650,7 +650,7 @@ const CreateRafflePage = ({userJustCreated, setUserJustCreated}) => {
                             name="borders" 
                             value={formData.colorPalette.borders} 
                             onChange={handlePaletteChange} 
-                            className={`w-full p-2 rounded-md bg-background border ${errors.colorPalette?.borders ? "border-red-500" : "border-input"}`} >
+                            className={`w-full max-w-full p-2 rounded-md bg-background border ${errors.colorPalette?.borders ? "border-red-500" : "border-input"}`} >
                             {colors.map((color, index) => (
                               <option key={index} value={color.id} >{color.name}</option>
                             ))}
@@ -663,7 +663,7 @@ const CreateRafflePage = ({userJustCreated, setUserJustCreated}) => {
                             name="color" 
                             value={formData.colorPalette.color} 
                             onChange={handlePaletteChange} 
-                            className={`w-full p-2 rounded-md bg-background border ${errors.colorPalette?.color ? "border-red-500" : "border-input"}`} >
+                            className={`w-full max-w-full p-2 rounded-md bg-background border ${errors.colorPalette?.color ? "border-red-500" : "border-input"}`} >
                             {colors.map((color, index) => (
                               <option key={index} value={color.id} >{color.name}</option>
                             ))}
@@ -736,7 +736,7 @@ const CreateRafflePage = ({userJustCreated, setUserJustCreated}) => {
                     <option value="off">No</option>
                     
                   </select>
-                  <ClockArrowDown className=" absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground w-4 h-4"/>
+                  <ClockArrowDown className="hidden xs:block absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground w-4 h-4"/>
                   </div>
               </div>
               <div>
@@ -1053,7 +1053,7 @@ const CreateRafflePage = ({userJustCreated, setUserJustCreated}) => {
           <div className="pt-6">
             <Button
               variant="outline"
-              onClick={() => navigate(`/raffle-admin/raffle/${newRaffleId}`)}
+              onClick={() => navigate(`/raffle/${newRaffleId}`)}
               className="flex items-center space-x-2"
             >
               <Share2 className="w-4 h-4" />
