@@ -7,6 +7,7 @@ import { useState, useEffect, useRef } from "react";
 export default function HomePromotional(){
     const navigate = useNavigate()
     const [domainAnimateText, setDomainAnimateText] = useState("")
+    const pricing = useRef(null)
     const chartData = {
         labels: ["11:00", "12:00", "13:00", "14:00", "15:00"],
         datasets: [
@@ -108,6 +109,10 @@ export default function HomePromotional(){
       
   
       const intervalRef = useRef(null); // keep track of interval
+
+      const scrollPricing = () => {
+        document.getElementById("pricing").scrollIntoView({ behavior: 'smooth' });
+      }
 
       useEffect(() => {
         const startAnimation = () => {
@@ -212,7 +217,7 @@ export default function HomePromotional(){
                         <div className="max-w-[500px]">
                             <h1 className="max-w-[420px] sm:text-3xl text-2xl mb-8 sm:leading-[42px] leading-[35px] ">Administra todos tus datos desde el panel administrativo de Rifaez.</h1>
                             <p className="mb-6">Usa el panel administrativo para crear, editar y borrar rifas, puedes manejar todos los pagos y tienes estadisticas para analizar tu rifa.</p>
-                            <button className="py-1.5 px-4 rounded-full bg-primary text-sm text-white">Ver Planes</button>
+                            <button className="py-1.5 px-4 rounded-full bg-primary text-sm text-white " onClick={scrollPricing}>Ver Planes</button>
                         </div>
                         <div className="flex justify-evenly">
                             
@@ -282,7 +287,7 @@ export default function HomePromotional(){
                 Planes de Suscripción
             </h2>
             
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+            <div id="pricing" className="grid grid-cols-1 md:grid-cols-3 gap-6">
               {plans.map((plan) => (
                 <div
                   key={plan.id}
