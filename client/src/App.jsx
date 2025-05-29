@@ -177,8 +177,8 @@ const AppContent = () => {
         )}
       </Routes>
     );
-  }
 
+  }
   return (
     <>
       <Routes>
@@ -269,9 +269,9 @@ const AppContent = () => {
           )}
         </Route>
         <Route path="/login" element={<RedirectHome />} />
-        <Route path="/register" element={<RedirectHome />} />
+          <Route path="/register" element={<RedirectHome />} />
         <Route path="/privacy-policy" element={<PrivacyPolicy/>} />
-        <Route path="/reset-password" element={<RecoverPass/>}/>
+          <Route path="/reset-password" element={<RecoverPass/>}/>
         <Route path="/pricing-plan" element={<PricingPlan />} />
         <Route path="/checkout" element={<CheckoutForm />} />
         <Route path="/checkout/return" element={<Return setUserJustCreated={setUserJustCreated} />} />

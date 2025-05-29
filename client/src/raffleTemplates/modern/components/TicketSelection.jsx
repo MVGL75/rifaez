@@ -37,7 +37,7 @@ const TicketSelection = ({ tickets, selectedTickets, onTicketClick, searchTerm, 
         <Ticket className="h-7 w-7 sm:h-8 sm:w-8 mr-3" />
         Selecciona tus Boletos
       </h2>
-      <Card className="shadow-xl bg-backgroundRaffle">
+     <Card className="shadow-xl bg-backgroundRaffle">
         <CardHeader className="border-b border-borderRaffle pb-4">
           <div className="flex flex-col sm:flex-row gap-3 sm:gap-4 items-center">
             <div className="relative flex-grow w-full sm:w-auto">

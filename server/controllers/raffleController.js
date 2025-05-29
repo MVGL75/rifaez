@@ -310,11 +310,11 @@ export const editRaffle = async (req, res) => {
 
   
 
-  async function handleDB(id){
-    const raffle = await Raffle.findById(id);
-    raffle.stats.paidParticipants = 0;
-    raffle.stats.dailySales = [];
-    await raffle.save();
-  }
+  // async function handleDB(id){
+  //   const raffle = await Raffle.findById(id);
+  //   raffle.stats.paidParticipants = 0;
+  //   raffle.stats.dailySales = [];
+  //   await raffle.save();
+  // }
 
-  handleDB("6834cd280edb39785609507e")
+  // handleDB("6834cd280edb39785609507e")
