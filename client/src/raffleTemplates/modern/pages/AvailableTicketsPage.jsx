@@ -211,7 +211,7 @@ const AvailableTicketsPage = ({availableTickets}) => {
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.5 }}
     >
-      <section className="relative text-center py-10 sm:py-16 bg-gradient-to-r from-primaryRaffle to-primaryRaffle-600 rounded-xl shadow-xl overflow-hidden">
+      {/* <section className="relative text-center py-10 sm:py-16 bg-gradient-to-r from-primaryRaffle to-primaryRaffle-600 rounded-xl shadow-xl overflow-hidden">
         <div className="absolute inset-0 bg-pattern opacity-10"></div>
         <motion.h1
           className="text-3xl sm:text-4xl md:text-5xl font-bold text-colorRaffle-foreground mb-2 sm:mb-3 px-2 z-10 relative"
@@ -238,7 +238,7 @@ const AvailableTicketsPage = ({availableTickets}) => {
           <span className="inline-flex items-center mr-3"><CalendarDays className="h-4 w-4 mr-1"/>Sorteo: {formatSpanishDate(raffle.endDate)}</span>
           <span className="inline-flex items-center"><Info className="h-4 w-4 mr-1"/>¡Mucha suerte a todos!</span>
         </motion.div>
-      </section>
+      </section> */}
 
       <PrizeSection raffle={raffle} />
       {raffle.countdown === "on" &&

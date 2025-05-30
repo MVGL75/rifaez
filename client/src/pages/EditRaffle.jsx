@@ -38,20 +38,40 @@ const EditRafflePage = () => {
   };
 
   const downloadExcel = (data, fileName = 'data.xlsx') => {
-    const refactoredData = data.map(ticket => ({
-        Nombre: ticket.name,
-        Telefono: ticket.phone,
-        Estado: ticket.state,
-        Fecha: new Date(ticket.date).toLocaleString('en-MX', {
-          dateStyle: 'medium',
-          timeStyle: 'short',
-        }),
-        Boletos: ticket.tickets.join(', '),
-        Cantidad: ticket.amount,
-        Status: ticket.status === "paid" ? "pagado" : "pendiente",
-        Identificador: ticket.transactionID,
-        Notas: ticket.notes ? ticket.notes.join(', ') : "",
-    }))
+    const refactoredData = []
+    data.forEach(participant => {
+      for (const ticket of participant.tickets) {
+          const excelRow = {
+            Boleto: ticket,
+            Nombre: participant.name,
+            Telefono: participant.phone,
+            Estado: participant.state,
+            Fecha: new Date(participant.date).toLocaleString('en-MX', {
+              dateStyle: 'medium',
+              timeStyle: 'short',
+            }),
+            Cantidad: participant.amount,
+            Status: participant.status === "paid" ? "pagado" : "pendiente",
+            Identificador: participant.transactionID,
+            Notas: participant.notes ? participant.notes.join(', ') : "",
+          }
+          refactoredData.push(excelRow)
+      }
+    });
+    // const refactoredData = data.map(ticket => ({
+    //     Nombre: ticket.name,
+    //     Telefono: ticket.phone,
+    //     Estado: ticket.state,
+    //     Fecha: new Date(ticket.date).toLocaleString('en-MX', {
+    //       dateStyle: 'medium',
+    //       timeStyle: 'short',
+    //     }),
+    //     Boletos: ticket.tickets.join(', '),
+    //     Cantidad: ticket.amount,
+    //     Status: ticket.status === "paid" ? "pagado" : "pendiente",
+    //     Identificador: ticket.transactionID,
+    //     Notas: ticket.notes ? ticket.notes.join(', ') : "",
+    // }))
     const worksheet = XLSX.utils.json_to_sheet(refactoredData);
   
     // Create a new workbook and append the worksheet

@@ -1,9 +1,13 @@
 import Logo from "./Logo"
+import React from "react";
 import { Button } from "./raffleTemplates/components/ui/button"
 import { Line } from "react-chartjs-2";
-import { ChevronRight, Shuffle, Search, Ticket, Check, Router } from "lucide-react"
+import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/home_components/ui/card';
+import { motion } from "framer-motion";
+import { ChevronRight, Shuffle, Rocket, CheckCircle, Zap, Award, BarChart, Users, Palette, Globe, MessageCircle, Search, Ticket, Check, Router, PanelsTopLeft, ChartBar, Server, User, Tag, MapPin, Phone, MessageSquare } from "lucide-react"
 import { useNavigate } from "react-router-dom"
 import { useState, useEffect, useRef } from "react";
+import { Chart } from "chart.js";
 export default function HomePromotional(){
     const navigate = useNavigate()
     const [domainAnimateText, setDomainAnimateText] = useState("")
@@ -53,41 +57,60 @@ export default function HomePromotional(){
       };
       const plans = [
         {
-          id: "basic",
-          name: "Plan Básico",
-          price_id: import.meta.env.VITE_PRICE_ID_BASIC, 
-          price: "$125",
+          name: 'Plan Básico',
+          price: '$150 USD',
+          priceSuffix: '/ mes',
           features: [
-            "1 Rifas Activas",
-            "1 Plantilla Disponibleo",
-            "2 Trabajadores",
-            "Dominio personalizado",
-          ]
+            { text: '1 rifa activa', icon: <Award className="h-5 w-5 text-blue-500" /> },
+            { text: '1 Plantilla de diseño', icon: <Palette className="h-5 w-5 text-blue-500" /> },
+            { text: 'Hasta 2 trabajadores', icon: <Users className="h-5 w-5 text-blue-500" /> },
+            { text: 'Servidor normal', icon: <Zap className="h-5 w-5 text-blue-500" /> },
+            { text: '3 métodos de pago', icon: <CheckCircle className="h-5 w-5 text-blue-500" /> },
+            { text: 'Soporte por WhatsApp', icon: <MessageCircle className="h-5 w-5 text-blue-500" /> },
+            { text: 'Estadísticas básicas de visitas y pagos', icon: <BarChart className="h-5 w-5 text-blue-500" /> },
+            { text: 'Dominio personalizado', icon: <Globe className="h-5 w-5 text-blue-500" /> },
+            { text: 'Sin necesidad de programador', icon: <CheckCircle className="h-5 w-5 text-blue-500" /> },
+          ],
+          bgColor: 'bg-gradient-to-br from-slate-50 to-slate-100',
+          textColor: 'text-slate-700',
+          buttonVariant: 'default',
         },
         {
-          id: "pro",
-          name: "Plan Pro",
-          price_id: import.meta.env.VITE_PRICE_ID_PRO,
-          price: "$250",
+          name: 'Plan Avanzado',
+          price: '$250 USD',
+          priceSuffix: '/ mes',
           features: [
-            "3 Rifas Activas",
-            "2 Plantilla Disponible",
-            "5 Trabajadores",
-            "Dominio personalizado",
-          ]
+            { text: 'Hasta 5 rifas activas', icon: <Award className="h-5 w-5 text-blue-600" /> },
+            { text: '2 Plantillas de diseño', icon: <Palette className="h-5 w-5 text-blue-600" /> },
+            { text: 'Hasta 5 trabajadores', icon: <Users className="h-5 w-5 text-blue-600" /> },
+            { text: 'Servidor rápido', icon: <Rocket className="h-5 w-5 text-blue-600" /> },
+            { text: '5 métodos de pago', icon: <CheckCircle className="h-5 w-5 text-blue-600" /> },
+            { text: 'Dominio personalizado', icon: <Globe className="h-5 w-5 text-blue-600" /> },
+            { text: 'Sin necesidad de programador', icon: <CheckCircle className="h-5 w-5 text-blue-600" /> },
+          ],
+          bgColor: 'bg-gradient-to-br from-blue-500 to-blue-600',
+          textColor: 'text-white',
+          buttonVariant: 'secondary',
+          popular: true,
         },
         {
-          id: "business",
-          name: "Plan Empresarial",
-          price_id: import.meta.env.VITE_PRICE_ID_BUSINESS,
-          price: "$500",
+          name: 'Plan Profesional',
+          price: '$500 USD',
+          priceSuffix: '/ mes',
           features: [
-            "Rifas Ilimitadas",
-            "3 Plantilla Disponible",
-            "10 Trabajadores",
-            "Dominio personalizado",
-          ]
-        }
+            { text: 'Rifas ilimitadas', icon: <Award className="h-5 w-5 text-blue-500" /> },
+            { text: '3 Plantillas de diseño', icon: <Palette className="h-5 w-5 text-blue-500" /> },
+            { text: 'Hasta 10 trabajadores', icon: <Users className="h-5 w-5 text-blue-500" /> },
+            { text: 'Servidor ultra rápido', icon: <Rocket className="h-5 w-5 text-blue-500" /> },
+            { text: '15 métodos de pago', icon: <CheckCircle className="h-5 w-5 text-blue-500" /> },
+            { text: 'Soporte por WhatsApp', icon: <MessageCircle className="h-5 w-5 text-blue-500" /> },
+            { text: 'Dominio personalizado', icon: <Globe className="h-5 w-5 text-blue-500" /> },
+            { text: 'Sin conocimientos técnicos', icon: <CheckCircle className="h-5 w-5 text-blue-500" /> },
+          ],
+          bgColor: 'bg-gradient-to-br from-slate-50 to-slate-100',
+          textColor: 'text-slate-700',
+          buttonVariant: 'default',
+        },
       ];
       const [visibleTickets, setVisibleTickets] = useState(60);
 
@@ -163,10 +186,10 @@ export default function HomePromotional(){
                         <h1 className="sm:text-4xl text-2xl">Comparte tus rifas con Rifaez: tú las manejas, nosotros las alojamos.</h1>
                         <p className="sm:text-base text-sm">Con Rifaez crea, administra y controla todas tus rifas en páginas personalizadas alojadas por nosotros.</p>
                     </div>
-                    <button onClick={()=>{navigate("/register")}} className="rounded-full px-5 py-2 shadow-sm shadow-primary">Comienza Hoy</button>
+                    <button onClick={()=>{navigate("/register")}} className="rounded-full px-5 py-2 shadow-md shadow-primary">Comienza Hoy</button>
                 </div>
             </section>
-            <section className="w-[700px] relative max-w-[100vw] sm:px-14 px-6 mt-12 mx-auto">
+            <section className="w-[700px] relative max-w-[100vw] sm:px-14 px-6 mt-12 mb-12 mx-auto">
                 <div className="rounded-lg border border-gray-900 bg-white shadow-sm bg-white max-w-full">
                     <div className="space-y-1.5 py-3 px-5 border-b border-gray-900">
                     <div className="  flex flex-col sm:flex-row gap-3 sm:gap-4 items-center">
@@ -207,28 +230,159 @@ export default function HomePromotional(){
                     
                 </div>
             </section>
+            <section className="mx-auto py-20 max-w-[100vw] w-[1400px] sm:px-14 px-8">
+                  <div className="flex flex-col items-center max-w-full gap-16">
+                  <h1 className="text-3xl text-center max-w-[550px]">Nuestra rifa en línea súper sencilla es tu boleto ganador.</h1>
+                  <div className="w-full flex flex-col items-center gap-8 md:flex-row justify-evenly text-gray-600">
+                    <div className="flex flex-col gap-5 items-center text-center max-w-[250px]">
+                      <PanelsTopLeft className="w-12 h-12" />
+                      <p><b>Administra</b> todas tus rifas desde un solo panel: crea, edita y elimina con facilidad.</p>
+                    </div>  
+                    <div className="flex flex-col items-center gap-5 max-w-[250px] text-center">
+                      <ChartBar className="w-12 h-12" />
+                      <p>Obtén un <b>análisis detallado</b> del rendimiento de tus rifas y el comportamiento de los participantes.</p>
+                    </div>  
+                    <div className="flex flex-col items-center gap-5 max-w-[250px] text-center">
+                      <Server className="w-12 h-12" />
+                      <p><b>Publica</b> tus rifas fácilmente en nuestra plataforma con alojamiento incluido y disponibilidad inmediata.</p>
+                    </div>  
+                  </div>
+                  </div>
+            </section>
             <section className="mx-auto py-20 max-w-[100vw] sm:px-14 px-8 w-[700px] customLg:w-[1400px]">
                 <div className="flex flex-col customLg:flex-row h-full max-w-full justify-between customLg:items-center gap-10">
+                    <div className="w-[500px] max-w-full">
+                        <div className="flex items-center mb-10 justify-center w-24 h-24 shadow-lg rounded-full">
+                                <User className="w-12 h-12 text-primary"/>
+                        </div>
+                    
+                        <div className="max-w-[500px]">
+                            <h1 className="max-w-[420px] sm:text-3xl text-2xl mb-6 sm:leading-[42px] leading-[35px] ">Gestiona a tus participantes con facilidad.</h1>
+                            <p className="mb-8">Lleva un control completo de cada participante en tu rifa: visualiza registros, verifica pagos, asigna boletos y gestiona ganadores desde un solo lugar.</p>
+                            <button className="py-1.5 px-4 rounded-full bg-primary sm:text-base text-sm text-white " onClick={()=>{navigate("/register")}}>Registrate</button>
+                        </div>
+                        <div className="flex justify-evenly">
+                            
+                        </div>
+                    </div>
+                      <div className="border max-w-full w-[640px] min-h-[320px] flex justify-center items-center border-gray-200 rounded-xl overflow-hidden shadow-lg">
+                          <div
+                              className="bg-muted/50 rounded-lg p-6 flex flex-col  min-h-fit h-[320px] w-full"
+                            >
+                              <div className="flex gap-6 flex-col items-start sm:flex-row sm:justify-between ">
+                                <div className=" w-full sm:w-auto">
+                                  <div className="flex flex-col sm:flex-row sm:items-center gap-3 mb-4">
+                                    <Tag className="w-5 h-5 text-primary" />
+                                    <div className="flex flex-col gap-1 xs:flex-row xs:items-center grow justify-between sm:justify-start xs:gap-3">
+                                      <h3 className="font-medium">Transacción #002</h3>
+                                        <span className="bg-primary/10 text-primary xs:px-2 py-1 rounded-md text-sm">
+                                          3 boletos
+                                        </span>
+                                    </div>
+                                  </div>
+                                  <div className="flex w-full flex-col items-left sm:w-auto sm:flex-row sm:items-center gap-2 mb-6">
+                                    <Button
+                                      variant="outline"
+                                      size="sm"
+                                      className="flex items-center space-x-1 border border-gray-200"
+                                    >
+                                      <Check className="w-4 h-4" />
+                                      <span>Marcar como Pagado</span>
+                                    </Button>
+                                  <Button
+                                    variant="outline"
+                                    size="sm"
+                                    className="border border-gray-200"
+                                  >
+                                    Ver Detalles
+                                  </Button>
+                                </div>
+                                  <div className="flex flex-col sm:mb-0 mb-6 gap-4 items-start md:items-center sm:flex-row text-sm text-muted-foreground">
+                                    <div className="flex items-center space-x-1">
+                                      <User className="w-4 h-4" />
+                                      <span>Juan</span>
+                                    </div>
+                                    <div className="flex items-center space-x-1">
+                                      <MapPin className="w-4 h-4" />
+                                      <span>Jalisco</span>
+                                    </div>
+                                    <div className="flex items-center space-x-1">
+                                      <Phone className="w-4 h-4" />
+                                      <span>(649) 490-4930</span>
+                                    </div>
+                                  </div>
+
+                                    <div className="sm:mt-3 sm:mb-0 mb-6 pl-8 border-l-2 border-primary/20">
+                                      <div className="text-sm text-muted-foreground mb-2">
+                                        Boletos:
+                                      </div>
+                                      <div className="flex flex-wrap gap-2">
+                                          <span
+                                            className="px-2 py-1 text-sm bg-background rounded-md"
+                                          >
+                                            #6
+                                          </span>
+                                          <span
+                                            className="px-2 py-1 text-sm bg-background rounded-md"
+                                          >
+                                            #8
+                                          </span>
+                                          <span
+                                            className="px-2 py-1 text-sm bg-background rounded-md"
+                                          >
+                                            #12
+                                          </span>
+                                      </div>
+                                    </div>
+                                </div>
+
+                               
+                              </div>
+
+                              <div className="flex flex-col xs:flex-row xs:items-center justify-between mt-auto pt-4 border-t border-muted">
+                                <div className="flex flex-col-reverse xs:mb-0 mb-3 items-left sm:flex-row sm:items-center gap-4">
+                                  <span className="px-2 py-1 rounded-full w-fit text-xs font-medium bg-yellow-100 text-yellow-800">
+                                    Pendiente
+                                  </span>
+                                  <span className="text-sm text-muted-foreground">
+                                    2025-05-30T02:22:27.140Z
+                                  </span>
+                                  <span className="text-sm font-medium">
+                                    $60
+                                  </span>
+                                </div>
+
+                                  <div  className="flex flex-row items-center space-x-1 text-sm text-muted-foreground">
+                                    <MessageSquare className="w-4 h-4" />
+                                    <span>2 notas</span>
+                                  </div>
+                              </div>
+                            </div>
+                      </div>
+              </div>
+            </section>  
+            <section className="mx-auto py-20 max-w-[100vw] sm:px-14 px-8 w-[700px] customLg:w-[1400px]">
+                <div className="flex flex-col customLg:flex-row-reverse h-full max-w-full justify-between customLg:items-center gap-10">
                     <div className="w-[500px] max-w-full">
                         <div className="flex items-center mb-10 justify-center w-24 h-24 shadow-lg rounded-full">
                                 <Ticket className="w-12 h-12 text-primary"/>
                         </div>
                     
                         <div className="max-w-[500px]">
-                            <h1 className="max-w-[420px] sm:text-3xl text-2xl mb-8 sm:leading-[42px] leading-[35px] ">Administra todos tus datos desde el panel administrativo de Rifaez.</h1>
-                            <p className="mb-6">Usa el panel administrativo para crear, editar y borrar rifas, puedes manejar todos los pagos y tienes estadisticas para analizar tu rifa.</p>
-                            <button className="py-1.5 px-4 rounded-full bg-primary text-sm text-white " onClick={scrollPricing}>Ver Planes</button>
+                            <h1 className="max-w-[420px] sm:text-3xl text-2xl mb-6 sm:leading-[42px] leading-[35px] ">Administra todos tus datos desde el panel administrativo de Rifaez.</h1>
+                            <p className="mb-8">Usa el panel administrativo para crear, editar y borrar rifas, puedes manejar todos los pagos y tienes estadisticas para analizar tu rifa.</p>
+                            <button className="py-1.5 px-4 rounded-full bg-primary sm:text-base text-sm text-white " onClick={scrollPricing}>Ver Planes</button>
                         </div>
                         <div className="flex justify-evenly">
                             
                         </div>
                     </div>
-                      <div className="border max-w-full w-[640px] h-[320px] flex justify-center items-center p-5 border-input rounded-xl overflow-hidden shadow-lg">
+                      <div className="border max-w-full w-[640px] h-[320px] flex justify-center items-center p-5 border-gray-200 rounded-xl overflow-hidden shadow-lg">
                       <Line className="" options={chartOptions} data={chartData} />
                       </div>
                 </div>
             </section>  
-            <section className="bg-white border-t border-b border-input">
+            <section className="bg-white border-t border-b border-gray-200">
                     <div className="mx-auto py-20 max-w-[100vw] sm:px-14 px-6 w-[1300px] ">
                         <div className="flex flex-col items-center">
                           <div className="flex flex-col gap-3 items-center mb-6">
@@ -281,48 +435,64 @@ export default function HomePromotional(){
                         </div>
                     </div>
             </section>  
-            <section className="mx-auto my-20 max-w-[100vw] sm:px-14 px-6 w-[1300px] min-h-[500px]">
+            <section className="mx-auto my-20 max-w-[100vw] sm:px-14 px-6 w-[1400px] min-h-[500px]">
             <div className="space-y-6">
             <h2 className="text-2xl text-center md:text-4xl font-medium text-gray-800 mb-12">
                 Planes de Suscripción
             </h2>
-            
-            <div id="pricing" className="grid grid-cols-1 md:grid-cols-3 gap-6">
-              {plans.map((plan) => (
-                <div
-                  key={plan.id}
-                  className="p-6 rounded-2xl bg-[#fff] border border-input h-[350px] flex flex-col justify-between"
-                >
-                  <div>
-                    <h3 className="text-xl font-medium">{plan.name}</h3>
-                    <p className="text-3xl font-semibold mt-2">{plan.price}</p>
-                    <p className="text-sm text-muted-foreground">por mes</p>
-                    
-                    <ul className="mt-4 space-y-2">
-                      {plan.features.map((feature, index) => (
-                        <li key={index} className="flex items-center space-x-2">
-                          <Check className="w-4 h-4 text-green-500" />
-                          <span>{feature}</span>
-                        </li>
-                      ))}
-                    </ul>
-                  </div>
-                    <Button
-                    onClick={()=>{navigate("/register")}}
-                      className="w-full mt-auto"
-                      variant="default"
-                    >
-                      Suscribir
-                    </Button>
-
-                
-                </div>
-              ))}
+          
+              <div id="pricing" className="grid md:grid-cols-2 lg:grid-cols-3 gap-8 md:gap-10">
+                {plans.map((plan, index) => (
+                  <motion.div
+                    key={plan.name}
+                    initial={{ opacity: 0, y: 30 }}
+                    whileInView={{ opacity: 1, y: 0 }}
+                    viewport={{ once: true, amount: 0.2 }}
+                    transition={{ duration: 0.5, delay: index * 0.1 }}
+                    whileHover={{ y: -10, boxShadow: "0px 20px 30px -10px rgba(59, 130, 246, 0.3)" }}
+                    className="relative"
+                  >
+                    {plan.popular && (
+                      <div className="absolute -top-2.5 -right-2.5 bg-yellow-400 text-gray-900 font-bold px-3 py-1 rounded-full text-xs shadow-md transform rotate-2">
+                        ¡MÁS POPULAR!
+                      </div>
+                    )}
+                    <Card className={`flex flex-col h-full shadow-xl rounded-xl overflow-hidden ${plan.bgColor} ${plan.textColor} border-2 ${plan.popular ? 'border-blue-600 ring-2 ring-blue-600 ring-opacity-40' : 'border-gray-200'}`}>
+                      <CardHeader className="p-6 md:p-8">
+                        <CardTitle className={`text-2xl md:text-3xl font-bold mb-1.5 md:mb-2 ${plan.popular ? 'text-white' : 'text-blue-600'}`}>{plan.name}</CardTitle>
+                        <CardDescription className={`text-md md:text-lg ${plan.popular ? 'text-blue-100' : 'text-gray-500'}`}>
+                          <span className="text-3xl md:text-4xl font-extrabold">{plan.price}</span>
+                          <span className="text-xs md:text-sm opacity-90">{plan.priceSuffix}</span>
+                        </CardDescription>
+                      </CardHeader>
+                      <CardContent className="p-6 md:p-8 flex-grow">
+                        <ul className="space-y-3 md:space-y-3.5">
+                          {plan.features.map((feature, i) => (
+                            <li key={i} className="flex items-start">
+                              {React.cloneElement(feature.icon, { className: `h-5 w-5 md:h-6 md:w-6 mr-2.5 md:mr-3 flex-shrink-0 ${plan.popular ? 'text-blue-200' : 'text-blue-500'}` })}
+                              <span className="flex-1 text-sm md:text-base">{feature.text}</span>
+                            </li>
+                          ))}
+                        </ul>
+                      </CardContent>
+                      <CardFooter className="p-6 md:p-8 mt-auto bg-opacity-50">
+                        <Button 
+                          onClick={() => navigate("/login")}
+                          variant={plan.buttonVariant} 
+                          className={`w-full text-md md:text-lg py-3 md:py-3.5 rounded-lg shadow-md hover:shadow-xl transition-all duration-300 transform hover:scale-105 ${plan.popular ? 'bg-white text-blue-600 hover:bg-blue-50' : 'bg-blue-600 text-white hover:bg-blue-700'}`}
+                        >
+                          Suscribirse
+                        </Button>
+                      </CardFooter>
+                    </Card>
+                  </motion.div>
+                ))}
+              </div>
             </div>
-
-          </div>
             </section>
-            <footer className="border border-input w-screen h-[100px]"></footer>     
+            <footer className="border border-gray-200 w-screen py-10 px-8 text-center">
+              Potenciando tus rifas, simplificando tu éxito.
+            </footer>     
         </div>
     )
 }

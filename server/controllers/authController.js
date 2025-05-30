@@ -446,10 +446,14 @@ export const save = async(req, res)=> {
 
   // async function deleteUsers(params) {
   //   await User.updateMany({}, {
-  //     $set: {
-  //       workers: [],
+  //     $unset: {
+  //       stripeCustomerId: "",
+  //       subscriptionId: "",
+  //       planId: "",
+  //       subscriptionStatus: ""
   //     }
   //   });
+    
     
   // }
 

@@ -20,6 +20,7 @@ router.post('/create-checkout-session', isAuthenticated, async (req, res) => {
   if (!priceId || !customerEmail) {
     throw new AppError({message: "missing priceid or customer email"});
   }  
+  console.log(checkPriceId, priceId)
   const newPriceId = checkPriceId.find(id => id === priceId)
   if(!newPriceId){
     throw new AppError({message: "price is invalid"});
@@ -259,6 +260,7 @@ async function setUserForClient(req, user){
   const safeUser = sanitizeUser(popUser)
   return {...safeUser, currentPlan: plans[user.planId]?.name, planStatus: user.subscriptionStatus,  asWorker: req.user.asWorker,}
 }
+
 
 
 
