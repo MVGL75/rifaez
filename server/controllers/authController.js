@@ -446,17 +446,10 @@ export const save = async(req, res)=> {
     res.json({message: "method removed", status: 200, user: clientUser})
   }
 
-  // async function deleteUsers(params) {
-  //   const result = await CustomDomain.deleteOne({ domain: 'max.com' });
-
-  //   if (result.deletedCount === 1) {
-  //     console.log('Domain deleted successfully');
-  //   } else {
-  //     console.log('No domain found with that name');
-  //   }
-
+  async function deleteUsers(params) {
+    const result = await User.find({})
+    console.log(result)
     
-    
-  // }
+  }
 
   // deleteUsers()

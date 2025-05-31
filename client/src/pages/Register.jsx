@@ -13,7 +13,6 @@ const RegisterPage = () => {
   const [message, setMessage] = useState({message: null, status: null})
   const [errorMessage, setErrorMessage] = useState(null)
   const [isLocked, setLock] = useState(true)
-  const { toast } = useToast();
   const [formData, setFormData] = useState({
     name: "",
     email: "",

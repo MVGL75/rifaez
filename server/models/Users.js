@@ -68,7 +68,6 @@ const UserSchema = new mongoose.Schema({
   },
   facebookId: {
     type: String,
-    unique: true,
   },
   payment_methods: {
     type: [{
