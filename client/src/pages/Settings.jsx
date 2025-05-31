@@ -38,7 +38,8 @@ import {
   CircleX,
   CircleAlert,
   CirclePlus,
-  Trash2
+  Trash2,
+  CircleCheck
 } from 'lucide-react';
 
 
@@ -62,12 +63,14 @@ const SettingsPage = () => {
   const [newMethod, setNewMethod] = useState({bank: '', person: '', number: "", instructions: ""})
   const [spinner, setSpinner] = useState(null)
   const [domainV, setDomainV] = useState('')
+  const [subdomainV, setSubdomainV] = useState('')
   const [emailExists, setEmailExists] = useState(false)
   const [newPhoneNumber, setNewPhoneNumber] = useState(null)
   const [record, setRecord] = useState({step: 0,})
   const [fileState, setFileState] = useState(null)
   const [changedPassword, setChangedPassword] = useState(false)
   const [loading, setLoading] = useState(false)
+  const [successDomain, setSuccessDomain] = useState(false)
   const [errors, setErrors] = useState({});
   const [methods, setMethods] = useState(user.payment_methods || [])
   const [workers, setWorkers] = useState(user.workers || [])
@@ -80,6 +83,7 @@ const SettingsPage = () => {
     logo: user.logo || undefined,
     facebookUrl: user.facebookUrl || null,
     phone: user.phone,
+    domain: user.domain,
   });
 
   const handleLogout = () => {
@@ -98,6 +102,7 @@ const SettingsPage = () => {
         logo: user.logo || undefined,
         facebookUrl: user.facebookUrl,
         phone: user.phone,
+        domain: user.domain,
       });
       setMethods(user.payment_methods || [])
       setWorkers(user.workers || []);
@@ -251,6 +256,10 @@ const removeMethod = async (methodInp) => {
     setNewPhoneNumber(null);
   }
   const handleDomainChange = (e) => {
+    if(e.target.name === "subdomain"){
+      setSubdomainV(e.target.value)
+      return;
+    }
     setDomainV(e.target.value)
   }
   const connectDomainFunc = async (type) => {
@@ -259,6 +268,7 @@ const removeMethod = async (methodInp) => {
       const newErr = {}
       if(res.status ===  200){
         setRecord({step: 1, ...res.record})
+        newErr.domain_verification = false
       } else {
         newErr.domain_verification = true
       }
@@ -276,6 +286,7 @@ const removeMethod = async (methodInp) => {
           ngrokDomain: res.record.ngrokDomain,
         }
         setRecord({step: 2, ...newRecord})
+        newErr.domain_verification = false
       } else {
         newErr.domain_verification = true
       }
@@ -283,16 +294,32 @@ const removeMethod = async (methodInp) => {
       return;
    }
     if(type === "cname"){
-      const res = await verifyCNAME(domainV);
+      if(!subdomainV){
+        setWasSubmitted(prev => ({...prev, subdomain: true}))
+        setErrors(prev => ({...prev, subdomain: true}))
+        return;
+      }
+      const res = await verifyCNAME(subdomainV, domainV);
       const newErr = {}
       if(res.status ===  200){
         setRecord({step: 3})
+        setFormData(prev => ({...prev, domain: res.domain }))
+        newErr.domain_verification = false
       } else {
         newErr.domain_verification = true
       }
       setErrors(prev => ({...prev, ...newErr}))
     }
   }
+  useEffect(()=>{
+    if(wasSubmitted.subdomain){
+      if(subdomainV){
+        return setErrors(prev => ({...prev, subdomain: false}))
+      } else {
+        return setErrors(prev => ({...prev, subdomain: true}))
+      }
+    }
+  }, [subdomainV])
 
   const handleChange = (e) => {
     let {name, value} = e.target;
@@ -1115,6 +1142,26 @@ const removeMethod = async (methodInp) => {
             <h2 className="text-2xl font-semibold">Dominios</h2>
             
             <div className="space-y-4">
+              {formData.domain ? (
+                 <div className="p-6 rounded-lg border border-input">
+                  <h3 className="font-medium mb-4">Dominio Conectado</h3>
+                  <div className="space-y-4">
+                    <div className="relative">
+                    <div
+                      className="w-full p-2 rounded-md border border-input bg-background"
+                    >{formData.domain.domain}</div>
+                      <CircleCheck className="w-5 h-5 text-green-500 absolute right-5 top-1/2 -translate-y-1/2"/>
+                    </div>
+                    <div className="relative">
+                    <label className="block mb-3 text-sm ">Subdominio:</label>
+                    <div
+                      className="w-full p-2 rounded-md border bg-background"
+                    >{formData.domain.subdomain}</div>
+                    </div>
+                     <Button onClick={()=>{setFormData(prev => ({...prev, domain: false}))}} className="w-full">Cambiar Dominio</Button> 
+                  </div>
+                </div>
+              ) : (
               <div className="p-6 rounded-lg border border-input">
                 <h3 className="font-medium mb-4">Conectar Dominio</h3>
                 <div className="space-y-4">
@@ -1128,12 +1175,26 @@ const removeMethod = async (methodInp) => {
                     className="w-full p-2 rounded-md border border-input bg-background"
                   />
                    {errors.domain_verification && <CircleX className="w-5 h-5 text-red-500 absolute right-5 top-1/2 -translate-y-1/2"/>}
+                   {successDomain && <CircleCheck className="w-5 h-5 text-green-500 absolute right-5 top-1/2 -translate-y-1/2"/>}
                   </div>
+                  {record.step > 1 &&
+                  <div className="relative">
+                  <label className={`block mb-3 text-sm ${errors.subdomain && "text-red-500"}`}>Subdominio:</label>
+                  <input
+                    name="subdomain"
+                    type="text"
+                    value={subdomainV}
+                    onChange={handleDomainChange}
+                    placeholder="rifas"
+                    className={`w-full p-2 rounded-md border ${errors.subdomain ? "border-red-500" : "border-input"} bg-background`}
+                  />
+                  </div>
+                  }
                   {record.step === 0 && <Button onClick={()=>{connectDomainFunc("create")}} className="w-full">Conectar Dominio</Button> }
                   {record.step === 1 && <Button onClick={()=>{connectDomainFunc("verify")}} className="w-full">Verificar</Button>}
                   {record.step === 2 && <Button onClick={()=>{connectDomainFunc("cname")}} className="w-full">Verificar CNAME</Button>}
                 </div>
-              </div>
+              </div>)}
               {record.step === 1 && (
               <div className="p-4 bg-background border rounded">
                 <h2 className="text-base font-medium mb-2">Agrega este registro TXT a tu DNS:</h2>
@@ -1148,13 +1209,13 @@ const removeMethod = async (methodInp) => {
                 </p>
               </div>
               )} {record.step === 2 && (
-              <div className="p-4 bg-white border rounded mt-6">
+              <div className="p-4 bg-background border rounded mt-6">
                   <h2 className="text-base font-medium mb-2">Configura el CNAME o A Record en tu DNS:</h2>
                   <div className="space-y-1 text-sm">
                     <p><strong>Opción 1: CNAME</strong> (recomendado si usas un subdominio)</p>
                     <p>Tipo: CNAME</p>
-                    <p>Nombre: <code>{record.subdomainName}</code></p>
-                    <p>Valor: <code>{record.ngrokDomain}</code></p>
+                    <p>Nombre: <code>{subdomainV || '(el nombre de tu subdominio)'}</code></p>
+                    <p>Valor: <code>proxy.rifaez.com</code></p>
                   </div>
 
                   <div className="space-y-1 text-sm mt-4">
@@ -1172,8 +1233,8 @@ const removeMethod = async (methodInp) => {
 
                  )}
                 {record.step === 3 && (
-              <div className="p-4 bg-white border rounded mt-6">
-                  <h2 className="text-base font-medium mb-2">Exito</h2>
+              <div className="p-4 bg-background border rounded mt-6">
+                  <h2 className="text-base font-medium mb-2">Exito, el dominio fue conectado.</h2>
                 </div>
                  )}
             </div>

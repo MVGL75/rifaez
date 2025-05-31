@@ -106,9 +106,9 @@ export const AuthProvider = ({ children }) => {
     }
   };
 
-  const verifyCNAME = async (domain) => {
+  const verifyCNAME = async (subdomain, domain) => {
     try {
-      const res = await api.post('/api/domains/verify/cname', {domain});
+      const res = await api.post('/api/domains/verify/cname', {domain, subdomain});
       return res.data;
     } catch (err) {
       return { error: err.response?.data?.message || 'Connection failed' };

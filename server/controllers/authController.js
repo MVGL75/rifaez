@@ -1,6 +1,7 @@
 import {User} from '../models/Users.js'
 import Raffle from '../models/Raffle.js';
 import { registerSchema, saveSchema, workerSchema, methodSchema } from '../validators/registerSchema.js';
+import CustomDomain from '../models/CustomDomain.js';
 import sanitizeUser from '../utils/sanitize.js';
 import { v2 as cloudinary } from 'cloudinary';
 import plans from '../seed/plans.js';
@@ -352,7 +353,8 @@ export const save = async(req, res)=> {
   async function setUserForClient(req, user){
     const popUser = await user.populate('raffles')
     const safeUser = sanitizeUser(popUser)
-    return {...safeUser, currentPlan: plans[user.planId]?.name, planStatus: user.subscriptionStatus,  asWorker: req.user.asWorker,}
+    const domain = await CustomDomain.findOne({userId: user._id, status: 'active'})
+    return {...safeUser, currentPlan: plans[user.planId]?.name, planStatus: user.subscriptionStatus,  asWorker: req.user.asWorker, domain: domain || false}
   }
 
   export const addWorker = async (req, res) => {
@@ -445,14 +447,14 @@ export const save = async(req, res)=> {
   }
 
   // async function deleteUsers(params) {
-  //   await User.updateMany({}, {
-  //     $unset: {
-  //       stripeCustomerId: "",
-  //       subscriptionId: "",
-  //       planId: "",
-  //       subscriptionStatus: ""
-  //     }
-  //   });
+  //   const result = await CustomDomain.deleteOne({ domain: 'max.com' });
+
+  //   if (result.deletedCount === 1) {
+  //     console.log('Domain deleted successfully');
+  //   } else {
+  //     console.log('No domain found with that name');
+  //   }
+
     
     
   // }

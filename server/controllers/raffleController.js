@@ -5,6 +5,7 @@ import sanitizeRaffle from '../utils/sanitizeRaffle.js';
 import { raffleValidationSchema } from '../validators/raffleSchema.js';
 import { contactValidationSchema } from '../validators/contactSchemaValidate.js';
 import { ticketInfoValidationSchema } from '../validators/ticketInfoSchemaValidate.js';
+import CustomDomain from '../models/CustomDomain.js';
 import AppError from '../utils/AppError.js';
 import { getNextTransactionId, RaffleCounter } from '../models/RaffleCounter.js';
 import { v2 as cloudinary } from 'cloudinary';
@@ -303,7 +304,8 @@ export const editRaffle = async (req, res) => {
   async function setUserForClient(req, user){
     const popUser = await user.populate('raffles')
     const safeUser = sanitizeUser(popUser)
-    return {...safeUser, currentPlan: plans[user.planId]?.name, planStatus: user.subscriptionStatus,  asWorker: req.user.asWorker,}
+    const domain = await CustomDomain.findOne({userId: user._id, status: 'active'})
+    return {...safeUser, currentPlan: plans[user.planId]?.name, planStatus: user.subscriptionStatus,  asWorker: req.user.asWorker, domain: domain || false}
   }
 
 

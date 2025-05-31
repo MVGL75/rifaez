@@ -22,11 +22,24 @@ export const createDomain = async (req, res) => {
     const verificationToken = Math.random().toString(36).substring(2, 15);
 
     const domainBody = {
-        userId,
-        domain,
-        verificationToken,
+      userId,
+      domain,
+      verificationToken,
+    };
+    
+    const existingDomain = await customDomain.findOne({ userId });
+    
+    let savedDomain;
+    
+    if (existingDomain) {
+      // Update existing record
+      existingDomain.domain = domain;
+      existingDomain.verificationToken = verificationToken;
+      savedDomain = await existingDomain.save();
+    } else {
+      // Create new record
+      savedDomain = await customDomain.create(domainBody);
     }
-    const custom = await customDomain.create({...domainBody});
   
     return res.json({
       message: 'Please add the following TXT record to your DNS settings:',
@@ -42,17 +55,13 @@ export const createDomain = async (req, res) => {
 export const verifyDomain = async (req, res) => {
     const { domain } = req.body;
     const entry = await customDomain.findOne({domain: domain});
-    console.log(entry)
     if (!entry) return res.status(404).json({ error: 'Domain not found' });
   
     try {
-        console.log('_raffle-verification.' + domain);
       const records = await dns.resolveTxt(`_raffle-verification.${domain}`);
       const flat = records.flat().join('');
-      console.log(records, flat)
       if (flat === entry.verificationToken) {
         entry.verified = true;
-        entry.status = "active";
         entry.lastVerifiedAt = new Date();
         await entry.save();
         return res.json({ 
@@ -73,10 +82,20 @@ export const verifyDomain = async (req, res) => {
 
   export const verifyCname = async (req, res) => {
     try {
-    const {domain} = req.body
-      const records = await dns.resolveCname(domain); // returns an array 
-      const match = records.some(record => record === process.env.CURRENT_DOMAIN);
-      return match ? res.json({ valid: true, status: 200 }) : res.json({ valid: false, records });
+    const {domain, subdomain} = req.body
+      const records = await dns.resolveCname(subdomain + '.' + domain); // returns an array 
+      console.log(records)
+      const match = records.some(record => record === 'proxy.rifaez.com');
+      if(match){
+        const entry = await customDomain.findOne({domain: domain});
+        entry.subdomain = subdomain;
+        entry.status = 'active';
+        await entry.save();
+        console.log(entry)
+        return res.json({ valid: true, status: 200, domain: entry })
+      } else {
+        res.json({ valid: false, records });
+      }
     } catch (err) {
       return res.json({ valid: false, error: err.message });
     }
