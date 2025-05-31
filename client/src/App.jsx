@@ -53,7 +53,7 @@ const RaffleFinalizedCheck = ({children, selectedRaffle}) => {
   const [ viewStatistics, setViewStatistics ] = useState(false)
   const isExpired = (endDate) => new Date(endDate) < new Date();
     if(isExpired(selectedRaffle.endDate) && !viewStatistics){
-        return <RaffleFinished setViewStatistics={setViewStatistics}/>
+        return <RaffleFinished setViewStatistics={setViewStatistics} raffle={selectedRaffle}/>
     }
     return children;
 }

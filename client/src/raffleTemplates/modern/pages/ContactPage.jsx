@@ -157,9 +157,6 @@ const ContactPage = () => {
               </div>
             </div>
           </div>
-          <div className="h-56 w-full bg-gray-200 mt-6 rounded-lg flex items-center justify-center text-gray-500">
-              <img  alt="Placeholder para mapa de ubicación" className="object-cover w-full h-full rounded-lg" src="https://images.unsplash.com/photo-1518487346609-25352f3e0c8c" />
-          </div>
         </motion.div>
       </div>
     </motion.div>

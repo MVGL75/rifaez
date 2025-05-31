@@ -218,7 +218,7 @@ export const save = async(req, res)=> {
       const userWithUsername = await User.findOne({ username: req.body.email });
       const userWithWorker = await User.findOne({ "workers.email": req.body.email });
 
-      if (userWithUsername || userWithWorker) {
+      if (req.user.username !== req.body.email && (userWithUsername || userWithWorker)) {
         if(req.file){
           await cloudinary.uploader.destroy(req.file.filename);
         }

@@ -8,7 +8,7 @@ import WhatsWidget from "../components/WhatsWidget";
 import RifaezWidget from '../components/RifaezWidget';
 import DefaultLogo from "../components/ui/default-logo";
 const navLinks = [
-  { to: ".", label: "Boletos Disponibles" },
+  { to: "verificar", label: "Boletos Disponibles" },
   { to: "pago", label: "Pago" },
   { to: "contacto", label: "Contacto" },
 ];

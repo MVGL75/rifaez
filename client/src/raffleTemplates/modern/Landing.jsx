@@ -18,6 +18,7 @@ function Landing({raffle}) {
         <Route path="/" element={<Layout raffle={raffle} />}>
           <Route index  element={<TicketVerificationRaffle availableTickets={availableTickets} />} />
           <Route path="contacto"  element={<ContactRaffle />} />
+          <Route path="verificar"  element={<TicketRaffle />} />
           <Route path="pago"  element={<PaymentRaffle setAvailableTickets={setAvailableTickets} />} />
           <Route path="*" element={<RaffleNotFound />} />
         </Route>

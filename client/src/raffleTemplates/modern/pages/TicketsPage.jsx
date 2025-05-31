@@ -1,95 +1,143 @@
 
-import React from 'react';
-import { Button } from '../components/ui/button';
-import { Card, CardContent, CardHeader, CardTitle, CardDescription, CardFooter } from '../components/ui/card';
-import { motion } from 'framer-motion';
-import { Ticket, CalendarDays, DollarSign } from 'lucide-react';
-
-const ticketOptions = [
-  { 
-    id: 1, 
-    name: "Boleto General", 
-    price: "$50", 
-    description: "Acceso general al evento principal. Disfruta de todas las áreas comunes y actividades.",
-    icon: <Ticket className="h-8 w-8 text-primaryRaffle mb-2" />,
-    features: ["Acceso al evento", "Áreas comunes", "Actividades programadas"] 
-  },
-  { 
-    id: 2, 
-    name: "Boleto VIP", 
-    price: "$120", 
-    description: "Experiencia premium con acceso exclusivo, asientos preferenciales y obsequios.",
-    icon: <CalendarDays className="h-8 w-8 text-primaryRaffle mb-2" />,
-    features: ["Todo en General", "Acceso VIP Lounge", "Asientos preferenciales", "Bebidas de cortesía"]
-  },
-  { 
-    id: 3, 
-    name: "Pase de Temporada", 
-    price: "$300", 
-    description: "Acceso ilimitado a todos los eventos de la temporada. La mejor opción para los verdaderos fanáticos.",
-    icon: <DollarSign className="h-8 w-8 text-primaryRaffle mb-2" />,
-    features: ["Acceso a todos los eventos", "Descuentos en mercancía", "Invitaciones especiales"]
-  },
-];
+import React, { useState } from "react";
+import { motion } from "framer-motion";
+import { Button } from "@/components/ui/button";
+import { useOutletContext, useParams } from "react-router-dom";
+import { Search, TriangleAlert } from "lucide-react";
+import DefaultLogo from "../../components/ui/default-logo";
+import axios from "axios";
+const api = axios.create({
+  baseURL: import.meta.env.VITE_CURRENT_HOST,
+  withCredentials: true,
+});
 
 const TicketsPage = () => {
+  const { id } = useParams();
+  const [ticketNumber, setTicketNumber] = useState("");
+  const [success, setSuccess] = useState(null)
+  const raffle = useOutletContext();
+
+  const setPhoneFormat = (phone) => {
+    const digits = phone?.replace(/\D/g, ''); 
+
+    const parts = [];
+
+    if (digits?.length > 0) {
+      parts.push('(' + digits.substring(0, Math.min(3, digits.length)));
+    }
+    if (digits?.length >= 4) {
+      parts[0] += ') ';
+      parts.push(digits.substring(3, Math.min(6, digits.length)));
+    }
+    if (digits?.length >= 7) {
+      parts.push('-' + digits.substring(6, 10));
+    }
+
+    return parts.join('');
+  }
+
+  const handleVerification = async (e) => {
+    e.preventDefault();
+    const res = await api.post(`/api/raffle/${id}/verify`, { query: ticketNumber })
+    if(res.data.status === 200){
+      setSuccess({message: 'success', ticket: res.data.ticket})
+    } else {
+      setSuccess({message: 'unsuccessful'})
+    }
+  };
+
   return (
-    <motion.div 
-      className="space-y-8"
-      initial={{ opacity: 0, y: 20 }}
-      animate={{ opacity: 1, y: 0 }}
-      transition={{ duration: 0.5 }}
-    >
-      <section className="text-center">
-        <h1 className="text-4xl font-bold text-primaryRaffle mb-4">Adquiere tus Boletos</h1>
-        <p className="text-lg text-gray-600 max-w-2xl mx-auto">
-          Selecciona el tipo de boleto que mejor se adapte a tus necesidades y prepárate para una experiencia inolvidable.
-        </p>
-      </section>
+    <div className="max-w-[1400px] mx-auto px-4 py-8">
+      <div className="max-w-2xl mx-auto">
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          className="text-center mb-12"
+        >
+         {raffle.logo?.url ?
+                <img alt="logo" className="rounded-full w-32 h-32 mx-auto mb-6" src={raffle.logo.url}  />
+                : <DefaultLogo className="rounded-full w-32 h-32 mx-auto mb-6"/>}
+          <h1 className="text-3xl font-bold text-colorRaffle mb-4">
+            VERIFICADOR DE BOLETOS
+          </h1>
+          <p className="text-xl text-colorRaffle">
+            {raffle.title}
+          </p>
+        </motion.div>
 
-      <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
-        {ticketOptions.map((ticket, index) => (
-          <motion.div
-            key={ticket.id}
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.5, delay: index * 0.1 }}
-          >
-            <Card className="flex flex-col h-full shadow-lg hover:shadow-xl transition-shadow duration-300 transform hover:-translate-y-1">
-              <CardHeader className="items-center text-center">
-                {ticket.icon}
-                <CardTitle className="text-2xl text-primaryRaffle">{ticket.name}</CardTitle>
-                <CardDescription className="text-3xl font-bold text-gray-800">{ticket.price}</CardDescription>
-              </CardHeader>
-              <CardContent className="flex-grow">
-                <p className="text-sm text-gray-600 mb-4">{ticket.description}</p>
-                <ul className="space-y-1 text-sm text-gray-500">
-                  {ticket.features.map(feature => <li key={feature} className="flex items-center"><Ticket className="h-4 w-4 mr-2 text-green-500" />{feature}</li>)}
-                </ul>
-              </CardContent>
-              <CardFooter className="mt-auto">
-                <Button className="w-full">
-                  Seleccionar Boleto
-                </Button>
-              </CardFooter>
-            </Card>
-          </motion.div>
-        ))}
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.2 }}
+          className="bg-cardRaffle p-8 rounded-lg shadow-xl"
+        >
+          
+          {!success &&
+          <>
+          <p className="text-colorRaffle text-center mb-8">
+            Introduce tu BOLETO, FOLIO ó CELULAR y haz click en "Verificar"
+          </p>
+          <form onSubmit={handleVerification} className="space-y-6">
+            <div className="relative">
+              <input
+                type="text"
+                value={ticketNumber}
+                onChange={(e) => setTicketNumber(e.target.value)}
+                className="w-full bg-transparent p-4 rounded text-colorRaffle border-2 border-borderRaffle text-center text-lg"
+                placeholder="Escribe Boleto, Folio ó Celular"
+              />
+              <Search className="absolute right-4 top-1/2 transform -translate-y-1/2 text-gray-400" />
+            </div>
+            
+            <Button 
+              type="submit" 
+              className="w-full text-primaryRaffle-foreground bg-primaryRaffle hover:bg-primaryRaffle-400 text-lg py-6"
+            >
+              Verificar
+            </Button>
+          </form>
+          </>
+          }
+          {success?.message === "success" &&
+            <div className="space-y-5">
+              <div className="text-colorRaffle text-xl">
+                Transaccion #{success.ticket.id}
+              </div>
+              <div className="flex items-center gap-3">
+                <div className="text-colorRaffle">Estado de Pago:</div>
+                {success.ticket.status === "paid" ? 
+                <span class="px-2 py-1 rounded-full text-xs font-medium bg-green-100 text-green-800">Pagado</span>
+                 : <span class="px-2 py-1 rounded-full text-xs font-medium bg-yellow-100 text-yellow-800">Pendiente</span>
+                 }
+              </div>
+            </div>
+          }
+          {success?.message === "unsuccessful" &&
+            <div className="space-y-4">
+              <TriangleAlert className="text-red-400"/>
+              <h1 className="text-colorRaffle text-xl">Boleto no encontrado</h1>
+              <p className="text-colorRaffle">Asegurese de haber ingresado los datos correctamente</p>
+            </div>
+          }
+
+
+        </motion.div>
+
+        <motion.div
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          transition={{ delay: 0.4 }}
+          className="mt-8 text-center text-gray-400"
+        >
+          <p>
+            ¿Tienes dudas? Contáctanos por WhatsApp al{" "}
+            <a href={`tel:${raffle.phone}`} className="text-colorRaffle">
+              {setPhoneFormat(raffle.phone)}
+            </a>
+          </p>
+        </motion.div>
       </div>
-
-      <section className="mt-12 p-6 bg-blue-50 rounded-lg">
-        <h2 className="text-2xl font-semibold text-primaryRaffle mb-3">Información Importante</h2>
-        <ul className="list-disc list-inside text-gray-700 space-y-1 text-sm">
-            <li>Los precios están sujetos a cambios sin previo aviso.</li>
-            <li>Todos los boletos son intransferibles y no reembolsables.</li>
-            <li>Se aplican términos y condiciones adicionales.</li>
-            <li>Para grupos grandes o consultas especiales, contáctanos.</li>
-        </ul>
-        <div className="h-48 w-full bg-gray-200 mt-4 rounded flex items-center justify-center text-gray-500">
-            <img  alt="Placeholder para imagen de información de boletos" className="object-cover w-full h-full rounded" src="https://images.unsplash.com/photo-1560243668-caf0e9776725" />
-        </div>
-      </section>
-    </motion.div>
+    </div>
   );
 };
 
