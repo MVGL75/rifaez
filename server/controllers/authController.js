@@ -216,6 +216,10 @@ export const save = async(req, res)=> {
             : null,
       };
 
+      if (!parsedBody.facebookUrl || parsedBody.facebookUrl === 'undefined') {
+        delete parsedBody.facebookUrl;
+      }
+
       const userWithUsername = await User.findOne({ username: req.body.email });
       const userWithWorker = await User.findOne({ "workers.email": req.body.email });
 
