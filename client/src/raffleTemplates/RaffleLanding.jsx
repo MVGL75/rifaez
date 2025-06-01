@@ -1,18 +1,16 @@
 import React, { useEffect, useState } from "react";
-import { Outlet, useParams } from "react-router-dom";
+import { useParams } from "react-router-dom";
 import classicLanding from "./classic/Landing"
 import modernLanding from "./modern/Landing";
 import minimalistLanding from "./minimalist/Landing";
 import RaffleNotFound from "./RaffleNotFound"
 import setCustomRaffle from "./utils/setCustomRaffle";
 import RaffleFinalized from "./RaffleFinalized";
-import Navbar from "./components/Navbar";
 import axios from "axios";
 const api = axios.create({
   baseURL: import.meta.env.VITE_CURRENT_HOST,
   withCredentials: true,
 });
-import Footer from "./components/Footer";
 import Spinner from "../components/spinner";
 
 const TEMPLATES = {
@@ -32,6 +30,7 @@ function RaffleLanding() {
     const fetchRaffle = async () => {
       try {
         setLoading(true)
+        console.log("hi")
         const res = await api.get(`/api/raffle/${id}`);
         if (res.data.status === 200) {
           const raffle = res.data.raffle;
@@ -55,8 +54,9 @@ function RaffleLanding() {
         }
         
       } catch (err) {
+        console.log(err)
         setNotFound(true);
-        setLoading(fakse)
+        setLoading(false)
       } 
     };
 

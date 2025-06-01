@@ -1,12 +1,13 @@
 import React, { useState } from 'react';
-import { NavLink, Outlet, useLocation } from 'react-router-dom';
+import { Link, NavLink, Outlet, useLocation } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Menu, X, Aperture } from 'lucide-react';
-import { Button } from '../components/ui/button';
+import { Button } from './components/ui/button';
 import { cn } from '../lib/utils';
 import WhatsWidget from "../components/WhatsWidget";
 import RifaezWidget from '../components/RifaezWidget';
 import DefaultLogo from "../components/ui/default-logo";
+import Logo from '../../Logo';
 const navLinks = [
   { to: "verificar", label: "Boletos Disponibles" },
   { to: "pago", label: "Pago" },
@@ -23,21 +24,24 @@ const Layout = ({raffle}) => {
 
   const linkClasses = "px-3 py-2 rounded-md text-sm font-medium";
   const activeLinkClasses = "bg-headerRaffle-foreground text-headerRaffle";
-  const inactiveLinkClasses = "text-headerRaffle-foreground hover:bg-blue-100 hover:text-primaryRaffle";
+  const inactiveLinkClasses = "text-headerRaffle-foreground hover:bg-primaryRaffle-300 hover:text-headerRaffle-foreground";
   const activeLinkClassesMenu = "bg-primaryRaffle text-primaryRaffle-foreground";
-  const inactiveLinkClassesMenu = "text-colorRaffle hover:bg-blue-100 hover:text-primaryRaffle";
+  const inactiveLinkClassesMenu = "text-colorRaffle hover:bg-primaryRaffle-300 hover:text-headerRaffle-foreground";
 
   return (
     <div className="min-h-screen flex flex-col bg-gradient-to-br from-backgroundRaffle to-lightColorTint font-fontRaffle">
-      <header className={`sticky top-0 z-50 ${raffle.header === "on" ? "bg-headerRaffle" : "bg-backgroundRaffle"} backdrop-blur-md shadow-sm`}>
-        <div className="max-w-[calc(100vw-64px)] w-[1400px] mx-auto px-4 sm:px-6 lg:px-8">
-          <div className={`relative flex items-center  ${raffle.logo_position === "left" ? "justify-between flex-row" : "flex-row-reverse"}  ${raffle.logo_position === "right" && "gap-4"} h-16`}>
-            <div className={`${raffle.logo_position === "center" && "absolute left-1/2 -translate-x-1/2"} flex items-center`}>
-              <NavLink to="" className="flex-shrink-0 flex items-center space-x-2">
+      <header className={`sticky top-0 z-50 ${raffle.header === "on" ? "bg-headerRaffle" : "bg-backgroundRaffle"} backdrop-blur-md shadow-sm border-b border-borderRaffle`}>
+        <div className="max-w-[calc(100vw-24px)] w-[1400px] mx-auto px-2 sm:px-6 lg:px-8">
+          <div className={`relative flex items-center justify-between  ${raffle.logo_position === "left" ? "flex-row" : "flex-row-reverse"}  ${raffle.logo_position === "right" && "gap-4"} h-16`}>
+          <div className={`${raffle.logo_position === "center" && "absolute left-1/2 -translate-x-1/2"} h-[64px] flex gap-2 items-center`}>
+            <NavLink to="" className={`${raffle.logo_size === "sm" && "h-12"} ${raffle.logo_size === "md" && "h-14 "} ${raffle.logo_size === "lg" && "h-20 "} ${raffle.logo_type === "on" && "border-borderRaffle border-2 rounded-full object-cover aspect-square overflow-hidden"} flex-shrink-0 flex items-center space-x-2 ${raffle.logo_size === "lg" && "translate-y-[10px]"}`}>
               {raffle.logo?.url ?
-                <img alt="logo" className="h-12 w-12 rounded-full object-cover" src={raffle.logo.url}   />
-                : <DefaultLogo className="h-12 w-12"/> }
+                <img alt="logo" className="h-full" src={raffle.logo.url}   />
+                : <DefaultLogo className="h-full"/> }
               </NavLink>
+              {raffle.logo_display_name &&
+                <span className={`min-w-max text-headerRaffle-foreground ${raffle.logo_position === "center" && "absolute left-[calc(100%+10px)] "}`}>{raffle.business_name}</span>
+              }
             </div>
             <nav className="hidden md:flex space-x-4">
               {navLinks.map((link) => (
@@ -89,7 +93,7 @@ const Layout = ({raffle}) => {
         </AnimatePresence>
       </header>
 
-      <main className="flex-grow max-w-[calc(100vw-64px)] w-[1400px] mx-auto px-4 sm:px-6 lg:px-8 py-8">
+      <main className="flex-grow max-w-[calc(100vw-24px)] w-[1400px] mx-auto px-0 sm:px-6 lg:px-8 py-8">
         <AnimatePresence mode="wait">
           <motion.div
             key={location.pathname}
@@ -105,8 +109,8 @@ const Layout = ({raffle}) => {
 
       <WhatsWidget number={raffle.phone}/>
       <footer className="bg-backgroundRaffle border-t border-borderRaffle">
-        <div className="max-w-[1400px] mx-auto px-4 sm:px-6 lg:px-8 py-6 text-center">
-          <p className="text-sm text-gray-500">&copy; {new Date().getFullYear()} Rifaez. Todos los derechos reservados.</p>
+        <div className="max-w-[1400px] mx-auto px-4 sm:px-6 lg:px-8 py-6 flex items-center justify-center gap-3">
+          <p className="text-sm text-gray-500 flex">Desarrollado por</p> <Link to="https://www.rifaez.com" className="text-primaryRaffle"><Logo/></Link>
         </div>
       </footer>
     </div>

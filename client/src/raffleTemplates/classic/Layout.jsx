@@ -13,6 +13,7 @@ function Layout({raffle}) {
     </div>
     <WhatsWidget number={raffle.phone}/>
     <Footer raffle={raffle} />
+    <div className="h-16 w-full"></div>
     </div>
   );
 }

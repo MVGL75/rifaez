@@ -234,8 +234,11 @@ const RaffleEditPage = ({}) => {
     }
     setCarousel(num)
   }
-  const switchHeader = (mode) => {
-    setRaffle(prev => ({...prev, header: mode}));
+  const switchHeader = () => {
+    setRaffle(prev => ({...prev, logo_display_name: !prev.logo_display_name}));
+  }
+  const switchSize = (size) => {
+    setRaffle(prev => ({...prev, logo_size: size}))
   }
   const switchMode = (mode) => {
     const permission = planRaffleAmount[user.currentPlan]
@@ -717,18 +720,49 @@ const RaffleEditPage = ({}) => {
                   </div>
             </div>
             <div>
-              <label className={`block text-sm font-medium mb-2 ${errors.header && "text-red-500"}`}>
-                Encabezado
-              </label>
-              <div className="flex gap-4">
-              <div onClick={()=>{switchHeader("on")}} className={`border-[1.5px] rounded-lg cursor-pointer ${raffle.header ==="on" ? "border-blue-500 text-blue-500"  : "border-input" } bg-background text-xs h-8 w-8 flex items-center justify-center`}>
-                <Captions/>
-              </div>
-              <div onClick={()=>{switchHeader("off")}} className={`border-[1.5px] rounded-lg cursor-pointer ${raffle.header === "off" ? "border-blue-500 text-blue-500"  : "border-input" } bg-background text-sm h-8 w-8 flex items-center justify-center`}>
-                <CaptionsOff/>
-              </div>
-              </div>
+              <label htmlFor="logo_type" className={`block text-sm font-medium mb-2 ${errors.logo_type && "text-red-500"}`}>
+                  Tipo de Logo
+                </label>
+                <div className="relative">
+                  <select id="logo_type" name="logo_type" value={raffle.logo_type}  onChange={handleChange} 
+                  className={`w-full p-2 rounded-md border ${errors.logo_type ? "border-red-500" : "border-input"} bg-background `}
+                   >
+                    <option value="on">Redondo</option>
+                    <option value="off">Sin fondo</option>
+                    
+                  </select>
+                  </div>
             </div>
+            <div>
+                <label className={`block text-sm font-medium mb-2 ${errors.logo_size && "text-red-500"}`}>
+                  Tamaño de Logo
+                </label>
+                <div className="flex gap-4">
+                <div onClick={()=>{switchSize('sm')}} className={`border-[1.5px] rounded-lg cursor-pointer ${raffle.logo_size === "sm" ? "border-blue-500 text-blue-500"  : "border-input" } bg-background text-xs h-8 w-8 flex items-center justify-center`}>
+                  <span>S</span>
+                </div>
+                <div onClick={()=>{switchSize('md')}} className={`border-[1.5px] rounded-lg cursor-pointer ${raffle.logo_size === "md" ? "border-blue-500 text-blue-500"  : "border-input" } bg-background text-sm h-8 w-8 flex items-center justify-center`}>
+                  <span>M</span>
+                </div>
+                <div onClick={()=>{switchSize('lg')}} className={`border-[1.5px] rounded-lg cursor-pointer ${raffle.logo_size === "lg" ? "border-blue-500 text-blue-500"  : "border-input" } bg-background text-sm h-8 w-8 flex items-center justify-center`}>
+                  <span>L</span>
+                </div>
+                </div>
+              </div>
+              
+              <div>
+                <label className={`block text-sm font-medium mb-2 ${errors.logo_display_name && "text-red-500"}`}>
+                  Nombre de Empresa en Encabezado
+                </label>
+                <div className="flex gap-4">
+                <div onClick={()=>{switchHeader()}} className={`border-[1.5px] rounded-lg cursor-pointer ${raffle.logo_display_name ? "border-blue-500 text-blue-500"  : "border-input" } bg-background text-xs h-8 w-8 flex items-center justify-center`}>
+                  <Captions/>
+                </div>
+                <div onClick={()=>{switchHeader()}} className={`border-[1.5px] rounded-lg cursor-pointer ${!raffle.logo_display_name ? "border-blue-500 text-blue-500"  : "border-input" } bg-background text-sm h-8 w-8 flex items-center justify-center`}>
+                  <CaptionsOff/>
+                </div>
+                </div>
+              </div>
             <div>
                 <label className={`block text-sm font-medium mb-2 ${errors.isActive && "text-red-500"}`}>
                   Activo

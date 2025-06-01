@@ -102,9 +102,17 @@ const RaffleSchema = new mongoose.Schema({
                 type: String,
                 default: "center"
             },
-            header: {
+            logo_display_name: {
+                type: Boolean,
+                default: true,
+            },
+            logo_size: {
                 type: String,
-                default: "on"
+                default: "md",
+            },
+            logo_type: {
+                type: String,
+                default: "on",
             },
             countdown: {
                 type: String,
@@ -113,6 +121,7 @@ const RaffleSchema = new mongoose.Schema({
             font: {
                 type: String,
             },
+
             // nightMode: {
             //     type: Boolean,
             //     default: false

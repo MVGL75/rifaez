@@ -55,7 +55,7 @@ const PrizeSection = ({raffle}) => {
             <div className="md:w-1/2 p-6 sm:p-8 flex flex-col justify-center">
               <CardTitle className="text-2xl sm:text-3xl font-bold text-primaryRaffle mb-3 sm:mb-4 flex items-center">
                 <Gift className="h-7 w-7 sm:h-8 sm:w-8 mr-3" />
-                Premio Principal
+                1° Lugar
               </CardTitle>
               <p className="text-lg sm:text-xl font-semibold text-colorRaffle mb-1 sm:mb-2">{raffle.title}</p>
               <p className="text-sm sm:text-base text-colorRaffle-300">

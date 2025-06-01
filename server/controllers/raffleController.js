@@ -20,6 +20,7 @@ export const createRaffle = async(req, res)=>{
       const parsedBody = {
         ...req.body,
         images,
+        logo_display_name: JSON.parse(req.body.logo_display_name || 'true'),
         colorPalette: JSON.parse(req.body.colorPalette || '[]'),
         paymentMethods: JSON.parse(req.body.paymentMethods || '[]'),
         additionalPrizes: JSON.parse(req.body.additionalPrizes || '[]'),
@@ -79,6 +80,7 @@ export const editRaffle = async (req, res) => {
   }
     const newRaffle = {
       ...restBody,
+      logo_display_name: JSON.parse(req.body.logo_display_name || 'true'),
       colorPalette: JSON.parse(req.body.colorPalette || '[]'),
       additionalPrizes: req.body.additionalPrizes ? JSON.parse(req.body.additionalPrizes) : [],
       paymentMethods: req.body.paymentMethods ? JSON.parse(req.body.paymentMethods) : [],
@@ -117,7 +119,7 @@ export const editRaffle = async (req, res) => {
               availableTickets.push(i)
             }
           }
-          res.json({message: "Raffle found", status: 200, raffle: {...cleanRaffle, availableTickets: availableTickets, logo: user.logo, phone: user.phone, email: user.username}})
+          res.json({message: "Raffle found", status: 200, raffle: {...cleanRaffle, availableTickets: availableTickets, logo: user.logo, phone: user.phone, facebookUrl: user.facebookUrl, email: user.username, business_name: user.companyName}})
         } else {
           return res.json({message: "raffle inactive"})
         }

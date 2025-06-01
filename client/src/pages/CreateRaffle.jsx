@@ -64,7 +64,9 @@ const CreateRafflePage = ({userJustCreated, setUserJustCreated}) => {
     price: "",
     maxParticipants: "",
     font: "",
-    header: "on",
+    logo_display_name: true,
+    logo_type: 'on',
+    logo_size: "md",
     logo_position: "",
     countdown: "on",
     colorPalette: {
@@ -168,7 +170,7 @@ const CreateRafflePage = ({userJustCreated, setUserJustCreated}) => {
             keys.push("price", "maxParticipants", "prize");
             break;
         case 3:
-            keys.push("template", "colorPalette", "logo_position", "header", "countdown", "font",);
+            keys.push("template", "colorPalette", "logo_position", "logo_display_name", "logo_size", "countdown", "font",);
             break;
         case 4:
             keys.push("endDate", "timeLimitPay", 'fileCounter', 'extraInfo');
@@ -247,11 +249,11 @@ const CreateRafflePage = ({userJustCreated, setUserJustCreated}) => {
     }
     setCurrentStep(currentStep + 1);
   };
-  const switchHeader = (mode) => {
-    setFormData(prev => ({...prev, header: mode}));
+  const switchHeader = () => {
+    setFormData(prev => ({...prev, logo_display_name: !prev.logo_display_name}));
   }
-  const switchMode = () => {
-    setFormData(prev => ({...prev, nightMode: !prev.nightMode}))
+  const switchSize = (size) => {
+    setFormData(prev => ({...prev, logo_size: size}))
   }
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -298,7 +300,6 @@ const CreateRafflePage = ({userJustCreated, setUserJustCreated}) => {
       filesArray.forEach(image => newRaffleData.append('images', image));
       try {
         const res = await api.post("/api/raffle/create", newRaffleData)
-        console.log(res)
         if(res.data.status === 200){
           setNewRaffleId(res.data.link)
           setSpinner(false)
@@ -544,12 +545,12 @@ const CreateRafflePage = ({userJustCreated, setUserJustCreated}) => {
                     <span className={`font-medium min-w-[100px] ${errors[`additionalPrizes_${index}`] && "text-red-500"}`}>
                       {prize.place}º Lugar
                     </span>
-                    <div className="relative">
+                    <div className="relative grow">
                     <input
                       type="text"
                       value={prize.prize}
                       onChange={(e) => handlePrizeChange(index, e.target.value)}
-                      className={`flex-1 p-2 rounded-md border bg-background ${errors[`additionalPrizes_${index}`] ? "border-red-500" : "border-input"}`}
+                      className={`flex-1 p-2 w-full rounded-md border bg-background ${errors[`additionalPrizes_${index}`] ? "border-red-500" : "border-input"}`}
                       placeholder="Describe el premio"
                     />
                     <CircleMinus onClick={()=>{removePrize(index)}} className="text-red-500 h-5 w-5 absolute top-1/2 -translate-y-1/2 right-3"/>
@@ -740,14 +741,44 @@ const CreateRafflePage = ({userJustCreated, setUserJustCreated}) => {
                   </div>
               </div>
               <div>
-                <label className={`block text-sm font-medium mb-2 ${errors.header && "text-red-500"}`}>
-                  Encabezado
+              <label htmlFor="logo_type" className={`block text-sm font-medium mb-2 ${errors.logo_type && "text-red-500"}`}>
+                  Tipo de Logo
+                </label>
+                <div className="relative">
+                  <select id="logo_type" name="logo_type" value={formData.logo_type}  onChange={handleChange} 
+                  className={`w-full p-2 rounded-md border ${errors.logo_type ? "border-red-500" : "border-input"} bg-background `}
+                   >
+                    <option value="on">Redondo</option>
+                    <option value="off">Sin fondo</option>
+                    
+                  </select>
+                  </div>
+              </div>
+              <div>
+                <label className={`block text-sm font-medium mb-2 ${errors.logo_size && "text-red-500"}`}>
+                  Tamaño de Logo
                 </label>
                 <div className="flex gap-4">
-                <div onClick={()=>{switchHeader("on")}} className={`border-[1.5px] rounded-lg cursor-pointer ${formData.header ==="on" ? "border-blue-500 text-blue-500"  : "border-input" } bg-background text-xs h-8 w-8 flex items-center justify-center`}>
+                <div onClick={()=>{switchSize('sm')}} className={`border-[1.5px] rounded-lg cursor-pointer ${formData.logo_size === "sm" ? "border-blue-500 text-blue-500"  : "border-input" } bg-background text-xs h-8 w-8 flex items-center justify-center`}>
+                  <span>S</span>
+                </div>
+                <div onClick={()=>{switchSize('md')}} className={`border-[1.5px] rounded-lg cursor-pointer ${formData.logo_size === "md" ? "border-blue-500 text-blue-500"  : "border-input" } bg-background text-sm h-8 w-8 flex items-center justify-center`}>
+                  <span>M</span>
+                </div>
+                <div onClick={()=>{switchSize('lg')}} className={`border-[1.5px] rounded-lg cursor-pointer ${formData.logo_size === "lg" ? "border-blue-500 text-blue-500"  : "border-input" } bg-background text-sm h-8 w-8 flex items-center justify-center`}>
+                  <span>L</span>
+                </div>
+                </div>
+              </div>
+              <div>
+                <label className={`block text-sm font-medium mb-2 ${errors.logo_display_name && "text-red-500"}`}>
+                  Nombre de Empresa en Encabezado
+                </label>
+                <div className="flex gap-4">
+                <div onClick={()=>{switchHeader()}} className={`border-[1.5px] rounded-lg cursor-pointer ${formData.logo_display_name ? "border-blue-500 text-blue-500"  : "border-input" } bg-background text-xs h-8 w-8 flex items-center justify-center`}>
                   <Captions/>
                 </div>
-                <div onClick={()=>{switchHeader("off")}} className={`border-[1.5px] rounded-lg cursor-pointer ${formData.header === "off" ? "border-blue-500 text-blue-500"  : "border-input" } bg-background text-sm h-8 w-8 flex items-center justify-center`}>
+                <div onClick={()=>{switchHeader()}} className={`border-[1.5px] rounded-lg cursor-pointer ${!formData.logo_display_name ? "border-blue-500 text-blue-500"  : "border-input" } bg-background text-sm h-8 w-8 flex items-center justify-center`}>
                   <CaptionsOff/>
                 </div>
                 </div>

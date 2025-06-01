@@ -205,9 +205,9 @@ const Home = ({availableTickets}) => {
           transition={{ duration: 0.5 }}
         >
           {/* Prize Amount */}
-          <div className="flex flex-col lg:flex-row pt-20 gap-20">
+          <div className="flex flex-col lg:flex-row lg:pt-20 gap-20">
           <div className="lg:w-[40%] pt-10">
-            <h1 className="text-4xl md:text-6xl font-bold text-colorRaffle mb-14">
+            <h1 className="text-4xl xxs:text-5xl md:text-6xl font-bold text-colorRaffle mb-14">
             {raffle?.title}
             </h1>
             <p className="mb-10">{raffle.description}</p>

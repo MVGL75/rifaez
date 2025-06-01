@@ -12,7 +12,7 @@ const TicketItem = ({ ticket, onClick, isSelected }) => {
     {
       "bg-lightTint border-borderRaffle text-colorRaffle-600 line-through cursor-not-allowed": ticket.status === 'purchased',
       "bg-primaryRaffle text-colorRaffle-foreground shadow-md scale-105": ticket.status === 'available' && isSelected,
-      "bg-backgroundRaffle text-primaryRaffle border-primaryRaffle hover:bg-blue-100 cursor-pointer": ticket.status === 'available' && !isSelected,
+      "bg-backgroundRaffle text-primaryRaffle border-primaryRaffle hover:bg-primaryRaffle-300 hover:text-primaryRaffle-foreground cursor-pointer": ticket.status === 'available' && !isSelected,
     }
   );
 

@@ -28,10 +28,9 @@ export default function(raffle){
         // add more if needed
     };
 
-
-
-    const header = colorShades[raffle.colorPalette.header];
     const background = colorShades[raffle.colorPalette.background];
+    const headerCheck = raffle.header === "on" ? raffle.colorPalette.header : raffle.colorPalette.background ;
+    const header = colorShades[headerCheck];
     const borders = colorShades[raffle.colorPalette.borders];
     const color = colorShades[raffle.colorPalette.color];
     const primary = colorShades[raffle.colorPalette.accent];
@@ -58,7 +57,7 @@ export default function(raffle){
         '--color-raffle-500': color[2],
         '--color-raffle-600': color[3],
         '--color-raffle-700': color[4],
-        '--border-raffle': borders[0],
+        '--border-raffle': borders[1],
     };
 
     // Apply user overrides (if any)
@@ -68,5 +67,4 @@ export default function(raffle){
     Object.entries(settings).forEach(([key, value]) => {
         root.style.setProperty(key, value);
     });
-    console.log("a")
 }

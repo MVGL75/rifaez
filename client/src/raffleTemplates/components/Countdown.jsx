@@ -26,7 +26,7 @@ export default function Countdown({targetDate}){
 
     return  (
         <section className="flex justify-center bg-lightTint rounded-xl py-2 max-w-full">
-            <div className="w-[1100px] max-w-full p-6 text-colorRaffle">
+            <div className="w-[1100px] max-w-full py-6 px-2 sm:px-4 text-colorRaffle">
                 <div className="w-full flex">
                     <div className="flex flex-col-reverse sm:gap-5 items-center relative">
                         <div className="text-colorRaffle-600 text-xs sm:text-xl">Dias</div>
