@@ -449,11 +449,18 @@ export const save = async(req, res)=> {
     const clientUser = await setUserForClient(req, user)
     res.json({message: "method removed", status: 200, user: clientUser})
   }
-
-  async function deleteUsers(params) {
-    const result = await User.find({})
-    console.log(result)
-    
-  }
-
-  // deleteUsers()
+  // import { customAlphabet } from "nanoid";
+  // const nanoid = customAlphabet('1234567890abcdefghijklmnopqrstuvwxyz', 8); // only digits
+  
+  // async function assignShortIdsToRaffles() {
+  //   const raffles = await Raffle.find({ shortId: { $exists: false } }); // Only those without one
+  //   console.log(raffles)
+  //   for (const raffle of raffles) {
+  //     raffle.shortId = nanoid();
+  //     await raffle.save(); // Will respect schema validations
+  //   }
+  
+  //   console.log(`Updated ${raffles.length} raffles with shortId`);
+  // }
+  
+  // assignShortIdsToRaffles();

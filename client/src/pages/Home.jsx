@@ -412,8 +412,8 @@ const HomePage = ({ selectedRaffle }) => {
 
         <div className="flex justify-between items-center">
           <div className="items-center px-3 space-x-3 py-2 rounded-md border border-input bg-background flex">
-            <Copy onClick={()=>{handleCopyLink(selectedRaffle._id)}} className="w-4 h-4"/>
-            <span className="text-muted-foreground">{copiedClip ? "Copied to clipboard" : `/raffle/${selectedRaffle._id}`}</span>
+            <Copy onClick={()=>{handleCopyLink(selectedRaffle.shortId)}} className="w-4 h-4"/>
+            <span className="text-muted-foreground">{copiedClip ? "Copied to clipboard" : `/raffle/${selectedRaffle.shortId}`}</span>
           </div>
           <div
             onClick={() => dateRef.current?.showPicker?.()}

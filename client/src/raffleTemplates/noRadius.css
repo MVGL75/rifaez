@@ -1,0 +1,7 @@
+.no-radius * {
+    border-radius: 0 !important;
+  }
+
+  .no-radius .round-must {
+    border-radius: 1000px !important;
+  }

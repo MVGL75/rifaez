@@ -277,7 +277,7 @@ const AppContent = () => {
         <Route path="/checkout/return" element={<Return setUserJustCreated={setUserJustCreated} />} />
         <Route path="/raffle/:id/*" element={<RaffleLanding />}></Route>
       </Routes>
-      {popError && <PopError message={popError.message} />}
+      {popError && <PopError message={popError.message} status={popError.status} />}
     </>
   );
 };

@@ -52,10 +52,12 @@ const TicketVerification = () => {
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
-          className="text-center mb-12"
+          className="text-center mb-12 flex flex-col items-center"
         >
          {raffle.logo?.url ?
-                <img alt="logo" className="rounded-full w-32 h-32 mx-auto mb-6" src={raffle.logo.url}  />
+               <div className={`h-32 ${raffle.logo_type === "on" && "border-borderRaffle border-2 rounded-full object-cover aspect-square overflow-hidden"} mb-6`}>
+                  <img alt="logo" className="h-32 object-cover mx-auto mb-6" src={raffle.logo.url}  />
+              </div>
                 : <DefaultLogo className="rounded-full w-32 h-32 mx-auto mb-6"/>}
           <h1 className="text-3xl font-bold text-colorRaffle mb-4">
             VERIFICADOR DE BOLETOS

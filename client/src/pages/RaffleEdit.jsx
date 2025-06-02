@@ -40,6 +40,7 @@ const RaffleEditPage = ({}) => {
   const { setUser, user, setPopError, } = useAuth()
   const [saveLoader, setSaveLoader] = useState(null)
   const dateRef = useRef(null)
+  const [shortId, setShortId] = useState(null)
   const [successMessage, setSuccessMessage] = useState(null)
   const [raffle, setRaffle] = useState(null); 
   const [errors, setErrors] = useState({})
@@ -50,6 +51,7 @@ const RaffleEditPage = ({}) => {
   const [oldPublicIds, setOldPublicIds] = useState([])
   const [carousel, setCarousel] = useState(0)
   const [minDate, setMinDate] = useState("");
+ 
 
   useEffect(() => {
     const today = new Date().toISOString().split("T")[0];  
@@ -83,7 +85,35 @@ const RaffleEditPage = ({}) => {
         setOldPublicIds(JSON.stringify(newPub))
         setPreviews(imgPrev)
         setInitialActive(raffleWithoutId.isActive)
-        setRaffle({...raffleWithoutId, fileCounter: raffle.images.length}); 
+        setShortId(res.data.shortId)
+        setRaffle({
+          title: raffleWithoutId.title, 
+          description: raffleWithoutId.description, 
+          price: raffleWithoutId.price, 
+          endDate: raffleWithoutId.endDate, 
+          maxParticipants: raffleWithoutId.maxParticipants, 
+          currentParticipants: raffleWithoutId.currentParticipants, 
+          isActive: raffleWithoutId.isActive, 
+          paymentMethods: raffleWithoutId.paymentMethods, 
+          additionalPrizes: raffleWithoutId.additionalPrizes, 
+          template: raffleWithoutId.template, 
+          colorPalette: {
+            header: raffleWithoutId.colorPalette.header,
+            background: raffleWithoutId.colorPalette.background,
+            accent: raffleWithoutId.colorPalette.accent,
+            borders: raffleWithoutId.colorPalette.borders,
+            color: raffleWithoutId.colorPalette.color,
+        }, 
+          logo_position: raffleWithoutId.logo_position, 
+          logo_display_name: raffleWithoutId.logo_display_name, 
+          logo_size: raffleWithoutId.logo_size, 
+          logo_type: raffleWithoutId.logo_type, 
+          border_corner: raffleWithoutId.border_corner,
+          countdown: raffleWithoutId.countdown, 
+          font: raffleWithoutId.font, 
+          timeLimitPay: raffleWithoutId.timeLimitPay, 
+          extraInfo: raffleWithoutId.extraInfo, 
+          fileCounter: raffle.images.length}); 
       }
     } catch (error) {
       console.error('Error fetching raffle:', error);
@@ -223,7 +253,7 @@ const RaffleEditPage = ({}) => {
   };
 
   const handlePreview = () => {
-    navigate(`/raffle/${id}`);
+    navigate(`/raffle/${shortId}`);
   };
   const changeCarousel = (direction) => {
     let num
@@ -263,6 +293,7 @@ const RaffleEditPage = ({}) => {
   const handleSave = async () => {
       setSaveLoader(true)
       const [error, value] = validateForm()
+      console.log(error)
       if(error){
         checkError(error)
         setSaveLoader(false)
@@ -729,6 +760,20 @@ const RaffleEditPage = ({}) => {
                    >
                     <option value="on">Redondo</option>
                     <option value="off">Sin fondo</option>
+                    
+                  </select>
+                  </div>
+            </div>
+            <div>
+              <label htmlFor="border_corner" className={`block text-sm font-medium mb-2 ${errors.border_corner && "text-red-500"}`}>
+                  Tipo de Esquinas
+                </label>
+                <div className="relative">
+                  <select id="border_corner" name="border_corner" value={raffle.border_corner}  onChange={handleChange} 
+                  className={`w-full p-2 rounded-md border ${errors.border_corner ? "border-red-500" : "border-input"} bg-background `}
+                   >
+                    <option value="square">Cuadrado</option>
+                    <option value="round">Redondeado</option>
                     
                   </select>
                   </div>

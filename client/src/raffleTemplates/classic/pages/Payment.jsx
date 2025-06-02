@@ -2,14 +2,9 @@
 import React, { useEffect, useState, useRef} from "react";
 import { motion } from "framer-motion";
 import { useLocation, useNavigate, useOutletContext } from "react-router-dom";
-import axios from "axios";
-import { MessageSquare } from "lucide-react";
-const api = axios.create({
-  baseURL: import.meta.env.VITE_CURRENT_HOST,
-  withCredentials: true,
-});
 
-const Payment = ({setAvailableTickets}) => {
+
+const Payment = () => {
   const raffle = useOutletContext();
   const location = useLocation();
   const navigate = useNavigate();
@@ -60,15 +55,6 @@ const Payment = ({setAvailableTickets}) => {
       instructions: method.instructions || null,
     }
   ));
-  const finalizePayment = async () => {
-    const res = await api.post(`/api${location.pathname}`, {...userInfo, tickets: [...selectedTickets]})
-    if(res.data.status === 200){
-      localStorage.removeItem('selectedTickets');
-      localStorage.removeItem('userInfo');
-      setAvailableTickets(prev => prev.filter(p => !selectedTickets.includes(p)))
-      setSuccess(true)
-    } 
-  }
   const goToParent = () => {
     const segments = location.pathname.split("/").filter(Boolean); 
     const parentPath = "/" + segments.slice(0, -1).join("/"); 
@@ -127,11 +113,11 @@ const Payment = ({setAvailableTickets}) => {
     </div>
   );
   if(noTickets) return (
-    <div className="text-colorRaffle box-border mx-auto max-w-2xl w-[1400px] max-w-[100vw] min-h-[calc(100vh-280px)] py-4">
+    <div className="text-colorRaffle box-border mx-auto max-w-2xl w-[1400px] max-w-[100vw] min-h-[calc(100vh-280px)] py-4 px-4">
       <div className="h-[500px] flex-col justify-center text-center space-y-6 flex items-center">
-        <div className="text-3xl">No haz seleccionado un boleto de la rifa</div>
-        <p className="text-base text-colorRaffle-300">Debes seleccionar al menos un boleto de la rifa y llenar tu informacion para poder accesar los metodos de pago</p>
-        <button onClick={goToParent} className="text-colorRaffle-foreground rounded-[50px] w-fit ml-auto mr-auto bg-primaryRaffle flex justify-center items-center px-6 py-3">Regresar a pagina de rifa</button>
+        <div className="text-2xl md:text-3xl">No haz seleccionado un boleto de la rifa</div>
+        <p className="text-sm md:text-base text-colorRaffle-300">Debes seleccionar al menos un boleto de la rifa y llenar tu informacion para poder accesar los metodos de pago</p>
+        <button onClick={goToParent} className="text-colorRaffle-foreground rounded-[50px] text-sm sm:text-base w-fit ml-auto mr-auto bg-primaryRaffle flex justify-center items-center px-6 py-3">Regresar a pagina de rifa</button>
         </div>
       </div>
   );
@@ -181,7 +167,6 @@ const Payment = ({setAvailableTickets}) => {
                 </a>
                 {" "}indicando tus números de boleto.
               </p>
-              <p>Cuando ya termines eso presiona donde dice <b>Apartar Boletos</b> para apartar tus boletos.</p>
             </div>
           </div>
         </div>
@@ -245,7 +230,9 @@ const Payment = ({setAvailableTickets}) => {
             </motion.div>
           ))}
         </div>
-        <button onClick={finalizePayment} className="text-colorRaffle-foreground rounded-[50px] w-fit ml-auto mr-auto bg-primaryRaffle flex justify-center items-center px-4 py-2 "><span>Apartar Boletos</span></button>
+        <section className='flex items-center justify-center text-colorRaffle'>
+          Tus boletos ya quedaron apartados tienes {raffle.timeLimitPay} dias(s) para realizar el pago.
+      </section>
       </motion.div>
     </div>
   );

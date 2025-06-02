@@ -66,6 +66,7 @@ const CreateRafflePage = ({userJustCreated, setUserJustCreated}) => {
     font: "",
     logo_display_name: true,
     logo_type: 'on',
+    border_corner: 'square',
     logo_size: "md",
     logo_position: "",
     countdown: "on",
@@ -754,6 +755,20 @@ const CreateRafflePage = ({userJustCreated, setUserJustCreated}) => {
                   </select>
                   </div>
               </div>
+              <div>
+              <label htmlFor="border_corner" className={`block text-sm font-medium mb-2 ${errors.border_corner && "text-red-500"}`}>
+                  Tipo de Esquinas
+                </label>
+                <div className="relative">
+                  <select id="border_corner" name="border_corner" value={formData.border_corner}  onChange={handleChange} 
+                  className={`w-full p-2 rounded-md border ${errors.border_corner ? "border-red-500" : "border-input"} bg-background `}
+                   >
+                    <option value="square">Cuadrado</option>
+                    <option value="round">Redondeado</option>
+                    
+                  </select>
+                  </div>
+            </div>
               <div>
                 <label className={`block text-sm font-medium mb-2 ${errors.logo_size && "text-red-500"}`}>
                   Tamaño de Logo

@@ -88,6 +88,7 @@ export const raffleValidationSchema = Joi.object({
     logo_position: Joi.string().valid('left', 'center', 'right').required(),
     logo_size: Joi.string().valid('sm', 'md', 'lg').required(),
     logo_type: Joi.string().valid('on', 'off').required(),
+    border_corner: Joi.string().valid('round', 'square').required(),
     logo_display_name: Joi.boolean().required(),
     countdown: Joi.string().valid('on', 'off').required(),
     // nightMode: Joi.boolean().required(),

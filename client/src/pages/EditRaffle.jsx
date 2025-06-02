@@ -179,7 +179,7 @@ const EditRafflePage = () => {
                             variant="outline"
                             size="sm"
                             className="flex items-center space-x-1"
-                            onClick={() => handlePreview(raffle._id)}
+                            onClick={() => handlePreview(raffle.shortId)}
                           >
                             <Eye className="w-4 h-4" />
                             <span>Vista Previa</span>

@@ -5,7 +5,7 @@ import { Menu, X, Aperture } from 'lucide-react';
 import { Button } from './components/ui/button';
 import { cn } from '../lib/utils';
 import WhatsWidget from "../components/WhatsWidget";
-import RifaezWidget from '../components/RifaezWidget';
+import "../noRadius.css";
 import DefaultLogo from "../components/ui/default-logo";
 import Logo from '../../Logo';
 const navLinks = [
@@ -29,18 +29,18 @@ const Layout = ({raffle}) => {
   const inactiveLinkClassesMenu = "text-colorRaffle hover:bg-primaryRaffle-300 hover:text-headerRaffle-foreground";
 
   return (
-    <div className="min-h-screen flex flex-col bg-gradient-to-br from-backgroundRaffle to-lightColorTint font-fontRaffle">
+    <div className={`${raffle.border_corner === "square" && "no-radius"} min-h-screen flex flex-col bg-gradient-to-br from-backgroundRaffle to-lightColorTint font-fontRaffle`}>
       <header className={`sticky top-0 z-50 ${raffle.header === "on" ? "bg-headerRaffle" : "bg-backgroundRaffle"} backdrop-blur-md shadow-sm border-b border-borderRaffle`}>
         <div className="max-w-[calc(100vw-24px)] w-[1400px] mx-auto px-2 sm:px-6 lg:px-8">
           <div className={`relative flex items-center justify-between  ${raffle.logo_position === "left" ? "flex-row" : "flex-row-reverse"}  ${raffle.logo_position === "right" && "gap-4"} h-16`}>
           <div className={`${raffle.logo_position === "center" && "absolute left-1/2 -translate-x-1/2"} h-[64px] flex gap-2 items-center`}>
-            <NavLink to="" className={`${raffle.logo_size === "sm" && "h-12"} ${raffle.logo_size === "md" && "h-14 "} ${raffle.logo_size === "lg" && "h-20 "} ${raffle.logo_type === "on" && "border-borderRaffle border-2 rounded-full object-cover aspect-square overflow-hidden"} flex-shrink-0 flex items-center space-x-2 ${raffle.logo_size === "lg" && "translate-y-[10px]"}`}>
+            <NavLink to="" className={`${raffle.logo_size === "sm" && "h-12"} ${raffle.logo_size === "md" && "h-14 "} ${raffle.logo_size === "lg" && "h-20 "} ${raffle.logo_type === "on" && "round-must border-borderRaffle border-2 rounded-full object-cover aspect-square overflow-hidden"} flex-shrink-0 flex items-center space-x-2 ${raffle.logo_size === "lg" && "translate-y-[10px]"}`}>
               {raffle.logo?.url ?
                 <img alt="logo" className="h-full" src={raffle.logo.url}   />
                 : <DefaultLogo className="h-full"/> }
               </NavLink>
               {raffle.logo_display_name &&
-                <span className={`min-w-max text-headerRaffle-foreground ${raffle.logo_position === "center" && "absolute left-[calc(100%+10px)] "}`}>{raffle.business_name}</span>
+                <span className={`min-w-max text-headerRaffle-foreground ${raffle.logo_position === "center" && "absolute right-[calc(100%+10px)] customLg:right-0 customLg:left-[calc(100%+10px)] "}`}>{raffle.business_name}</span>
               }
             </div>
             <nav className="hidden md:flex space-x-4">

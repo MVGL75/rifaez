@@ -82,7 +82,7 @@ const Contact = () => {
               name="name"
               onChange={handleChange}
               value={formData.name}
-              className={`w-full bg-transparent p-2 rounded text-colorRaffle border ${errors.name ? "border-red-400" : "border-borderRaffle"}`}
+              className={`w-full bg-backgroundRaffle p-2 rounded text-colorRaffle border ${errors.name ? "border-red-400" : "border-0"}`}
               placeholder="Tu nombre"
             />
           </div>
@@ -95,7 +95,7 @@ const Contact = () => {
               name="email"
               onChange={handleChange}
               value={formData.email}
-              className={`w-full bg-transparent p-2 rounded text-colorRaffle border ${errors.email ? "border-red-400" : "border-borderRaffle"}`}
+              className={`w-full bg-backgroundRaffle p-2 rounded text-colorRaffle border ${errors.email ? "border-red-400" : "border-0"}`}
               placeholder="tu@email.com"
             />
           </div>
@@ -107,7 +107,7 @@ const Contact = () => {
               name="message"
               onChange={handleChange}
               value={formData.message}
-              className={`w-full p-2 rounded text-colorRaffle bg-transparent border ${errors.message ? "border-red-400" : "border-borderRaffle"} h-32`}
+              className={`w-full p-2 rounded text-colorRaffle bg-backgroundRaffle border ${errors.message ? "border-red-400" : "border-0"} h-32`}
               placeholder="Tu mensaje"
             />
           </div>

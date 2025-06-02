@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useMemo } from 'react';
-import { useNavigate, useOutletContext } from 'react-router-dom';
+import { useNavigate, useOutletContext, useParams } from 'react-router-dom';
 import { Button } from '../components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle, CardFooter } from '../components/ui/card';
 import { Input } from '../components/ui/input';
@@ -13,10 +13,14 @@ import Countdown from '../../components/Countdown';
 import SelectedTicketsSummary from '../components/SelectedTicketsSummary';
 import { ticketInfoValidationSchema } from '../../../validation/ticketInfoSchemaValidate';
 import mexicanStates from '../../lib/mexicanStates';
+import axios from "axios";
+const api = axios.create({
+  baseURL: import.meta.env.VITE_CURRENT_HOST,
+  withCredentials: true,
+});
 
 
-
-const AvailableTicketsPage = ({availableTickets}) => {
+const AvailableTicketsPage = ({ availableTickets, setAvailableTickets }) => {
   const raffle = useOutletContext()
   const navigate = useNavigate();
   const { toast } = useToast();
@@ -29,6 +33,7 @@ const AvailableTicketsPage = ({availableTickets}) => {
   const [allTickets, setAllTickets] = useState([]);
   const [buyerPopUp, setBuyerPopUp] = useState(false)
   const [errors, setErrors] = useState([])
+  const {id} = useParams()
   const [searchTerm, setSearchTerm] = useState('');
 
   const TICKET_PRICE = raffle.price;
@@ -184,7 +189,7 @@ const AvailableTicketsPage = ({availableTickets}) => {
     }
     setBuyerInfo(prev => ({...prev, [name]: value}))
   }
-  const handleApartarClick = () => {
+  const handleApartarClick = async () => {
     setWasSubmitted(true)
     const [isValid, value] = validateBuyerInfo();
     if (selectedTickets.length === 0) {
@@ -192,10 +197,16 @@ const AvailableTicketsPage = ({availableTickets}) => {
       return;
     }
     if(isValid){
-      
-      localStorage.setItem('selectedTickets', JSON.stringify(selectedTickets.map(ticket => ticket.id)));
-      localStorage.setItem('userInfo', JSON.stringify(value));
-      navigate('../pago');
+      const newSelectedTickets = selectedTickets.map(ticket => ticket.id)
+      const res = await api.post(`/api/raffle/${id}/payment`, {...buyerInfo, tickets: newSelectedTickets})
+      if(res.data.status === 200){
+        localStorage.setItem('selectedTickets', JSON.stringify(selectedTickets.map(ticket => ticket.id)));
+        localStorage.setItem('userInfo', JSON.stringify(value));
+        setAvailableTickets(prev => prev.filter(p => !newSelectedTickets.includes(p)))
+        navigate('../pago');
+      } else {
+        console.log(res)
+      }
     }
   };
   const selectState = (e) => {
@@ -275,6 +286,12 @@ const AvailableTicketsPage = ({availableTickets}) => {
           />
         )}
       </AnimatePresence>
+      {raffle.extraInfo &&
+        <section className="w-full px-4 space-y-3">
+          <header className="bg-primaryRaffle text-primaryRaffle-foreground rounded-md px-4 py-3">Informacion Adicional</header>
+          <div className="border border-borderRaffle p-4 text-colorRaffle">{raffle.extraInfo}</div>
+        </section>
+      }
       
     </motion.div>
   );

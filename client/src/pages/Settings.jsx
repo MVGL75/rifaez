@@ -495,6 +495,7 @@ const removeMethod = async (methodInp) => {
       const res = await save(newRaffleData)
       console.log(res)
       if(res.status === 200){
+        setEmailExists(false)
         setLoading(false);
         setSuccessMessage('Usuario guardado exitosamente.');
       } else if (res.status === 401){

@@ -2,19 +2,12 @@
 import React, { useEffect, useState, useRef} from "react";
 import { motion } from "framer-motion";
 import { useLocation, useNavigate, useOutletContext } from "react-router-dom";
-import { MessageSquare } from "lucide-react";
-import axios from "axios";
-const api = axios.create({
-  baseURL: import.meta.env.VITE_CURRENT_HOST,
-  withCredentials: true,
-});
 
-const Payment = ({setAvailableTickets}) => {
+const Payment = () => {
   const raffle = useOutletContext();
   const location = useLocation();
   const navigate = useNavigate();
   const [selectedTickets, setSelectedTickets] = useState([]);
-  const [success, setSuccess] =  useState(false)
   const [noTickets, setNoTickets] = useState(true);
   const [userInfo, setUserInfo] = useState({});
   const topRef = useRef(null);
@@ -61,15 +54,6 @@ const Payment = ({setAvailableTickets}) => {
       instructions: method.instructions || null,
     }
   ));
-  const finalizePayment = async () => {
-    const res = await api.post(`/api${location.pathname}`, {...userInfo, tickets: [...selectedTickets]})
-    if(res.data.status === 200){
-      localStorage.removeItem('selectedTickets');
-      localStorage.removeItem('userInfo');
-      setAvailableTickets(prev => prev.filter(p => !selectedTickets.includes(p)))
-      setSuccess(true)
-    } 
-  }
   const goToParent = () => {
     const segments = location.pathname.split("/").filter(Boolean); 
     const parentPath = "/" + segments.slice(0, -1).join("/"); 
@@ -101,37 +85,37 @@ const Payment = ({setAvailableTickets}) => {
       description: "El número de cuenta ha sido copiado al portapapeles.",
     });
   };
-  if(success) return (
-    <div className="flex items-center justify-center text-colorRaffle box-border mx-auto max-w-3xl w-[1400px] max-w-[100vw] h-[calc(100vh-280px)] min-h-[500px] py-4">
-      <div className="bg-cardRaffle px-8 py-10 border border-gray-800 rounded-lg flex-col justify-center space-y-6 flex">
-        <div className="text-3xl">Transaccion Exitosa</div>
-        <div className="flex flex-col space-y-4">
-          <span>Nombre: {userInfo.name}</span>
-          <span>Telefono: {setPhoneFormat(userInfo.phone)}</span>
-          <span>Estado: {userInfo.state}</span>
-          <span>Boletos:</span>
-          <div className="flex flex-wrap gap-2">
-                  {selectedTickets.map(ticket => (
-                    <span key={ticket} className="bg-primaryRaffle text-colorRaffle-foreground px-3 py-1 rounded-full">
-                      #{ticket}
-                    </span>
-                  ))}
-            </div>
-        </div>
-        <div className="space-y-3">
-          <p className="text-base text-colorRaffle-300">Tus boletos han sido adquiridos, pero el pago sigue pendiente hasta que el organizador de la rifa revise tu comprobante y confirme la transacción.</p>
-          <p className="">Tienes {raffle.timeLimitPay} días para pagar, si no, tus boletos se liberarán automáticamente.</p>
-        </div>
-        <button onClick={goToParent} className="text-colorRaffle-foreground rounded-[50px] w-fit bg-primaryRaffle flex justify-center items-center px-6 py-3">Regresar a pagina de rifa</button>
-        </div>
-    </div>
-  );
+  // if(success) return (
+  //   <div className="flex items-center justify-center text-colorRaffle box-border mx-auto max-w-3xl w-[1400px] max-w-[100vw] h-[calc(100vh-280px)] min-h-[500px] py-4">
+  //     <div className="bg-cardRaffle px-8 py-10 border border-gray-800 rounded-lg flex-col justify-center space-y-6 flex">
+  //       <div className="text-3xl">Transaccion Exitosa</div>
+  //       <div className="flex flex-col space-y-4">
+  //         <span>Nombre: {userInfo.name}</span>
+  //         <span>Telefono: {setPhoneFormat(userInfo.phone)}</span>
+  //         <span>Estado: {userInfo.state}</span>
+  //         <span>Boletos:</span>
+  //         <div className="flex flex-wrap gap-2">
+  //                 {selectedTickets.map(ticket => (
+  //                   <span key={ticket} className="bg-primaryRaffle text-colorRaffle-foreground px-3 py-1 rounded-full">
+  //                     #{ticket}
+  //                   </span>
+  //                 ))}
+  //           </div>
+  //       </div>
+  //       <div className="space-y-3">
+  //         <p className="text-base text-colorRaffle-300">Tus boletos han sido adquiridos, pero el pago sigue pendiente hasta que el organizador de la rifa revise tu comprobante y confirme la transacción.</p>
+  //         <p className="">Tienes {raffle.timeLimitPay} días para pagar, si no, tus boletos se liberarán automáticamente.</p>
+  //       </div>
+  //       <button onClick={goToParent} className="text-colorRaffle-foreground rounded-[50px] w-fit bg-primaryRaffle flex justify-center items-center px-6 py-3">Regresar a pagina de rifa</button>
+  //       </div>
+  //   </div>
+  // );
   if(noTickets) return (
-    <div className="text-colorRaffle box-border mx-auto max-w-2xl w-[1400px] max-w-[100vw] min-h-[calc(100vh-280px)] py-4">
+    <div className="text-colorRaffle box-border mx-auto max-w-2xl w-[1400px] max-w-[100vw] min-h-[calc(100vh-280px)] py-4 px-4">
       <div className="h-[500px] flex-col justify-center text-center space-y-6 flex items-center">
-        <div className="text-3xl">No haz seleccionado un boleto de la rifa</div>
-        <p className="text-base text-colorRaffle-300">Debes seleccionar al menos un boleto de la rifa y llenar tu informacion para poder accesar los metodos de pago</p>
-        <button onClick={goToParent} className="text-colorRaffle-foreground rounded-[50px] w-fit ml-auto mr-auto bg-primaryRaffle flex justify-center items-center px-6 py-3">Regresar a pagina de rifa</button>
+        <div className="text-2xl sm:text-3xl">No haz seleccionado un boleto de la rifa</div>
+        <p className="text-sm sm:text-base text-colorRaffle-300">Debes seleccionar al menos un boleto de la rifa y llenar tu informacion para poder accesar los metodos de pago</p>
+        <button onClick={goToParent} className="text-colorRaffle-foreground text-sm sm:text-base rounded-[50px] w-fit ml-auto mr-auto bg-primaryRaffle flex justify-center items-center px-6 py-3">Regresar a pagina de rifa</button>
         </div>
       </div>
   );
@@ -181,7 +165,6 @@ const Payment = ({setAvailableTickets}) => {
                 </a>
                 {" "}indicando tus números de boleto.
               </p>
-              <p>Cuando ya termines eso presiona donde dice <b>Apartar Boletos</b> para apartar tus boletos.</p>
             </div>
           </div>
         </div>
@@ -245,7 +228,9 @@ const Payment = ({setAvailableTickets}) => {
               </motion.div>
             ))}
         </div>
-        <button onClick={finalizePayment} className="text-colorRaffle-foreground rounded-[50px] w-fit ml-auto mr-auto bg-primaryRaffle flex justify-center items-center px-4 py-2 "><span>Finalizar Pago</span></button>
+        <section className='flex items-center justify-center text-colorRaffle'>
+          Tus boletos ya quedaron apartados tienes {raffle.timeLimitPay} dias(s) para realizar el pago.
+      </section>
       </motion.div>
     </div>
   );

@@ -1,8 +1,16 @@
 
 
 
-import mongoose from "mongoose"
+import mongoose from "mongoose";
+import { customAlphabet } from "nanoid";
+const nanoid = customAlphabet('1234567890abcdefghijklmnopqrstuvwxyz', 8); // only digits
+
+
 const RaffleSchema = new mongoose.Schema({
+    shortId: {
+        type: String,
+        unique: true,
+      },
             title: {
                 type: String,
                 required: true
@@ -113,6 +121,10 @@ const RaffleSchema = new mongoose.Schema({
             logo_type: {
                 type: String,
                 default: "on",
+            },
+            border_corner: {
+                type: String,
+                default: "square",
             },
             countdown: {
                 type: String,
@@ -257,7 +269,12 @@ RaffleSchema.virtual('notifications').get(function () {
 });
 
 
-
+RaffleSchema.pre('save', function (next) {
+    if (this.isNew && !this.shortId) {
+      this.shortId = nanoid();
+    }
+    next();
+  });
 
 RaffleSchema.virtual('totalSales').get(function () {
     return this.stats.dailySales.reduce((sum, sale) => sum + sale.count, 0);

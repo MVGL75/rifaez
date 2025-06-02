@@ -14,7 +14,7 @@ const Navbar = ({raffle}) => {
           {/* Mobile menu button */}
           <div className={`flex w-full h-full justify-between md:hidden ${raffle.logo_position === "right" && "flex-row-reverse"}`}>
           <div className={`${raffle.logo_position === "center" && "absolute left-1/2 -translate-x-1/2"} h-[64px] flex gap-2 items-center`}>
-            <Link to="" className={`${raffle.logo_size === "sm" && "h-12"} ${raffle.logo_size === "md" && "h-14 "} ${raffle.logo_size === "lg" && "h-20 "} ${raffle.logo_type === "on" && "border-borderRaffle border-2 rounded-full object-cover aspect-square overflow-hidden"} flex-shrink-0 flex items-center space-x-2 ${raffle.logo_size === "lg" && "translate-y-[10px]"}`}>
+            <Link to="" className={`${raffle.logo_size === "sm" && "h-12"} ${raffle.logo_size === "md" && "h-14 "} ${raffle.logo_size === "lg" && "h-20 "} ${raffle.logo_type === "on" && " round-must border-borderRaffle border-2 rounded-full object-cover aspect-square overflow-hidden"} flex-shrink-0 flex items-center space-x-2 ${raffle.logo_size === "lg" && "translate-y-[10px]"}`}>
               {raffle.logo?.url ?
                 <img alt="logo" className="h-full" src={raffle.logo.url}   />
                 : <DefaultLogo className="h-full"/> }
@@ -36,7 +36,7 @@ const Navbar = ({raffle}) => {
           {/* Desktop Navigation */}
           <div className={`hidden w-full justify-between ${raffle.logo_position === "right" && "flex-row-reverse"} md:flex md:items-center md:gap-8`}>
           <div className={`${raffle.logo_position === "center" && "absolute left-1/2 -translate-x-1/2"} h-[64px] flex gap-2 items-center`}>
-            <Link to="" className={`${raffle.logo_size === "sm" && "h-12"} ${raffle.logo_size === "md" && "h-14 "} ${raffle.logo_size === "lg" && "h-20 "} ${raffle.logo_type === "on" && "border-borderRaffle border-2 rounded-full object-cover aspect-square overflow-hidden"} flex-shrink-0 flex items-center space-x-2 ${raffle.logo_size === "lg" && "translate-y-[10px]"}`}>
+            <Link to="" className={`${raffle.logo_size === "sm" && "h-12"} ${raffle.logo_size === "md" && "h-14 "} ${raffle.logo_size === "lg" && "h-20 "} ${raffle.logo_type === "on" && "round-must border-borderRaffle border-2 rounded-full object-cover aspect-square overflow-hidden"} flex-shrink-0 flex items-center space-x-2 ${raffle.logo_size === "lg" && "translate-y-[10px]"}`}>
               {raffle.logo?.url ?
                 <img alt="logo" className="h-full" src={raffle.logo.url}   />
                 : <DefaultLogo className="h-full"/> }

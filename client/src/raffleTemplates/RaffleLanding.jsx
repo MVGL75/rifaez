@@ -30,7 +30,6 @@ function RaffleLanding() {
     const fetchRaffle = async () => {
       try {
         setLoading(true)
-        console.log("hi")
         const res = await api.get(`/api/raffle/${id}`);
         if (res.data.status === 200) {
           const raffle = res.data.raffle;

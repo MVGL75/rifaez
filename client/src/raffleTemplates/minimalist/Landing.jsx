@@ -14,10 +14,10 @@ function Landing({raffle}) {
     <>
        <Routes>
         <Route path="/" element={<Layout raffle={raffle} />}>
-          <Route index element={<HomeRaffle availableTickets={availableTickets} />} />
+          <Route index element={<HomeRaffle availableTickets={availableTickets} setAvailableTickets={setAvailableTickets}/>} />
           <Route path="verify" element={<TicketVerificationRaffle />} />
           <Route path="contact" element={<ContactRaffle />} />
-          <Route path="payment" element={<PaymentRaffle  setAvailableTickets={setAvailableTickets} />} />
+          <Route path="payment" element={<PaymentRaffle  />} />
           <Route path="*" element={<RaffleNotFound />} />
         </Route>
       </Routes>

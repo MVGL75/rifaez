@@ -1,15 +1,10 @@
 import {useState, useEffect, useRef} from 'react';
 import { Button } from '../components/ui/button';
-import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '../components/ui/card';
+import { Card, CardContent, CardHeader, CardTitle } from '../components/ui/card';
 import { motion } from 'framer-motion';
-import { useLocation, useNavigate, useOutletContext, useParams } from 'react-router-dom';
-import { Banknote, MessageSquare, Smartphone, Copy, CheckCircle } from 'lucide-react';
+import { useLocation, useNavigate, useOutletContext } from 'react-router-dom';
+import { Smartphone, Copy, CheckCircle } from 'lucide-react';
 import { useToast } from '../components/ui/use-toast';
-import axios from "axios";
-const api = axios.create({
-  baseURL: import.meta.env.VITE_CURRENT_HOST,
-  withCredentials: true,
-});
 
 const PaymentMethodCard = ({ method, onCopy }) => {
 
@@ -93,12 +88,8 @@ const PaymentPage = ({ setAvailableTickets }) => {
   const location = useLocation();
   const WHATSAPP_MESSAGE = "Hola, he realizado el pago de mis boletos. Adjunto mi comprobante.";
   const navigate = useNavigate();
-  const [selectedTickets, setSelectedTickets] = useState([]);
-  const [success, setSuccess] =  useState(false)
   const [noTickets, setNoTickets] = useState(true);
   const raffle = useOutletContext();
-  const [userInfo, setUserInfo] = useState({});
-  const {id} = useParams()
   const topRef = useRef(null);
 
   useEffect(() => {
@@ -108,23 +99,11 @@ const PaymentPage = ({ setAvailableTickets }) => {
       return;
     }
     setNoTickets(false)
-    setSelectedTickets(tickets);
-    setUserInfo(user);
     
     topRef.current?.scrollIntoView({ behavior: 'smooth' });
   }, []);
 
-  const finalizePayment = async () => {
-    const res = await api.post(`/api/raffle/${id}/payment`, {...userInfo, tickets: selectedTickets})
-    if(res.data.status === 200){
-      localStorage.removeItem('selectedTickets');
-      localStorage.removeItem('userInfo');
-      setAvailableTickets(prev => prev.filter(p => !selectedTickets.includes(p)))
-      setSuccess(true)
-    } else {
-      console.log(res)
-    }
-  }
+
 
   const handleCopyToClipboard = (text) => {
     navigator.clipboard.writeText(text).then(() => {
@@ -166,40 +145,12 @@ const PaymentPage = ({ setAvailableTickets }) => {
     navigate(parentPath);
   };
 
-  if(success){
-    return(
-        <div className="flex items-center justify-center text-colorRaffle box-border mx-auto w-full h-[calc(100vh-280px)] min-h-[500px] py-4">
-        <div className="bg-cardRaffle px-8 py-10 shadow-lg border border-borderRaffle rounded-lg flex-col justify-center space-y-6 flex">
-          <div className="text-3xl">Transaccion Exitosa</div>
-          <div className="flex flex-col space-y-4">
-            <span>Nombre: {userInfo.name}</span>
-            <span>Telefono: {setPhoneFormat(userInfo.phone)}</span>
-            <span>Estado: {userInfo.state}</span>
-            <span>Boletos:</span>
-            <div className="flex flex-wrap gap-2">
-                    {selectedTickets.map(ticket => (
-                      <span key={ticket} className="bg-primaryRaffle text-colorRaffle-foreground px-3 py-1 rounded-full">
-                        #{ticket}
-                      </span>
-                    ))}
-              </div>
-          </div>
-          <div className="space-y-3">
-              <p className="text-base text-colorRaffle-300">Tus boletos han sido adquiridos, pero el pago sigue pendiente hasta que el organizador de la rifa revise tu comprobante y confirme la transacción.</p>
-              <p className="">Tienes {raffle.timeLimitPay} días para pagar, si no, tus boletos se liberarán automáticamente.</p>
-          </div>
-          <button onClick={goToParent} className="text-colorRaffle-foreground rounded-[50px] w-fit bg-primaryRaffle flex justify-center items-center px-6 py-3">Regresar a pagina de rifa</button>
-          </div>
-      </div>
-     
-    )
-  }
   if(noTickets) return (
-    <div className="text-colorRaffle box-border mx-auto max-w-2xl w-full min-h-[calc(100vh-280px)] py-4">
+    <div className="text-colorRaffle box-border mx-auto max-w-2xl w-full min-h-[calc(100vh-280px)] py-4 px-2">
       <div className="h-[500px] flex-col justify-center text-center space-y-6 flex items-center">
-        <div className="text-3xl">No haz seleccionado un boleto de la rifa</div>
-        <p className="text-base text-colorRaffle-300">Debes seleccionar al menos un boleto de la rifa y llenar tu informacion para poder accesar los metodos de pago</p>
-        <button onClick={goToParent} className="text-colorRaffle-foreground rounded-[50px] w-fit ml-auto mr-auto bg-primaryRaffle flex justify-center items-center px-6 py-3">Regresar a pagina de rifa</button>
+        <div className="text-2xl md:text-3xl">No haz seleccionado un boleto de la rifa</div>
+        <p className="text-sm md:text-base text-colorRaffle-300">Debes seleccionar al menos un boleto de la rifa y llenar tu informacion para poder accesar los metodos de pago</p>
+        <button onClick={goToParent} className="text-colorRaffle-foreground rounded-[50px] text-sm sm:text-base w-fit ml-auto mr-auto bg-primaryRaffle flex justify-center items-center px-6 py-3">Regresar a pagina de rifa</button>
         </div>
       </div>
   );
@@ -267,8 +218,8 @@ const PaymentPage = ({ setAvailableTickets }) => {
         </Card>
       </section>
 
-      <section className='flex items-center justify-center'>
-        <button onClick={finalizePayment} className='rounded-full px-4 py-2 bg-primaryRaffle text-colorRaffle-foreground'>Apartar Boletos</button>
+      <section className='flex items-center justify-center text-colorRaffle'>
+          Tus boletos ya quedaron apartados tienes {raffle.timeLimitPay} dias(s) para realizar el pago.
       </section>
       
       <section className="text-center px-4 pt-6">

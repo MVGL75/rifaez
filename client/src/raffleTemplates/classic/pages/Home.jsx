@@ -2,17 +2,23 @@
 import React, { useState, useEffect, useRef } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { ShoppingCart, ChevronDown, SearchIcon, Shuffle } from "lucide-react";
-import { useNavigate, useOutletContext } from "react-router-dom";
+import { useNavigate, useOutletContext, useParams } from "react-router-dom";
 import { ticketInfoValidationSchema} from "../../../validation/ticketInfoSchemaValidate"
 import { Button } from "../../components/ui/button";
 import mexicanStates from "../../lib/mexicanStates";
 import Countdown from "../../components/Countdown";
-import { use } from "react";
+import axios from "axios";
+const api = axios.create({
+  baseURL: import.meta.env.VITE_CURRENT_HOST,
+  withCredentials: true,
+});
 
-const Home = ({availableTickets}) => {
+
+const Home = ({availableTickets, setAvailableTickets}) => {
   const newMexicanStates = mexicanStates.filter(state => state !== "Extranjero")
   const navigate = useNavigate();
   const raffle = useOutletContext();
+  const {id} = useParams()
   const [currentImageIndex, setCurrentImageIndex] = useState(0);
   const [selectedTickets, setSelectedTickets] = useState([]);
   const [showSearch, setShowSearch] = useState(false);
@@ -173,7 +179,7 @@ const Home = ({availableTickets}) => {
     }
   },[userInfo])
 
-  const handlePurchase = (e) => {
+  const handlePurchase = async (e) => {
     e.preventDefault();
     setWasSubmitted(true)
     const [isValid, value] = validateForm();
@@ -182,9 +188,15 @@ const Home = ({availableTickets}) => {
       return;
     }
     if(isValid){
-      localStorage.setItem('selectedTickets', JSON.stringify(selectedTickets));
-      localStorage.setItem('userInfo', JSON.stringify(value));
-      navigate('payment');
+      const res = await api.post(`/api/raffle/${id}/payment`, {...value, tickets: [...selectedTickets]})
+      if(res.data.status === 200){
+        localStorage.setItem('selectedTickets', JSON.stringify(selectedTickets));
+        localStorage.setItem('userInfo', JSON.stringify(value));
+        setAvailableTickets(prev => prev.filter(p => !selectedTickets.includes(p)))
+        navigate('payment');
+      }  else {
+        console.log(res)
+      }
     }
   };
 
@@ -292,12 +304,12 @@ const Home = ({availableTickets}) => {
           <h2 className="text-2xl font-semi mb-8 flex gap-4 flex-col sm:flex-row text-left"><span>Selecciona tus Boletos</span> </h2>
           
           {/* Selected Tickets Display */}
-          <div className="mb-8 p-6 bg-cardRaffle rounded-lg text-left">
+          <div className="mb-6 p-6 rounded-lg border border-borderRaffle text-left">
             <div className="flex flex-col gap-4 sm:flex-row justify-between sm:items-center mb-4">
               <h3 className="text-xl">Boletos Seleccionados:</h3>
               <div className="relative flex items-center gap-5">
               <div className="relative w-full sm:w-auto">
-              <input value={searchTicket} onChange={handleSearch} className="border-2 w-full sm:w-[225px] rounded-xl px-4 pl-10 py-2 border-input text-sm" type="text" />
+              <input value={searchTicket} onChange={handleSearch} className="border-2 bg-backgroundRaffle w-full sm:w-[225px] rounded-xl px-4 pl-10 py-2 border-borderRaffle text-sm" type="text" />
               <SearchIcon className="w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2"/>
               </div>
               <div className="absolute right-4 sm:right-auto  sm:relative">
@@ -318,7 +330,7 @@ const Home = ({availableTickets}) => {
           </div>
 
           {/* Ticket Grid */}
-          <div className="grid grid-cols-5 md:grid-cols-10 gap-2">
+          <div className="grid rounded-lg border border-borderRaffle px-4 py-4 grid-cols-5 md:grid-cols-10 gap-2">
             {filteredTickets?.map( i => (
               <motion.button
                 key={i}
@@ -328,7 +340,7 @@ const Home = ({availableTickets}) => {
                 className={`p-2 text-sm rounded transition-colors ${
                   selectedTickets.includes(i)
                     ? "bg-primaryRaffle text-colorRaffle-foreground"
-                    : "bg-cardRaffle hover:bg-gray-700 hover:text-colorRaffle-foreground"
+                    : " border border-borderRaffle hover:bg-gray-700 hover:text-colorRaffle-foreground"
                 }`}
               >
                 {i}
@@ -337,7 +349,7 @@ const Home = ({availableTickets}) => {
           </div>
 
           {/* Centered Scroll Arrow - Only shows when tickets are selected */}
-          {selectedTickets.length > 0 && (
+          {/* {selectedTickets.length > 0 && (
             <motion.div
               initial={{ opacity: 0, y: -20 }}
               animate={{ opacity: 1, y: 0 }}
@@ -353,7 +365,7 @@ const Home = ({availableTickets}) => {
                 <ChevronDown size={32} className="text-colorRaffle-foreground" />
               </motion.button>
             </motion.div>
-          )}
+          )} */}
 
           {/* Purchase Form */}
           {selectedTickets.length > 0 && (
@@ -361,7 +373,7 @@ const Home = ({availableTickets}) => {
               ref={purchaseFormRef}
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
-              className="mt-8 max-w-md mx-auto"
+              className="mt-8 max-w-md mx-auto sticky bottom-0 bg-backgroundRaffle border border-borderRaffle rounded-lg px-4 py-4"
               onSubmit={handlePurchase}
               noValidate
             >
@@ -415,6 +427,12 @@ const Home = ({availableTickets}) => {
           )}
         </div>
       </div>
+      {raffle.extraInfo &&
+        <section className="max-w-4xl w-full px-4 space-y-3">
+          <header className="bg-primaryRaffle text-primaryRaffle-foreground rounded-md px-4 py-3">Informacion Adicional</header>
+          <div className="border border-borderRaffle p-4 text-colorRaffle">{raffle.extraInfo}</div>
+        </section>
+      }
     </div>
   );
 };
