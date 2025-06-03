@@ -3,50 +3,16 @@
 // import { Button } from '../components/ui/button';
 // import { Card, CardContent, CardHeader, CardTitle } from '../components/ui/card';
 import { motion } from 'framer-motion';
-import { ChevronRight, Facebook, Mail, Phone, Send } from 'lucide-react';
+import { ChevronRight, Facebook, Mail, Phone } from 'lucide-react';
 import axios from "axios";
-import { useOutletContext, useParams } from 'react-router-dom';
-// import ContactSuccess from '../../components/ContactSuccess';
-// import { contactValidationSchema } from '../../../validation/contactSchemaValidate';
+import { useOutletContext } from 'react-router-dom';
 const api = axios.create({
   baseURL: import.meta.env.VITE_CURRENT_HOST,
   withCredentials: true,
 });
 
 const ContactPage = () => {
-  // const {id} = useParams()
-  // const [contactSent, setContactSent] = useState(false)
-  // const [wasSubmitted, setWasSubmitted] = useState(false)
   const raffle = useOutletContext()
-  // const [formData, setFormData] = useState({
-  //   name: '',
-  //   email: '',
-  //   message: '',
-  // })
-  // const [errors, setErrors] = useState({})
-  // const handleChange = (e) => {
-  //   const name = e.target.name
-  //   const value = e.target.value
-  //   setFormData(prev => ({...prev, [name]: value}))
-  // }
-  // const validateForm = () => {
-  //   const errorObj = {}
-  //   let isValid = true
-  //   const {error, value} = contactValidationSchema.validate(formData, { abortEarly: false })
-  //   if(error){
-  //     isValid = false
-  //     error.details.forEach(detail => errorObj[detail.context.key] = detail.message)
-  //   }
-  //   setErrors(errorObj)
-  //   return [isValid, value]
-  // }
-
-
-  // useEffect(()=>{
-  //   if(wasSubmitted){
-  //     validateForm()
-  //   }
-  // },[formData])
   const setPhoneFormat = (phone) => {
     if(phone){
       const digits = phone?.replace(/\D/g, ''); 
@@ -68,17 +34,6 @@ const ContactPage = () => {
     }
     
   }
-  // const handleSubmit = async (e) => {
-  //   e.preventDefault();
-  //   setWasSubmitted(true)
-  //   const [isValid, value] = validateForm()
-  //   if(isValid){
-  //     const res = await api.post(`/api/raffle/${id}/contact`, value)
-  //     if(res.data.status === 200){
-  //       setContactSent(true)
-  //     }
-  //   }
-  // };
 
   return (
     <motion.div 

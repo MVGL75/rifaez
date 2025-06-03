@@ -525,7 +525,7 @@ const RaffleEditPage = ({}) => {
           <div className="bg-muted p-4 rounded-lg">
             <h3 className="font-medium mb-2">Ingresos Estimados</h3>
             <p className="text-2xl font-bold text-primary">
-              ${raffle.totalRevenue}
+              ${raffle.price * raffle.maxParticipants}
             </p>
             <p className="text-sm text-muted-foreground">
               Si se venden todos los boletos
@@ -613,7 +613,7 @@ const RaffleEditPage = ({}) => {
                   { `Encabezado: ${colorCheck[raffle.colorPalette?.header]}, Fondo: ${colorCheck[raffle.colorPalette?.background]}, Detalles: ${colorCheck[raffle.colorPalette?.accent]}, Bordes: ${colorCheck[raffle.colorPalette?.borders]}, Letra: ${colorCheck[raffle.colorPalette?.color]}`}
                 </div>
                 <dialog id="create-palette" className="rounded-md shadow-lg text-foreground">
-                  <div className="space-y-5 p-5 w-[400px] bg-background">
+                  <div className="space-y-5 p-5 w-[400px] max-w-full bg-background">
                     <h1 className="text-lg">Colores de Rifa</h1>
                     <div className="space-y-3">
                       <div className="flex flex-col gap-2">

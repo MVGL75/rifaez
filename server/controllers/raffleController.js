@@ -3,7 +3,6 @@ import {User} from '../models/Users.js'
 import sanitizeUser from '../utils/sanitize.js';
 import sanitizeRaffle from '../utils/sanitizeRaffle.js';
 import { raffleValidationSchema } from '../validators/raffleSchema.js';
-import { contactValidationSchema } from '../validators/contactSchemaValidate.js';
 import { ticketInfoValidationSchema } from '../validators/ticketInfoSchemaValidate.js';
 import CustomDomain from '../models/CustomDomain.js';
 import AppError from '../utils/AppError.js';
@@ -129,19 +128,19 @@ export const editRaffle = async (req, res) => {
         console.log(error)
     }
   }
-  export const contactRaffle = async (req, res)=>{
-    const raffleID = req.params.id
-    const contactData = req.body
-    const {error, value} = contactValidationSchema.validate(contactData)
-    if(error){
-      return res.json({message: error.details, status: 400})
-    }
-    await Raffle.updateOne(
-      { shortId: raffleID },
-      { $push: { contact: value } }
-    );
-    res.json({message: "Contact Sent", status: 200})
-  }
+  // export const contactRaffle = async (req, res)=>{
+  //   const raffleID = req.params.id
+  //   const contactData = req.body
+  //   const {error, value} = contactValidationSchema.validate(contactData)
+  //   if(error){
+  //     return res.json({message: error.details, status: 400})
+  //   }
+  //   await Raffle.updateOne(
+  //     { shortId: raffleID },
+  //     { $push: { contact: value } }
+  //   );
+  //   res.json({message: "Contact Sent", status: 200})
+  // }
   export const paymentRaffle = async (req, res)=>{
     const raffleID = req.params.id
     const raffle = await Raffle.findOne({ shortId: raffleID });

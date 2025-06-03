@@ -29,7 +29,7 @@ export default function(raffle){
     };
 
     const background = colorShades[raffle.colorPalette.background];
-    const headerCheck = raffle.header === "on" ? raffle.colorPalette.header : raffle.colorPalette.background ;
+    const headerCheck = raffle.colorPalette.header;
     const header = colorShades[headerCheck];
     const borders = colorShades[raffle.colorPalette.borders];
     const color = colorShades[raffle.colorPalette.color];

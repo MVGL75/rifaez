@@ -49,7 +49,7 @@ const Layout = ({raffle}) => {
 
   return (
     <div className={`${raffle.border_corner === "square" && "no-radius"} min-h-screen flex flex-col bg-gradient-to-br from-backgroundRaffle to-lightColorTint font-fontRaffle`}>
-      <header className={`sticky top-0 z-50 ${raffle.header === "on" ? "bg-headerRaffle" : "bg-backgroundRaffle"} backdrop-blur-md shadow-sm border-b border-borderRaffle`}>
+      <header className='sticky top-0 z-50 bg-headerRaffle backdrop-blur-md shadow-sm border-b border-borderRaffle'>
         <div className="max-w-[calc(100vw-24px)] w-[1400px] mx-auto px-2 sm:px-6 lg:px-8">
           <div className={`relative flex items-center justify-between  ${raffle.logo_position === "left" ? "flex-row" : "flex-row-reverse"}  ${raffle.logo_position === "right" && "gap-4"} h-16`}>
           <div className={`${raffle.logo_position === "center" && "absolute left-1/2 -translate-x-1/2"} h-[64px] flex gap-2 items-center`}>

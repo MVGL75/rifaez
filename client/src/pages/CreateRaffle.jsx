@@ -43,7 +43,7 @@ const CreateRafflePage = ({userJustCreated, setUserJustCreated}) => {
   const navigate = useNavigate();
   const { toast } = useToast();
   const { user, setUser } = useAuth();
-  const [currentStep, setCurrentStep] = useState(1);
+  const [currentStep, setCurrentStep] = useState(3);
   const dateRef = useRef(null)
   const [showSuccess, setShowSuccess] = useState(false);
   const [newRaffleId, setNewRaffleId] = useState(null);
