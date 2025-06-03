@@ -87,52 +87,8 @@ const ContactPage = () => {
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.5 }}
     >
-{/*       
-      <section className="text-center">
-        <h1 className="text-4xl font-bold text-primaryRaffle mb-4">Ponte en Contacto</h1>
-        <p className="text-lg text-colorRaffle-300 max-w-2xl mx-auto">
-          ¿Tienes alguna pregunta o comentario? Nos encantaría saber de ti. Completa el formulario o utiliza nuestros datos de contacto.
-        </p>
-      </section> */}
 
       <div className="flex justify-center ">
-        {/* <motion.div
-          initial={{ opacity: 0, x: -30 }}
-          animate={{ opacity: 1, x: 0 }}
-          transition={{ duration: 0.5, delay: 0.2 }}
-        >
-          <Card className="shadow-xl">
-            {contactSent ? (
-              <div className='p-6'>
-                <ContactSuccess/>
-                </div>
-            ) : (
-            <>
-              <CardHeader>
-                <CardTitle className="text-2xl text-primaryRaffle flex items-center">
-                  <Send className="mr-2 h-6 w-6" /> Envíanos un Mensaje
-                </CardTitle>
-              </CardHeader>
-              <CardContent className="space-y-4">
-                <div>
-                  <label htmlFor="name" className={`block text-sm font-medium ${errors.name ? "text-red-500" : "text-colorRaffle"} mb-1`}>Nombre Completo</label>
-                  <input type="text" name="name" onChange={handleChange} value={formData.name} id="name" className={`bg-transparent w-full px-3 py-2 border ${errors.name ? "border-red-400" : "border-borderRaffle"} rounded-md shadow-sm focus:outline-none focus:ring-primaryRaffle focus:border-primaryRaffle`} />
-                </div>
-                <div>
-                  <label htmlFor="email" className={`block text-sm font-medium ${errors.email ? "text-red-500" : "text-colorRaffle"} mb-1`}>Correo Electrónico</label>
-                  <input type="email" id="email" name="email" onChange={handleChange} value={formData.email} className={`bg-transparent  w-full px-3 py-2 border ${errors.email ? "border-red-400" : "border-borderRaffle"} rounded-md shadow-sm focus:outline-none focus:ring-primaryRaffle focus:border-primaryRaffle`} />
-                </div>
-                <div>
-                  <label htmlFor="message" className={`block text-sm font-medium ${errors.message ? "text-red-500" : "text-colorRaffle"} mb-1`}>Mensaje</label>
-                  <textarea id="message" rows="4" name="message" onChange={handleChange} value={formData.message} className={`bg-transparent  w-full px-3 py-2 border ${errors.message ? "border-red-400" : "border-borderRaffle"} rounded-md shadow-sm focus:outline-none focus:ring-primaryRaffle focus:border-primaryRaffle`} ></textarea>
-                </div>
-                <Button onClick={handleSubmit} className="w-full">
-                  Enviar Mensaje
-                </Button>
-              </CardContent>
-            </>)}
-          </Card>
-        </motion.div> */}
 
         <motion.div 
           className="space-y-8 my-12 max-w-full"
