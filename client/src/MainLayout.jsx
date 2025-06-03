@@ -99,7 +99,7 @@ export default function({selectedRaffle, setSelectedRaffle}){
                 }`}
                 >
                 {item.icon}
-                <span className="text-xs mt-1">{item.label}</span>
+                {/* <span className="text-xs mt-1">{item.label}</span> */}
                 </Link>
             ))}
             </div>

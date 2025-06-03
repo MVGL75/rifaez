@@ -43,7 +43,7 @@ const CreateRafflePage = ({userJustCreated, setUserJustCreated}) => {
   const navigate = useNavigate();
   const { toast } = useToast();
   const { user, setUser } = useAuth();
-  const [currentStep, setCurrentStep] = useState(3);
+  const [currentStep, setCurrentStep] = useState(1);
   const dateRef = useRef(null)
   const [showSuccess, setShowSuccess] = useState(false);
   const [newRaffleId, setNewRaffleId] = useState(null);
@@ -1133,8 +1133,8 @@ const CreateRafflePage = ({userJustCreated, setUserJustCreated}) => {
         animate={{ opacity: 1, y: 0 }}
         className="text-center"
       >
-        <h1 className="text-4xl font-bold text-foreground">Crear Nueva Rifa</h1>
-        <p className="text-lg text-muted-foreground mt-2">
+        <h1 className="text-3xl sm:text-4xl font-bold text-foreground">Crear Nueva Rifa</h1>
+        <p className="text:base sm:text-lg text-muted-foreground mt-2">
           Configura los detalles de tu rifa
         </p>
       </motion.div>

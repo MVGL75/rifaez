@@ -858,11 +858,13 @@ const removeMethod = async (methodInp) => {
                   {workers.map((worker, index) => (
                     <div
                       key={index}
-                      className={`flex items-center ${!worker.isActive && "bg-muted text-muted-foreground"} justify-between p-4 rounded-lg border`}
+                      className={`flex items-center max-w-full ${!worker.isActive && "bg-muted text-muted-foreground"} justify-between p-4 rounded-lg border`}
                     >
-                      <div className="flex items-center space-x-3 ">
-                        <Users className="w-5 h-5 text-muted-foreground" />
-                        <span>{worker.email}</span>
+                      <div className="flex min-w-1 items-center space-x-3 ">
+                        <Users className="min-w-5 min-h-5 text-muted-foreground" />
+                        <span className="block max-w-full min-w-1 overflow-x-auto whitespace-nowrap">
+                          {worker.email}
+                        </span>
                       </div>
                       <Button
                         variant="destructive"
@@ -1404,8 +1406,8 @@ const removeMethod = async (methodInp) => {
         animate={{ opacity: 1, y: 0 }}
         className="text-center mb-8"
       >
-        <h1 className="text-4xl font-bold text-foreground">Configuración</h1>
-        <p className="text-lg text-muted-foreground mt-2">
+        <h1 className="text-3xl sm:text-4xl font-bold text-foreground">Configuración</h1>
+        <p className="text-base sm:text-lg text-muted-foreground mt-2">
           Administra tu cuenta y preferencias
         </p>
       </motion.div>

@@ -124,8 +124,8 @@ const EditRafflePage = () => {
         animate={{ opacity: 1, y: 0 }}
         className="text-center"
       >
-        <h1 className="text-4xl font-bold text-foreground">Editar Rifas</h1>
-        <p className="text-lg text-muted-foreground mt-2">
+        <h1 className="text-3xl sm:text-4xl font-bold text-foreground">Editar Rifas</h1>
+        <p className="text-base sm:text-lg text-muted-foreground mt-2">
           Gestiona tus rifas activas
         </p>
       </motion.div>
