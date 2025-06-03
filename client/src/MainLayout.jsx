@@ -35,7 +35,7 @@ export default function({selectedRaffle, setSelectedRaffle}){
         { icon: <Settings className="w-6 h-6" />, path: "/raffle-admin/settings", label: "Ajustes" }
     ];
     return(
-            <div className="min-h-screen bg-background">
+            <div className="min-h-[100dvh] bg-background">
         {/* Desktop Navigation */}
         <nav className="hidden customLg:flex items-center justify-between px-8 py-4 bg-card border-b">
             <div className="flex items-center space-x-8">
