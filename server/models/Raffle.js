@@ -126,6 +126,10 @@ const RaffleSchema = new mongoose.Schema({
                 type: String,
                 default: "square",
             },
+            purchasedTicketDisplay: {
+                type: String,
+                default: "cross",
+            },
             countdown: {
                 type: String,
                 default: "off"

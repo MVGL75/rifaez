@@ -117,7 +117,7 @@ const Payment = () => {
       <div className="h-[500px] flex-col justify-center text-center space-y-6 flex items-center">
         <div className="text-2xl md:text-3xl">No haz seleccionado un boleto de la rifa</div>
         <p className="text-sm md:text-base text-colorRaffle-300">Debes seleccionar al menos un boleto de la rifa y llenar tu informacion para poder accesar los metodos de pago</p>
-        <button onClick={goToParent} className="text-colorRaffle-foreground rounded-[50px] text-sm sm:text-base w-fit ml-auto mr-auto bg-primaryRaffle flex justify-center items-center px-6 py-3">Regresar a pagina de rifa</button>
+        <button onClick={goToParent} className="text-primaryRaffle-foreground rounded-[50px] text-sm sm:text-base w-fit ml-auto mr-auto bg-primaryRaffle flex justify-center items-center px-6 py-3">Regresar a pagina de rifa</button>
         </div>
       </div>
   );

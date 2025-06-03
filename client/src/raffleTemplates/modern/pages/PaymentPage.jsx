@@ -206,7 +206,7 @@ const PaymentPage = ({ setAvailableTickets }) => {
                 rel="noopener noreferrer"
                 className=""
                 >
-                <Button size="lg" className="text-lg sm:text-xl bg-green-500 hover:bg-green-600 text-colorRaffle-foreground">
+                <Button size="lg" className="text-lg min-h-5 h-auto py-2 sm:text-xl bg-green-500 hover:bg-green-600 text-colorRaffle-foreground">
                   <Smartphone className="mr-2 h-5 w-5 sm:h-6 sm:w-6" /> Enviar Comprobante por WhatsApp
                 </Button>
               </a>

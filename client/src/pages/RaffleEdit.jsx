@@ -109,6 +109,7 @@ const RaffleEditPage = ({}) => {
           logo_size: raffleWithoutId.logo_size, 
           logo_type: raffleWithoutId.logo_type, 
           border_corner: raffleWithoutId.border_corner,
+          purchasedTicketDisplay: raffleWithoutId.purchasedTicketDisplay,
           countdown: raffleWithoutId.countdown, 
           font: raffleWithoutId.font, 
           timeLimitPay: raffleWithoutId.timeLimitPay, 
@@ -774,6 +775,20 @@ const RaffleEditPage = ({}) => {
                    >
                     <option value="square">Cuadrado</option>
                     <option value="round">Redondeado</option>
+                    
+                  </select>
+                  </div>
+            </div>
+            <div>
+              <label htmlFor="purchasedTicketDisplay" className={`block text-sm font-medium mb-2 ${errors.purchasedTicketDisplay && "text-red-500"}`}>
+                    Visualización del boleto comprado
+                </label>
+                <div className="relative">
+                  <select id="purchasedTicketDisplay" name="purchasedTicketDisplay" value={raffle.purchasedTicketDisplay}  onChange={handleChange} 
+                  className={`w-full p-2 rounded-md border ${errors.purchasedTicketDisplay ? "border-red-500" : "border-input"} bg-background `}
+                   >
+                    <option value="cross">Tachado</option>
+                    <option value="hide">Oculto</option>
                     
                   </select>
                   </div>

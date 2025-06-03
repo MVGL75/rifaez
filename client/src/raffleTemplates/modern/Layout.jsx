@@ -24,9 +24,9 @@ const Layout = ({raffle}) => {
 
   const linkClasses = "px-3 py-2 rounded-md text-sm font-medium";
   const activeLinkClasses = "bg-headerRaffle-foreground text-headerRaffle";
-  const inactiveLinkClasses = "text-headerRaffle-foreground hover:bg-primaryRaffle-300 hover:text-headerRaffle-foreground";
+  const inactiveLinkClasses = "text-headerRaffle-foreground hover:bg-primaryRaffle-300 hover:text-primaryRaffle-foreground";
   const activeLinkClassesMenu = "bg-primaryRaffle text-primaryRaffle-foreground";
-  const inactiveLinkClassesMenu = "text-colorRaffle hover:bg-primaryRaffle-300 hover:text-headerRaffle-foreground";
+  const inactiveLinkClassesMenu = "text-colorRaffle hover:bg-primaryRaffle-300 hover:text-primaryRaffle-foreground";
 
   return (
     <div className={`${raffle.border_corner === "square" && "no-radius"} min-h-screen flex flex-col bg-gradient-to-br from-backgroundRaffle to-lightColorTint font-fontRaffle`}>

@@ -60,21 +60,21 @@ const Navbar = ({raffle}) => {
             <div className="px-2 pt-2 pb-3 space-y-1 text-headerRaffle-foreground">
               <Link
                 to="payment"
-                className="block px-3 py-2 hover:bg-primaryRaffle-300"
+                className="block px-3 py-2 hover:bg-primaryRaffle-300 hover:text-primaryRaffle-foreground"
                 onClick={() => setIsOpen(false)}
               >
                 Métodos de Pago
               </Link>
               <Link
                 to="verify"
-                className="block px-3 py-2 hover:bg-primaryRaffle-300"
+                className="block px-3 py-2 hover:bg-primaryRaffle-300 hover:text-primaryRaffle-foreground"
                 onClick={() => setIsOpen(false)}
               >
                 Boletos Disponibles
               </Link>
               <Link
                 to="contact"
-                className="block px-3 py-2 hover:bg-primaryRaffle-300"
+                className="block px-3 py-2 hover:bg-primaryRaffle-300 hover:text-primaryRaffle-foreground"
                 onClick={() => setIsOpen(false)}
               >
                 Contacto

@@ -1,9 +1,11 @@
 
-import React, { useState, useEffect, useRef } from "react";
+import React, { useState, useEffect, useRef, useMemo } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { ShoppingCart, ChevronDown, SearchIcon, Shuffle } from "lucide-react";
 import { useNavigate, useOutletContext, useParams } from "react-router-dom";
 import { ticketInfoValidationSchema} from "../../../validation/ticketInfoSchemaValidate"
+import { cn } from '../../lib/utils';
+import { VirtuosoGrid } from 'react-virtuoso';
 import { Button } from "../../components/ui/button";
 import mexicanStates from "../../lib/mexicanStates";
 import Countdown from "../../components/Countdown";
@@ -23,9 +25,8 @@ const Home = ({availableTickets, setAvailableTickets}) => {
   const [selectedTickets, setSelectedTickets] = useState([]);
   const [showSearch, setShowSearch] = useState(false);
   const [filteredStates, setFilteredStates] = useState([...newMexicanStates, "Extranjero"]);
-  const [filteredTickets, setFilteredTickets] = useState([...availableTickets])
-  const [showTicketModal, setShowTicketModal] = useState(false);
   const [wasSubmitted, setWasSubmitted] = useState(false)
+  const [allTickets, setAllTickets] = useState([]);
   const [touchStart, setTouchStart] = useState(null);
   const [searchTicket, setSearchTicket] = useState("")
   const [touchEnd, setTouchEnd] = useState(null);
@@ -47,6 +48,34 @@ const Home = ({availableTickets, setAvailableTickets}) => {
     }, 3000);
     return () => clearInterval(timer);
   }, []);
+
+  useEffect(() => {
+    const TOTAL_TICKETS = raffle.maxParticipants;
+    const initialTickets = Array.from({ length: TOTAL_TICKETS }, (_, i) => {
+      const number = i + 1;
+      let status = "purchased"
+      if(availableTickets.includes(number)) status = "available"
+      return {
+        id: number,
+        number: String(number).padStart(3, '0'),
+        status,
+      };
+    });
+    if(raffle.purchasedTicketDisplay === "hide") {
+      setAllTickets(initialTickets.filter(ticket => ticket.status === "available"));
+    } else {
+      setAllTickets(initialTickets);
+    }
+
+    const storedSelectedTickets = JSON.parse(localStorage.getItem('selectedTickets')) || [];
+    setSelectedTickets(storedSelectedTickets.map(id => initialTickets.find(t => t.id === id)).filter(Boolean));
+  }, [availableTickets]);
+
+  const filteredTickets = useMemo(() => {
+    if (!searchTicket) return allTickets;
+    return allTickets.filter(ticket => ticket.number.includes(searchTicket));
+  }, [allTickets, searchTicket]);
+
 
   const minSwipeDistance = 50;
 
@@ -81,14 +110,6 @@ const Home = ({availableTickets, setAvailableTickets}) => {
       setCurrentImageIndex((prev) => (prev - 1 + prizeImages.length) % prizeImages.length);
     }
   };
-  const handleSearch = (e) => {
-    const query = e.target.value
-    setSearchTicket(query)
-    const filteredArray = availableTickets?.filter((item) =>
-      item.toString().includes(query)
-    );
-    setFilteredTickets(filteredArray)
-  }
   const ticketPrices = [
     { quantity: 1, price: raffle?.price },
     { quantity: 2, price: raffle?.price * 2 },
@@ -99,16 +120,7 @@ const Home = ({availableTickets, setAvailableTickets}) => {
     { quantity: 100, price: raffle?.price * 100 }
   ];
 
-  const handleTicketSelection = (ticket) => {
-    if (selectedTickets.includes(ticket)) {
-      setSelectedTickets(selectedTickets.filter(t => t !== ticket));
-    } else {
-        setSelectedTickets(prev => [...prev, ticket]); 
-    }
-  };
-
   const handlePriceClick = (quantity) => {
-    setShowTicketModal(true);
     document.getElementById('ticketsSection').scrollIntoView({ behavior: 'smooth' });
   };
 
@@ -125,11 +137,33 @@ const Home = ({availableTickets, setAvailableTickets}) => {
     
   }
 
-  const randomizeSelection = () => {
-    const availableTicketsFiltered = availableTickets.filter(ticket => !selectedTickets.includes(ticket))
-    const random = Math.floor(Math.random() * availableTicketsFiltered.length);
-    setSelectedTickets(prev => [...prev, availableTicketsFiltered[random]]);
-  }
+  const handleSelectRandomTicket = () => {
+
+    const availableTickets = allTickets.filter(
+      ticket => ticket.status === 'available' && !selectedTickets.find(st => st.id === ticket.id)
+    );
+    if (availableTickets.length === 0) {
+      return;
+    }
+    const randomIndex = Math.floor(Math.random() * availableTickets.length);
+    const randomTicket = availableTickets[randomIndex];
+    setSelectedTickets(prevSelected => [...prevSelected, randomTicket]);
+  };
+
+  const handleTicketClick = (ticket) => {
+    if (ticket.status === 'purchased') {
+      return;
+    }
+
+    setSelectedTickets(prevSelected => {
+      const isSelected = prevSelected.find(st => st.id === ticket.id);
+      if (isSelected) {
+        return prevSelected.filter(st => st.id !== ticket.id);
+      } else {
+        return [...prevSelected, ticket];
+      }
+    });
+  };
   const handleChange = (e) => {
     const name = e.target.name
     let value = e.target.value
@@ -188,21 +222,19 @@ const Home = ({availableTickets, setAvailableTickets}) => {
       return;
     }
     if(isValid){
-      const res = await api.post(`/api/raffle/${id}/payment`, {...value, tickets: [...selectedTickets]})
+      const newSelectedTickets = selectedTickets.map(ticket => ticket.id)
+      const res = await api.post(`/api/raffle/${id}/payment`, {...value, tickets: newSelectedTickets})
       if(res.data.status === 200){
-        localStorage.setItem('selectedTickets', JSON.stringify(selectedTickets));
+        localStorage.setItem('selectedTickets', JSON.stringify(newSelectedTickets));
         localStorage.setItem('userInfo', JSON.stringify(value));
-        setAvailableTickets(prev => prev.filter(p => !selectedTickets.includes(p)))
-        navigate('payment');
-      }  else {
+        setAvailableTickets(prev => prev.filter(p => !newSelectedTickets.includes(p)))
+        navigate('/payment');
+      } else {
         console.log(res)
       }
     }
   };
 
-  const scrollToPurchaseForm = () => {
-    purchaseFormRef.current?.scrollIntoView({ behavior: 'smooth' });
-  };
   return (
     <div className="flex flex-col items-center min-h-screen bg-backgroundRaffle">
       <div className="w-full max-w-4xl mx-auto px-4 py-8 text-center relative">
@@ -215,7 +247,8 @@ const Home = ({availableTickets, setAvailableTickets}) => {
           <h1 className="text-4xl md:text-6xl font-bold text-colorRaffle mb-4">
           {raffle?.title}
           </h1>
-          <p className="text-xl mb-4">Fecha de sorteo - {formatSpanishDate(raffle?.endDate)}</p>
+          <p className="text-xl md:text-2xl mb-4 text-colorRaffle">{raffle?.description}</p>
+          <p className="text-base md:text-lg mb-4 text-colorRaffle">Fecha de sorteo - {formatSpanishDate(raffle?.endDate)}</p>
 
           {/* Image Carousel */}
           <div 
@@ -243,6 +276,12 @@ const Home = ({availableTickets, setAvailableTickets}) => {
               </motion.div>
             </AnimatePresence>
           </div>
+
+          {raffle.extraInfo &&
+            <section className="w-full text-center px-4 mb-4 space-y-3">
+              <div className=" p-4 text-xl text-colorRaffle">{raffle.extraInfo}</div>
+            </section>
+          }
 
           <section className="max-w-[100vw] mb-10 px-5 bg-lightTint rounded-xl">
             {raffle.countdown === "on" &&
@@ -288,7 +327,7 @@ const Home = ({availableTickets, setAvailableTickets}) => {
                 onClick={() => handlePriceClick(quantity)}
                 whileHover={{ scale: 1.05 }}
                 whileTap={{ scale: 0.95 }}
-                className="text-colorRaffle-foreground bg-primaryRaffle fake-700 p-3 w-full max-w-sm rounded-lg text-center transform transition-all hover:bg-primaryRaffle"
+                className="text-primaryRaffle-foreground bg-primaryRaffle fake-700 p-3 w-full max-w-sm rounded-lg text-center transform transition-all hover:bg-primaryRaffle"
               >
                 <p className="">{quantity} boleto{quantity > 1 ? 's' : ''}</p>
                 <p className="text-lg">${price} MXN</p>
@@ -309,18 +348,18 @@ const Home = ({availableTickets, setAvailableTickets}) => {
               <h3 className="text-xl">Boletos Seleccionados:</h3>
               <div className="relative flex items-center gap-5">
               <div className="relative w-full sm:w-auto">
-              <input value={searchTicket} onChange={handleSearch} className="border-2 bg-backgroundRaffle w-full sm:w-[225px] rounded-xl px-4 pl-10 py-2 border-borderRaffle text-sm" type="text" />
+              <input value={searchTicket} onChange={(e)=>{setSearchTicket(e.target.value)}} className="border-2 bg-backgroundRaffle w-full sm:w-[225px] rounded-xl px-4 pl-10 py-2 border-borderRaffle text-sm" type="text" />
               <SearchIcon className="w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2"/>
               </div>
               <div className="absolute right-4 sm:right-auto  sm:relative">
-                <Shuffle className="w-5 h-5 sm:w-6 sm:h-6" onClick={randomizeSelection} />
+                <Shuffle className="w-5 h-5 sm:w-6 sm:h-6" onClick={handleSelectRandomTicket} />
               </div>
               </div>
             </div>
             <div className="flex flex-wrap gap-2 justify-left">
               {selectedTickets.map(ticket => (
-                <span key={ticket} className="bg-primaryRaffle text-colorRaffle-foreground px-3 py-1 rounded-full">
-                  #{ticket}
+                <span key={ticket.id} className="bg-primaryRaffle text-primaryRaffle-foreground px-3 py-1 rounded-full">
+                  #{ticket.number}
                 </span>
               ))}
             </div>
@@ -330,7 +369,28 @@ const Home = ({availableTickets, setAvailableTickets}) => {
           </div>
 
           {/* Ticket Grid */}
-          <div className="grid rounded-lg border border-borderRaffle px-4 py-4 grid-cols-5 md:grid-cols-10 gap-2">
+          {filteredTickets.length > 0 ? (
+            <div className="py-4 border border-borderRaffle rounded-lg">
+              <VirtuosoGrid
+              totalCount={filteredTickets.length}
+              itemContent={(index) => (
+                  <TicketItem 
+                    key={filteredTickets[index].id}
+                    ticket={filteredTickets[index]}
+                    onClick={() => handleTicketClick(filteredTickets[index])}
+                    isSelected={selectedTickets.some(st => st.id === filteredTickets[index].id)}
+                  />
+              )}
+              listClassName="grid grid-cols-5 md:grid-cols-10 gap-1 px-4"
+              style={{ height: 500 }}
+            />
+            </div>
+          ) : (
+            <p className="text-center text-gray-500 py-4 text-sm sm:text-base">
+              No se encontraron boletos con el número "{searchTicket}". Intenta con otro número o revisa los disponibles.
+            </p>
+          )}
+          {/* <div className="grid rounded-lg border border-borderRaffle px-4 py-4 grid-cols-5 md:grid-cols-10 gap-2">
             {filteredTickets?.map( i => (
               <motion.button
                 key={i}
@@ -346,7 +406,7 @@ const Home = ({availableTickets, setAvailableTickets}) => {
                 {i}
               </motion.button>
             ))}
-          </div>
+          </div> */}
 
           {/* Centered Scroll Arrow - Only shows when tickets are selected */}
           {/* {selectedTickets.length > 0 && (
@@ -417,7 +477,7 @@ const Home = ({availableTickets, setAvailableTickets}) => {
                 <Button
                   type="submit"
                   size="lg"
-                  className="w-full bg-primaryRaffle hover:bg-primaryRaffle text-white py-4 rounded-lg text-lg flex items-center justify-center gap-2"
+                  className="w-full bg-primaryRaffle text-primaryRaffle-foreground hover:bg-primaryRaffle py-4 rounded-lg text-lg flex items-center justify-center gap-2"
                 >
                   <ShoppingCart size={22} />
                   Comprar Boletos
@@ -427,12 +487,31 @@ const Home = ({availableTickets, setAvailableTickets}) => {
           )}
         </div>
       </div>
-      {raffle.extraInfo &&
-        <section className="max-w-4xl w-full px-4 space-y-3">
-          <header className="bg-primaryRaffle text-primaryRaffle-foreground rounded-md px-4 py-3">Informacion Adicional</header>
-          <div className="border border-borderRaffle p-4 text-colorRaffle">{raffle.extraInfo}</div>
-        </section>
-      }
+    </div>
+  );
+};
+
+const TicketItem = ({ ticket, onClick, isSelected,  }) => {
+  const ticketClasses = cn(
+    "p-2 border rounded-md text-center font-medium transition-all duration-200 transform text-xs sm:text-sm overflow-visible",
+    {
+      "bg-lightTint border-borderRaffle text-colorRaffle-600 line-through cursor-not-allowed": ticket.status === 'purchased',
+      "bg-primaryRaffle border-0 text-primaryRaffle-foreground shadow-md scale-105": ticket.status === 'available' && isSelected,
+      "bg-backgroundRaffle text-primaryRaffle border-primaryRaffle hover:bg-primaryRaffle-300 hover:text-primaryRaffle-foreground cursor-pointer": ticket.status === 'available' && !isSelected,
+    }
+  );
+
+  return (
+    <div className="p-0.5">
+    <motion.div
+      onClick={ticket.status === 'available' ? () => onClick(ticket) : undefined}
+      className={ticketClasses}
+      whileHover={ticket.status === 'available' ? { scale: 1.1 } : {}}
+      whileTap={ticket.status === 'available' ? { scale: 0.95 } : {}}
+      layout
+    >
+      {ticket.number}
+    </motion.div>
     </div>
   );
 };

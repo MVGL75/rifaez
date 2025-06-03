@@ -306,8 +306,8 @@ const HomePage = ({ selectedRaffle }) => {
 
           <div className="flex flex-col gap-3 sm:flex-row xs:justify-between xs:items-center mb-4">
           <div className="items-center px-3 space-x-3 py-2 rounded-md border border-input bg-background max-w-full flex">
-            <Copy onClick={()=>{handleCopyLink(selectedRaffle._id)}} className="w-4 h-4 min-w-4"/>
-            <span className="text-muted-foreground min-w-[10px] overflow-hidden">{copiedClip ? "Copied to clipboard" : `/raffle/${selectedRaffle._id}`}</span>
+            <Copy onClick={()=>{handleCopyLink(selectedRaffle.shortId)}} className="w-4 h-4 min-w-4"/>
+            <span className="text-muted-foreground min-w-[10px] overflow-hidden">{copiedClip ? "Copied to clipboard" : `/raffle/${selectedRaffle.shortId}`}</span>
           </div>
             <div className="relative">
               <Calendar className="absolute left-4 top-1/2 transform -translate-y-1/2 text-muted-foreground w-4 h-4" />

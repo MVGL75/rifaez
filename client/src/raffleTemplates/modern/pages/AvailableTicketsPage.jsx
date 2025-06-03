@@ -1,12 +1,7 @@
 import React, { useState, useEffect, useMemo } from 'react';
 import { useNavigate, useOutletContext, useParams } from 'react-router-dom';
-import { Button } from '../components/ui/button';
-import { Card, CardContent, CardHeader, CardTitle, CardFooter } from '../components/ui/card';
-import { Input } from '../components/ui/input';
 import { useToast } from '../components/ui/use-toast';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Ticket, CalendarDays, Award, Info, Gift, Search, Shuffle, ShoppingCart, Trash2 } from 'lucide-react';
-import { cn } from '../lib/utils';
 import PrizeSection from '../components/PrizeSection';
 import TicketSelection from '../components/TicketSelection';
 import Countdown from '../../components/Countdown';
@@ -40,8 +35,7 @@ const AvailableTicketsPage = ({ availableTickets, setAvailableTickets }) => {
   
 
   useEffect(() => {
-    const TOTAL_TICKETS = availableTickets.length;
-
+    const TOTAL_TICKETS = raffle.maxParticipants;
     const initialTickets = Array.from({ length: TOTAL_TICKETS }, (_, i) => {
       const number = i + 1;
       let status = "purchased"
@@ -53,7 +47,11 @@ const AvailableTicketsPage = ({ availableTickets, setAvailableTickets }) => {
       };
     });
 
-    setAllTickets(initialTickets);
+    if(raffle.purchasedTicketDisplay === "hide") {
+      setAllTickets(initialTickets.filter(ticket => ticket.status === "available"));
+    } else {
+      setAllTickets(initialTickets);
+    }
 
     const storedSelectedTickets = JSON.parse(localStorage.getItem('selectedTickets')) || [];
     setSelectedTickets(storedSelectedTickets.map(id => initialTickets.find(t => t.id === id)).filter(Boolean));
@@ -76,11 +74,6 @@ const AvailableTicketsPage = ({ availableTickets, setAvailableTickets }) => {
 
   const handleTicketClick = (ticket) => {
     if (ticket.status === 'purchased') {
-      toast({
-        title: "Boleto no disponible",
-        description: `El boleto ${ticket.number} ya ha sido comprado.`,
-        variant: "destructive",
-      });
       return;
     }
 
@@ -89,48 +82,22 @@ const AvailableTicketsPage = ({ availableTickets, setAvailableTickets }) => {
       if (isSelected) {
         return prevSelected.filter(st => st.id !== ticket.id);
       } else {
-        if (prevSelected.length >= raffle.maxTpT) {
-          toast({
-            title: "Límite alcanzado",
-            description: "Puedes seleccionar un máximo de 10 boletos.",
-            variant: "destructive",
-          });
-          return prevSelected;
-        }
         return [...prevSelected, ticket];
       }
     });
   };
 
   const handleSelectRandomTicket = () => {
-    if (selectedTickets.length >= raffle.maxTpT) {
-      toast({
-        title: "Límite alcanzado",
-        description: "Ya has seleccionado el máximo de 10 boletos.",
-        variant: "destructive",
-      });
-      return;
-    }
-
     const availableTickets = allTickets.filter(
       ticket => ticket.status === 'available' && !selectedTickets.find(st => st.id === ticket.id)
     );
-
     if (availableTickets.length === 0) {
-      toast({
-        title: "No hay boletos disponibles",
-        description: "Todos los boletos disponibles ya han sido seleccionados o comprados.",
-      });
       return;
     }
 
     const randomIndex = Math.floor(Math.random() * availableTickets.length);
     const randomTicket = availableTickets[randomIndex];
     setSelectedTickets(prevSelected => [...prevSelected, randomTicket]);
-    toast({
-      title: "Boleto Aleatorio Añadido",
-      description: `Se ha añadido el boleto ${randomTicket.number} a tu selección.`,
-    });
   };
 
   const handleRemoveSelectedTicket = (ticketId) => {
@@ -198,9 +165,9 @@ const AvailableTicketsPage = ({ availableTickets, setAvailableTickets }) => {
     }
     if(isValid){
       const newSelectedTickets = selectedTickets.map(ticket => ticket.id)
-      const res = await api.post(`/api/raffle/${id}/payment`, {...buyerInfo, tickets: newSelectedTickets})
+      const res = await api.post(`/api/raffle/${id}/payment`, {...value, tickets: newSelectedTickets})
       if(res.data.status === 200){
-        localStorage.setItem('selectedTickets', JSON.stringify(selectedTickets.map(ticket => ticket.id)));
+        localStorage.setItem('selectedTickets', JSON.stringify(newSelectedTickets));
         localStorage.setItem('userInfo', JSON.stringify(value));
         setAvailableTickets(prev => prev.filter(p => !newSelectedTickets.includes(p)))
         navigate('../pago');
@@ -252,9 +219,15 @@ const AvailableTicketsPage = ({ availableTickets, setAvailableTickets }) => {
       </section> */}
 
       <PrizeSection raffle={raffle} />
+      {raffle.extraInfo &&
+        <section className="w-full text-center px-4 space-y-3">
+          <div className=" p-4 text-colorRaffle">{raffle.extraInfo}</div>
+        </section>
+      }
       {raffle.countdown === "on" &&
         <Countdown targetDate={raffle.endDate}/>
       }
+
       
       <TicketSelection
         tickets={filteredTickets}
@@ -286,12 +259,7 @@ const AvailableTicketsPage = ({ availableTickets, setAvailableTickets }) => {
           />
         )}
       </AnimatePresence>
-      {raffle.extraInfo &&
-        <section className="w-full px-4 space-y-3">
-          <header className="bg-primaryRaffle text-primaryRaffle-foreground rounded-md px-4 py-3">Informacion Adicional</header>
-          <div className="border border-borderRaffle p-4 text-colorRaffle">{raffle.extraInfo}</div>
-        </section>
-      }
+     
       
     </motion.div>
   );
