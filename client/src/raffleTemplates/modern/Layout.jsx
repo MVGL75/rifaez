@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { Link, NavLink, Outlet, useLocation } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Menu, X, Aperture } from 'lucide-react';
+import { Menu, X, Aperture, Phone, Facebook } from 'lucide-react';
 import { Button } from './components/ui/button';
 import { cn } from '../lib/utils';
 import WhatsWidget from "../components/WhatsWidget";
@@ -27,6 +27,25 @@ const Layout = ({raffle}) => {
   const inactiveLinkClasses = "text-headerRaffle-foreground hover:bg-primaryRaffle-300 hover:text-primaryRaffle-foreground";
   const activeLinkClassesMenu = "bg-primaryRaffle text-primaryRaffle-foreground";
   const inactiveLinkClassesMenu = "text-colorRaffle hover:bg-primaryRaffle-300 hover:text-primaryRaffle-foreground";
+
+  const setPhoneFormat = (phone) => {
+    const digits = phone?.replace(/\D/g, ''); 
+
+    const parts = [];
+
+    if (digits?.length > 0) {
+      parts.push('(' + digits.substring(0, Math.min(3, digits.length)));
+    }
+    if (digits?.length >= 4) {
+      parts[0] += ') ';
+      parts.push(digits.substring(3, Math.min(6, digits.length)));
+    }
+    if (digits?.length >= 7) {
+      parts.push('-' + digits.substring(6, 10));
+    }
+
+    return parts.join('');
+  }
 
   return (
     <div className={`${raffle.border_corner === "square" && "no-radius"} min-h-screen flex flex-col bg-gradient-to-br from-backgroundRaffle to-lightColorTint font-fontRaffle`}>
@@ -108,9 +127,36 @@ const Layout = ({raffle}) => {
       </main>
 
       <WhatsWidget number={raffle.phone}/>
-      <footer className="bg-backgroundRaffle border-t border-borderRaffle">
+      <footer className="bg-backgroundRaffle border-t border-borderRaffle text-colorRaffle">
         <div className="max-w-[1400px] mx-auto px-4 sm:px-6 lg:px-8 py-6 flex items-center justify-center gap-3">
-          <p className="text-sm text-gray-500 flex">Desarrollado por</p> <Link to="https://www.rifaez.com" className="text-primaryRaffle"><Logo/></Link>
+        <div className="flex flex-col items-center space-y-4">
+          <div className="flex space-x-4">
+            { raffle.facebookUrl &&
+              <a href={raffle.facebookUrl} className="hover:text-primaryRaffle">
+                <Facebook size={24} />
+              </a>
+            }
+            { raffle.phone &&
+              <a href={`tel:${raffle.phone}`} className="hover:text-primaryRaffle">
+                <Phone size={24} />
+              </a>
+            }
+          </div>
+          <div className="text-center">
+            <p className="text-lg font-bold">PREGUNTAS AL WHATSAPP</p>
+            <a href={`tel:${raffle.phone}`} className="text-xl hover:text-primaryRaffle">
+              {setPhoneFormat(raffle.phone)}
+            </a>
+          </div>
+          <div className="flex flex-col items-center gap-5 text-sm text-colorRaffle-600 mt-4">
+            <div className="flex items-center gap-4 ">
+              <p>Sitio desarrollado por</p>
+              <Link to="/">
+                <Logo/>
+              </Link>
+            </div>
+          </div>
+        </div>
         </div>
       </footer>
     </div>

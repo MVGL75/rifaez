@@ -217,9 +217,6 @@ export const save = async(req, res)=> {
       };
 
 
-      if (!parsedBody.facebookUrl || parsedBody.facebookUrl === 'undefined') {
-        delete parsedBody.facebookUrl;
-      }
       const userWithUsername = await User.findOne({ username: req.body.email });
       const userWithWorker = await User.findOne({ "workers.email": req.body.email });
 
@@ -241,7 +238,7 @@ export const save = async(req, res)=> {
         value.logo = {url: req.file.path, public_id: req.file.filename}
       }
       const userData = value
-      const user = await User.findByIdAndUpdate(req.user._id, {...userData});
+      const user = await User.findByIdAndUpdate(req.user._id, {...userData, username: userData.email});
       if(user){
         res.json({message: "Se guardo exitosamente", status: 200})
       } else {

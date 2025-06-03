@@ -35,8 +35,9 @@ const PaymentMethodCard = ({ method, onCopy }) => {
         </CardHeader>
         
         <CardContent className="space-y-3">
-            <div  className="text-sm sm:text-base">
+            <div  className="text-sm sm:text-base flex flex-col sm:flex-row sm:items-center gap-2">
               <span className="font-semibold text-colorRaffle">Beneficiario: </span>
+              <div className='flex gap-2 items-center justify-between'>
               <span className="text-colorRaffle-300 break-all">{method.person}</span>
                 <Button
                   variant="ghost"
@@ -44,32 +45,37 @@ const PaymentMethodCard = ({ method, onCopy }) => {
                   className="ml-2 px-2 py-1 h-auto text-primaryRaffle hover:bg-blue-100 hover:text-primaryRaffle"
                   onClick={() => onCopy(method.person)}
                 >
-                  <Copy className="h-4 w-4 mr-1" /> Copiar
+                  <Copy className="h-4 w-4 mr-1" /> <span className='hidden sm:block'>Copiar</span>
                 </Button>
+                </div>
             </div>
-            <div  className="text-sm sm:text-base">
+            <div  className="text-sm sm:text-base flex flex-col sm:flex-row sm:items-center gap-2">
               <span className="font-semibold text-colorRaffle">Numero de Tarjeta: </span>
-              <span className="text-colorRaffle-300 break-all">{formatMethodNumber(method.number)}</span>
-                <Button
-                  variant="ghost"
-                  size="sm"
-                  className="ml-2 px-2 py-1 h-auto text-primaryRaffle hover:bg-blue-100 hover:text-primaryRaffle"
-                  onClick={() => onCopy(method.number)}
-                >
-                  <Copy className="h-4 w-4 mr-1" /> Copiar
-                </Button>
+              <div className='flex gap-2 items-center justify-between'>
+                <span className="text-colorRaffle-300 break-all">{formatMethodNumber(method.number)}</span>
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    className="ml-2 px-2 py-1 h-auto text-primaryRaffle hover:bg-blue-100 hover:text-primaryRaffle"
+                    onClick={() => onCopy(method.number)}
+                  >
+                    <Copy className="h-4 w-4 mr-1" /> <span className='hidden sm:block'>Copiar</span>
+                  </Button>
+              </div>
             </div>
-            <div  className="text-sm sm:text-base">
+            <div  className="text-sm sm:text-base flex flex-col sm:flex-row sm:items-center gap-2">
               <span className="font-semibold text-colorRaffle">CLABE: </span>
-              <span className="text-colorRaffle-300 break-all">{formatCLABE(method.clabe)}</span>
-                <Button
-                  variant="ghost"
-                  size="sm"
-                  className="ml-2 px-2 py-1 h-auto text-primaryRaffle hover:bg-blue-100 hover:text-primaryRaffle"
-                  onClick={() => onCopy(method.clabe)}
-                >
-                  <Copy className="h-4 w-4 mr-1" /> Copiar
-                </Button>
+              <div className='flex gap-2 items-center justify-between'>
+                <span className="text-colorRaffle-300 break-all">{formatCLABE(method.clabe)}</span>
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    className="ml-2 px-2 py-1 h-auto text-primaryRaffle hover:bg-blue-100 hover:text-primaryRaffle"
+                    onClick={() => onCopy(method.clabe)}
+                  >
+                    <Copy className="h-4 w-4 mr-1" /> <span className='hidden sm:block'>Copiar</span>
+                  </Button>
+                </div>
             </div>
             {method.instructions &&
             <div  className="text-sm sm:text-base">
@@ -162,14 +168,14 @@ const PaymentPage = ({ setAvailableTickets }) => {
       transition={{ duration: 0.5 }}
     >
       
-      <section className="text-center px-4">
+      <section className="text-center px-2 sm:px-4">
         <h1 className="text-3xl sm:text-4xl font-bold text-primaryRaffle mb-3">Realiza tu Pago</h1>
         <p className="text-md sm:text-lg text-colorRaffle-300">
           Selecciona tu método de pago preferido y sigue las instrucciones.
         </p>
       </section>
 
-      <div className="grid md:grid-cols-1 gap-6 px-4">
+      <div className="grid md:grid-cols-1 gap-6 px-2 sm:px-4">
         {paymentMethods.map((method, index) => (
           <motion.div
             key={index}
@@ -185,13 +191,13 @@ const PaymentPage = ({ setAvailableTickets }) => {
         ))}
       </div>
 
-      <section className="text-center mt-10 px-4">
-        <Card className="bg-cardRaffle border-borderRaffle shadow-xl p-6 sm:p-8">
-          <CardContent className="space-y-4">
+      <section className="text-left sm:text-center mt-10 px-2 sm:px-4">
+        <Card className="bg-cardRaffle border-borderRaffle shadow-xl px-4 py-6 sm:p-8">
+          <CardContent className="px-3 space-y-5 sm:px-6 sm:space-y-4">
             <h2 className="text-xl sm:text-2xl font-semibold text-primaryRaffle">
               ¡Importante! Envía tu Comprobante
             </h2>
-            <p className="text-md sm:text-lg text-colorRaffle">
+            <p className="text-base sm:text-lg text-colorRaffle">
               Una vez realizado el depósito o transferencia, por favor envía tu comprobante de pago al siguiente número de WhatsApp para confirmar tu participación:
             </p>
             <a
@@ -206,23 +212,23 @@ const PaymentPage = ({ setAvailableTickets }) => {
                 rel="noopener noreferrer"
                 className=""
                 >
-                <Button size="lg" className="text-lg min-h-5 h-auto py-2 sm:text-xl bg-green-500 hover:bg-green-600 text-colorRaffle-foreground">
-                  <Smartphone className="mr-2 h-5 w-5 sm:h-6 sm:w-6" /> Enviar Comprobante por WhatsApp
+                <Button className="flex-col gap-2 xs:flex-row min-h-5 items-start text-left sm:items-center sm:text-center h-auto py-2  bg-green-500 hover:bg-green-600 text-colorRaffle-foreground">
+                  <Smartphone className=" min-h-5 min-w-5 h-5 w-5 sm:h-6 sm:w-6" /> <span className='text-base xs:text-lg sm:text-xl'>Enviar Comprobante por WhatsApp</span>
                 </Button>
               </a>
             </a>
-            <p className="text-sm text-colorRaffle-300 mt-2">
+            <p className="text-base text-colorRaffle-300 flex flex-col sm:justify-center gap-2 sm:flex-row mt-2">
               Número de contacto: <span className="font-semibold text-primaryRaffle">{setPhoneFormat(raffle.phone)}</span>
             </p>
           </CardContent>
         </Card>
       </section>
 
-      <section className='flex items-center justify-center text-colorRaffle'>
+      <section className='flex px-2 text-center sm:px-4 items-center justify-center text-colorRaffle'>
           Tus boletos ya quedaron apartados tienes {raffle.timeLimitPay} dias(s) para realizar el pago.
       </section>
       
-      <section className="text-center px-4 pt-6">
+      <section className="text-center px-2 sm:px-4 pt-6">
           <p className="text-xs text-colorRaffle-300">
             Si tienes alguna duda, contáctanos a través de la sección de "Contacto". Tus boletos serán confirmados una vez validado el pago.
           </p>

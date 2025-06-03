@@ -88,7 +88,7 @@ const TicketsPage = () => {
                 className="w-full bg-transparent p-4 rounded text-colorRaffle border-2 border-borderRaffle text-center text-lg"
                 placeholder="Escribe Boleto, Folio ó Celular"
               />
-              <Search className="absolute right-4 top-1/2 transform -translate-y-1/2 text-gray-400" />
+              <Search className="bg-cardRaffle absolute right-4 top-1/2 transform -translate-y-1/2 text-gray-400" />
             </div>
             
             <Button 
