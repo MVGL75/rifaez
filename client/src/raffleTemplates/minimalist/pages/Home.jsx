@@ -229,7 +229,8 @@ const Home = ({availableTickets, setAvailableTickets}) => {
         localStorage.setItem('selectedTickets', JSON.stringify(newSelectedTickets));
         localStorage.setItem('userInfo', JSON.stringify(value));
         setAvailableTickets(prev => prev.filter(p => !newSelectedTickets.includes(p)))
-        navigate('/payment');
+        setSelectedTickets([])
+        navigate('payment');
       } else {
         console.log(res)
       }

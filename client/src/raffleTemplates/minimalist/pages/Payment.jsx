@@ -13,8 +13,21 @@ const Payment = () => {
   const topRef = useRef(null);
 
   useEffect(() => {
-    const tickets = JSON.parse(localStorage.getItem('selectedTickets') || '[]');
-    const user = JSON.parse(localStorage.getItem('userInfo') || '{}');
+    const unParsedTickets = localStorage.getItem('selectedTickets')
+    const unParsedUser = localStorage.getItem('userInfo')
+    localStorage.removeItem('selectedTickets')
+    localStorage.removeItem('userInfo')
+    let tickets
+    let user
+    if(unParsedTickets && unParsedUser){
+      localStorage.setItem('pendingSelectedTickets', unParsedTickets)
+      localStorage.setItem('pendingUserInfo', unParsedUser)
+      tickets = JSON.parse(unParsedTickets || '[]');
+      user = JSON.parse(unParsedUser || '{}');
+    } else {
+      tickets = JSON.parse(localStorage.getItem('pendingSelectedTickets') || '[]');
+      user = JSON.parse(localStorage.getItem('pendingUserInfo') || '{}');
+    }
     
     if (!tickets.length || Object.keys(user).length === 0) {
       return;

@@ -170,6 +170,7 @@ const AvailableTicketsPage = ({ availableTickets, setAvailableTickets }) => {
         localStorage.setItem('selectedTickets', JSON.stringify(newSelectedTickets));
         localStorage.setItem('userInfo', JSON.stringify(value));
         setAvailableTickets(prev => prev.filter(p => !newSelectedTickets.includes(p)))
+        setSelectedTickets([])
         navigate('../pago');
       } else {
         console.log(res)
