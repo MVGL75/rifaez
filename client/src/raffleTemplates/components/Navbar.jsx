@@ -8,7 +8,7 @@ const Navbar = ({raffle}) => {
   const [isOpen, setIsOpen] = useState(false);
 
   return (
-    <nav className='bg-headerRaffle border-b border-borderRaffle text-headerRaffle-foreground fixed w-full top-0 z-50'>
+    <nav className='bg-headerRaffle border-b-2 border-borderRaffle text-headerRaffle-foreground fixed w-full top-0 z-50'>
       <div className="w-[1400px] max-w-[100vw] box-border mx-auto px-4">
         <div className="flex justify-between items-center h-16 ">
           {/* Mobile menu button */}

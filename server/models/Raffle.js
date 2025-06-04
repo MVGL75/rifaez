@@ -174,11 +174,14 @@ const RaffleSchema = new mongoose.Schema({
                 dailyVisitStats: {
                     type: [
                         {
-                            date: String, // e.g., '2024-05-02'
+                            date: {
+                                type: String,
+                                unique: true
+                            }, // e.g., '2024-05-02'
                             count: Number,
                             time: {
                                 type: [{
-                                    hour: { type: String, required: true }, // e.g., "19:00"
+                                    hour: { type: String, required: true, unique: true }, // e.g., "19:00"
                                     count: { type: Number, required: true }
                                   }],
                                 default: []
@@ -190,11 +193,14 @@ const RaffleSchema = new mongoose.Schema({
                 dailySales: {
                     type: [
                         {
-                            date: String, // e.g., '2024-05-02'
+                            date: {
+                                type: String,
+                                unique: true
+                            }, // e.g., '2024-05-02'
                             count: Number,
                             time: {
                                 type: [{
-                                    hour: { type: String, required: true }, // e.g., "19:00"
+                                    hour: { type: String, required: true, unique: true }, // e.g., "19:00"
                                     count: { type: Number, required: true }
                                   }],
                                 default: []

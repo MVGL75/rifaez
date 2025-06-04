@@ -154,7 +154,7 @@ const Payment = () => {
                 <p><span className="font-bold">Teléfono:</span> {setPhoneFormat(userInfo.phone)}</p>
                 <p><span className="font-bold">Estado:</span> {userInfo.state}</p>
                 <p><span className="font-bold">Boletos Seleccionados:</span></p>
-                <div className="flex flex-wrap gap-2">
+                <div className="flex max-h-[150px] overflow-y-auto flex-wrap gap-2">
                   {selectedTickets.map(ticket => (
                     <span key={ticket} className="bg-primaryRaffle text-colorRaffle-foreground px-3 py-1 rounded-full">
                       #{ticket}
@@ -168,7 +168,7 @@ const Payment = () => {
             </div>
 
             {/* Important Instructions */}
-            <div className="bg-primaryRaffle p-4 rounded-lg text-colorRaffle-foreground">
+            <div className="bg-primaryRaffle h-fit p-4 rounded-lg text-colorRaffle-foreground">
               <p className="text-lg font-bold mb-2">
                 ¡IMPORTANTE!
               </p>

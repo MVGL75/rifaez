@@ -42,6 +42,38 @@ const PrizeSection = ({raffle}) => {
     return () => clearInterval(timer);
   }, []);
 
+  const [direction, setDirection] = useState(1); // 1 = next, -1 = prev
+
+  function goToNext() {
+    setDirection(1);
+    setCurrentImageIndex((prev) => (prev + 1) % prizeImages.length);
+  }
+  
+  function goToPrev() {
+    setDirection(-1);
+    setCurrentImageIndex((prev) =>
+      prev === 0 ? prizeImages.length - 1 : prev - 1
+    );
+  }
+  
+    const variants = {
+      enter: (direction) => ({
+        x: direction > 0 ? '100%' : '-100%',
+        opacity: 0,
+        position: 'absolute',
+      }),
+      center: {
+        x: 0,
+        opacity: 1,
+        position: 'absolute',
+      },
+      exit: (direction) => ({
+        x: direction < 0 ? '100%' : '-100%',
+        opacity: 0,
+        position: 'absolute',
+      }),
+    };
+
   return (
     <section className="px-2">
       <motion.div
@@ -52,18 +84,36 @@ const PrizeSection = ({raffle}) => {
       >
         <Card className="shadow-xl overflow-hidden bg-gradient-to-br from-backgroundRaffle to-lightColorTint border-primaryRaffle border-t-4">
           <div className="md:flex">
-            <div className="md:w-1/2 p-6 sm:p-8 flex flex-col justify-center">
-              <CardTitle className="text-2xl sm:text-3xl font-bold text-primaryRaffle mb-3 sm:mb-4 flex items-center">
+            <div className="md:w-1/2 text-center sm:text-left p-6 sm:p-8 flex flex-col justify-center">
+              <CardTitle className="text-2xl sm:text-3xl font-bold text-primaryRaffle mb-3 sm:mb-4 justify-center sm:justify-start flex items-center">
                 <Gift className="h-7 w-7 sm:h-8 sm:w-8 mr-3" />
                 1° Lugar
               </CardTitle>
-              <p className="text-lg sm:text-xl font-semibold text-colorRaffle mb-1 sm:mb-2">{raffle.title}</p>
-              <p className="text-sm sm:text-base text-colorRaffle-300">
+              <p className="text-xl sm:text-xl font-semibold text-colorRaffle mb-1 sm:mb-2">{raffle.title}</p>
+              <p className="text-base sm:text-base text-colorRaffle-300">
                {raffle.description}
               </p>
             </div>
-            <div className="md:w-1/2 h-64 md:h-auto bg-gray-200 h-[400px]">
-               <img  className="w-full h-[400px] max-h-[400px] object-cover" alt={prizeImages[currentImageIndex].alt} src={prizeImages[currentImageIndex].url} />
+            <div className="md:w-1/2 relative md:h-[400px] bg-gray-200 h-[400px] overflow-hidden">
+            {prizeImages.map((img, index) => {
+                    const isCurrent = index === currentImageIndex;
+                    const isPrevious =
+                      index === (currentImageIndex - 1 + prizeImages.length) % prizeImages.length;
+
+
+
+                    return (
+                      <img
+                        key={img.url}
+                        src={img.url}
+                        alt={img.alt}
+                        className="absolute top-0 -left-[100%] w-full h-full object-cover"
+                        style={{
+                          animation: isCurrent ? 'slideInFromLeft 0.5s ease-in-out forwards' : isPrevious && 'slideOut 0.5s ease-in-out forwards'
+                        }}
+                      />
+                    );
+                  })}
             </div>
           </div>
         </Card>

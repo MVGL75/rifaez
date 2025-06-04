@@ -144,8 +144,10 @@ const HomePage = ({ selectedRaffle }) => {
     const getToday = getTodayIso.split("T")[0];
     const dailyVisitArray = selectedRaffle?.stats?.dailyVisitStats;
     const dailySaleArray = selectedRaffle?.stats?.dailySales;
+    console.log(dailySaleArray)
     const dailyV = (dailyVisitArray && dailyVisitArray.length > 0) ? processDailyVisitStats(dailyVisitArray).todayTotal : 0;
     const dailyS = (dailySaleArray && dailySaleArray.length > 0) ? processDailyVisitStats(dailySaleArray).todayTotal : 0;
+    console.log(dailyS)
     setTodayStats({
       visits: dailyV,
       sales: dailyS,

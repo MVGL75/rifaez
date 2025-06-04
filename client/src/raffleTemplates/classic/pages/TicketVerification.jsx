@@ -93,7 +93,7 @@ const TicketVerification = () => {
             
             <Button 
               type="submit" 
-              className="w-full bg-primaryRaffle hover:bg-primaryRaffle-400 text-lg py-6"
+              className="w-full bg-primaryRaffle text-primaryRaffle-foreground hover:bg-primaryRaffle-400 text-lg py-6"
             >
               Verificar
             </Button>

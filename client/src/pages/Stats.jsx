@@ -417,7 +417,7 @@ const StatsPage = ({ selectedRaffle }) => {
               className="bg-muted/50 rounded-lg p-4"
             >
               <div className="flex gap-6 flex-col items-start sm:flex-row sm:justify-between ">
-                <div className="space-y-5 w-full sm:w-auto sm:space-y-4">
+                <div className="space-y-5 w-full sm:w-auto sm:max-w-[calc(100%-350px)] sm:space-y-4">
                   <div className="flex flex-col sm:flex-row sm:items-center gap-3">
                     <Tag className="w-5 h-5 text-primary" />
                     <div className="flex items-center grow justify-between sm:justify-start gap-3">

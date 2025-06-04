@@ -1,7 +1,7 @@
 
 import React, { useState, useEffect, useRef, useMemo } from "react";
-import { motion, AnimatePresence } from "framer-motion";
-import { ShoppingCart, ChevronDown, SearchIcon, Shuffle, ArrowDown } from "lucide-react";
+import { motion } from "framer-motion";
+import { ShoppingCart, ChevronDown, SearchIcon, Shuffle } from "lucide-react";
 import { useNavigate, useOutletContext, useParams } from "react-router-dom";
 import { ticketInfoValidationSchema} from "../../../validation/ticketInfoSchemaValidate"
 import Countdown from "../../components/Countdown";
@@ -26,9 +26,7 @@ const Home = ({availableTickets, setAvailableTickets}) => {
   const [filteredStates, setFilteredStates] = useState([...newMexicanStates, "Extranjero"]);
   const [wasSubmitted, setWasSubmitted] = useState(false)
   const [allTickets, setAllTickets] = useState([]);
-  const [touchStart, setTouchStart] = useState(null);
   const [searchTicket, setSearchTicket] = useState("")
-  const [touchEnd, setTouchEnd] = useState(null);
   const purchaseFormRef = useRef(null);
   const ticketSectionRef = useRef(null);
   const [errors, setErrors] = useState({})
@@ -48,6 +46,7 @@ const Home = ({availableTickets, setAvailableTickets}) => {
     }, 3000);
     return () => clearInterval(timer);
   }, []);
+
 
   useEffect(() => {
     const TOTAL_TICKETS = raffle.maxParticipants;
@@ -78,12 +77,6 @@ const Home = ({availableTickets, setAvailableTickets}) => {
 
   const minSwipeDistance = 50;
 
-  const onTouchStart = (e) => {
-    setTouchEnd(null);
-    setTouchStart(e.targetTouches[0].clientX);
-  };
-
-  const onTouchMove = (e) => setTouchEnd(e.targetTouches[0].clientX);
 
   function formatSpanishDate(isoDateStr) {
     const date = new Date(isoDateStr);
@@ -96,19 +89,6 @@ const Home = ({availableTickets, setAvailableTickets}) => {
     return new Intl.DateTimeFormat('es-ES', options).format(date);
   }
 
-  const onTouchEnd = () => {
-    if (!touchStart || !touchEnd) return;
-    const distance = touchStart - touchEnd;
-    const isLeftSwipe = distance > minSwipeDistance;
-    const isRightSwipe = distance < -minSwipeDistance;
-    
-    if (isLeftSwipe) {
-      setCurrentImageIndex((prev) => (prev + 1) % prizeImages.length);
-    }
-    if (isRightSwipe) {
-      setCurrentImageIndex((prev) => (prev - 1 + prizeImages.length) % prizeImages.length);
-    }
-  };
   const ticketPrices = [
     { quantity: 1, price: raffle?.price },
     { quantity: 2, price: raffle?.price * 2 },
@@ -202,6 +182,8 @@ const Home = ({availableTickets, setAvailableTickets}) => {
 
     return parts.join('');
   }
+
+  
   const selectState = (e) => {
     const value = e.target.textContent
     setShowSearch(false)
@@ -240,6 +222,21 @@ const Home = ({availableTickets, setAvailableTickets}) => {
   const scrollToTicketSection = () => {
     ticketSectionRef.current?.scrollIntoView({ behavior: 'smooth' });
   };
+
+  const [direction, setDirection] = useState(1); // 1 = next, -1 = prev
+
+function goToNext() {
+  setDirection(1);
+  setCurrentImageIndex((prev) => (prev + 1) % prizeImages.length);
+}
+
+function goToPrev() {
+  setDirection(-1);
+  setCurrentImageIndex((prev) =>
+    prev === 0 ? prizeImages.length - 1 : prev - 1
+  );
+}
+
   return (
     <div className="flex flex-col items-center min-h-screen bg-backgroundRaffle">
       <div className=" w-[1400px] max-w-[100vw] mx-auto px-4 py-8 relative">
@@ -251,14 +248,57 @@ const Home = ({availableTickets, setAvailableTickets}) => {
           {/* Prize Amount */}
           <div className="flex flex-col lg:flex-row lg:pt-20 gap-20">
           <div className="lg:w-[40%] pt-10">
-            <h1 className="text-4xl xxs:text-5xl md:text-6xl font-bold text-colorRaffle mb-14">
+            <h1 className="text-4xl xxs:text-5xl md:text-6xl font-bold text-colorRaffle mb-10 lg:mb-14">
             {raffle?.title}
             </h1>
-            <p className="mb-10">{raffle.description}</p>
+            <p className="mb-10 text-lg">{raffle.description}</p>
+            <div className="block lg:hidden grow">
+              <div 
+                className="relative h-[400px] mb-8 rounded-3xl overflow-hidden border-4 border-borderRaffle"
+                onTouchStart={goToNext}
+                onClick={goToNext}
+              >
+                 {prizeImages.map((img, index) => {
+                    const isCurrent = index === currentImageIndex;
+                    const isPrevious =
+                      index === (currentImageIndex - 1 + prizeImages.length) % prizeImages.length;
+
+
+
+                    return (
+                      <img
+                        key={img.url}
+                        src={img.url}
+                        alt={img.alt}
+                        className="absolute top-0 -left-[100%] w-full h-full object-cover"
+                        style={{
+                          animation: isCurrent ? 'slideInFromLeft 0.5s ease-in-out forwards' : isPrevious && 'slideOut 0.5s ease-in-out forwards'
+                        }}
+                      />
+                    );
+                  })}
+              </div>
+
+
+              {/* Prize Places */}
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-8">
+                {raffle?.additionalPrizes.map((prize, index) => (
+                <motion.div
+                key={index}
+                  whileHover={{ scale: 1.05 }}
+                  className="bg-cardRaffle p-4 rounded-lg"
+                >
+                  <h3 className="text-lg font-bold text-primaryRaffle">{prize.place}do Lugar</h3>
+                  <p>{prize.prize}</p>
+                </motion.div>
+                ))}
+              </div>
+              </div>
             <div className="flex items-center gap-4 mb-3">
               <span className="text-colorRaffle-300 font-semibold">Precio de Boleto</span>
               <span>${raffle.price}</span>
             </div>
+           
             <div className="flex items-center gap-4 mb-8">
               <span className="text-colorRaffle-300 font-semibold">Fecha de rifa</span>
               <span>{formatSpanishDate(raffle?.endDate)}</span>
@@ -270,31 +310,33 @@ const Home = ({availableTickets, setAvailableTickets}) => {
           </div>
 
           {/* Image Carousel */}
-          <div className="grow">
+
+          <div className="hidden lg:block grow">
               <div 
-                className="relative h-[400px] mb-8 rounded-3xl overflow-hidden"
-                onTouchStart={onTouchStart}
-                onTouchMove={onTouchMove}
-                onTouchEnd={onTouchEnd}
+                className="relative h-[400px] mb-8 rounded-3xl overflow-hidden border-4 border-borderRaffle"
+                onTouchStart={goToNext}
+                onClick={goToNext}
               >
-                <AnimatePresence mode="wait">
-                  <motion.div
-                    key={currentImageIndex}
-                    initial={{ opacity: 0, x: 100 }}
-                    animate={{ opacity: 1, x: 0 }}
-                    exit={{ opacity: 0, x: -100 }}
-                    className="absolute inset-0"
-                  >
-                    <img 
-                      className="w-full h-full object-cover"
-                      alt={prizeImages[currentImageIndex].alt}
-                      src={prizeImages[currentImageIndex].url}
-                    />
-                    <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black to-transparent p-4">
-                      <h2 className="text-2xl font-bold">{prizeImages[currentImageIndex].description}</h2>
-                    </div>
-                  </motion.div>
-                </AnimatePresence>
+                {prizeImages.map((img, index) => {
+                    const isCurrent = index === currentImageIndex;
+                    const isPrevious =
+                      index === (currentImageIndex - 1 + prizeImages.length) % prizeImages.length;
+
+
+
+                    return (
+                      <img
+                        key={img.url}
+                        src={img.url}
+                        alt={img.alt}
+                        className="absolute top-0 -left-[100%] w-full h-full object-cover"
+                        style={{
+                          animation: isCurrent ? 'slideInFromLeft 0.5s ease-in-out forwards' : isPrevious && 'slideOut 0.5s ease-in-out forwards'
+                        }}
+                      />
+                    );
+                  })}
+
               </div>
 
 

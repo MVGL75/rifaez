@@ -220,7 +220,6 @@ export const editRaffle = async (req, res) => {
   }
   export const viewUpdateRaffle = async (req, res) => {
     const { id } = req.params
-    console.log(id)
     const raffle = await Raffle.findOne({ shortId: id });
     if(raffle){
       await updateStats(raffle, "dailyVisitStats", 1);
@@ -267,41 +266,38 @@ export const editRaffle = async (req, res) => {
   }
 
 
-  async function updateStats(raffle, type, amount){
+  async function updateStats(raffle, type, amount) {
     const currentDate = new Date();
     const [isoDateShort, time] = currentDate.toISOString().split('T');
-    const hour = time.split(":")[0] + ':00';  
-    let isDateInside = false
-    raffle.stats[type] = raffle.stats[type].map(visit => {
-      if(visit.date === isoDateShort){
-        visit.count += amount;
-        let exists = false
-        for (let i = 0; i < visit.time.length; i++) {
-          if(visit.time[i].hour === hour){
-            visit.time[i].count += amount;
-            exists = true
-          }
-        }
-        if(!exists){
-          visit.time.push({
-            hour: hour,
-            count: amount
-          })
-        }
-        isDateInside = true;
+    const hour = time.split(":")[0].padStart(2, '0') + ':00';
+  
+    const statArray = raffle.stats[type] || [];
+  
+    let dayEntry = statArray.find(entry => entry.date === isoDateShort);
+  
+    if (!dayEntry) {
+      dayEntry = {
+        date: isoDateShort,
+        count: amount,
+        time: [{ hour, count: amount }],
+      };
+      statArray.push(dayEntry);
+    } else {
+      dayEntry.count += amount;
+  
+      const hourEntry = dayEntry.time.find(t => t.hour === hour);
+  
+      if (hourEntry) {
+        hourEntry.count += amount;
+      } else {
+        dayEntry.time.push({ hour, count: amount });
       }
-      return visit
-  })
-    if(!isDateInside){
-      raffle.stats[type].push({date: isoDateShort, count: amount, time:[{
-        hour: hour,
-        count: amount
-      }]})
     }
-    const latest = await Raffle.findById(raffle._id);
-    latest.stats = raffle.stats;
-    return await latest.save();
+  
+    raffle.stats[type] = statArray;
+    await raffle.save(); 
   }
+  
 
 
   async function setUserForClient(req, user){
@@ -315,11 +311,39 @@ export const editRaffle = async (req, res) => {
 
   
 
-  // async function handleDB(id){
-  //   const raffle = await Raffle.findById(id);
-  //   raffle.stats.paidParticipants = 0;
-  //   raffle.stats.dailySales = [];
-  //   await raffle.save();
+  // async function handleDB(id) {
+  //   const raffles = await Raffle.find({});
+    
+  //   for (const raffle of raffles) {
+  //     let dateObj = {};
+  //     const dailySales = raffle.stats.dailySales
+  //       .filter(day => {
+  //         if(!dateObj[day.date]){
+  //           const seenHours = new Set();
+  //           const timeArray = [];
+    
+  //           for (const hour of day.time) {
+  //             if (!seenHours.has(hour.hour)) {
+  //               seenHours.add(hour.hour);
+  //               timeArray.push(hour);
+  //             }
+  //         }
+  //           dateObj[day.date] = timeArray
+  //           return true;
+  //         }
+  //       })
+  //       .map(day => ({
+  //         ...day,
+  //         time: day.time.filter(hour =>
+  //           dateObj[day.date].some(h => h.hour === hour.hour)
+  //         ),
+  //       }));
+  
+  //     raffle.stats.dailySales = dailySales;
+  //     console.log(raffle.stats.dailySales)
+  //     await raffle.save();
+  //   }
   // }
+  
 
-  // handleDB("6834cd280edb39785609507e")
+  // handleDB("683bc594c182578b0a194efa")

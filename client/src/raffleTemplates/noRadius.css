@@ -5,3 +5,21 @@
   .no-radius .round-must {
     border-radius: 1000px !important;
   }
+
+  @keyframes slideInFromLeft {
+    from {
+      transform: translateX(0);
+    }
+    to {
+      transform: translateX(100%);
+    }
+  }
+
+  @keyframes slideOut {
+    from {
+      transform: translateX(100%);
+    }
+    to {
+      transform: translateX(200%);
+    }
+  }
