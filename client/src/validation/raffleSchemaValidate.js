@@ -14,6 +14,19 @@ function getDate30DaysFromNow() {
 }
 const colors = ['red', 'blue', 'yellow', 'green', 'purple', 'white', 'black']
 
+const colorSchema = Joi.string().custom((value, helpers) => {
+  const isPredefined = colors.includes(value);
+  const isHex = /^#([0-9a-fA-F]{3}){1,2}$/.test(value);
+
+  if (!isPredefined && !isHex) {
+    return helpers.error('any.invalid');
+  }
+
+  return value;
+}, 'Color Validation').messages({
+  'any.invalid': 'Color must be a valid hex code or one of the predefined options',
+});
+
 const fonts = [
   "Inter",
   "Roboto",
@@ -66,11 +79,11 @@ export const raffleValidationSchema = Joi.object({
     ).default([]),
     template: Joi.string().valid('classic', 'modern', 'minimalist').required(),
     colorPalette: Joi.object({
-      header: Joi.string().valid(...colors).required(),
-      background: Joi.string().valid(...colors).required(),
-      accent: Joi.string().valid(...colors).required(),
-      borders: Joi.string().valid(...colors).required(),
-      color: Joi.string().valid(...colors).required(),
+      header: colorSchema,
+      background: colorSchema,
+      accent: colorSchema,
+      borders: colorSchema,
+      color: colorSchema,
     }).required(),
     font: Joi.string().valid(...fonts).required(),
     logo_position: Joi.string().valid('left', 'center', 'right').required(),

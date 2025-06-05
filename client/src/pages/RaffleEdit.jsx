@@ -3,6 +3,7 @@ import React, { useState, useEffect, useRef } from "react";
 import { motion } from "framer-motion";
 import { useNavigate, useParams } from "react-router-dom";
 import { useToast } from "@/components/ui/use-toast";
+import { HexColorPicker } from "react-colorful";
 import { useAuth } from "@/contexts/AuthContext"
 import { Button } from "@/components/ui/button";
 import { 
@@ -151,7 +152,9 @@ const RaffleEditPage = ({}) => {
 
   const handlePaletteChange = (e) => {
     const {name, value} = e.target
-    console.log(name, value)
+    if(colors.map(color => color.id).includes(value)){
+      setPickerColor(prev => ({...prev, [name]: colors.find(color => color.id === value).hex}));
+    }
     setRaffle(prev => ({...prev, colorPalette: {...prev.colorPalette, [name]: value}}))
   }
 
@@ -187,7 +190,15 @@ const RaffleEditPage = ({}) => {
     pro: [["Clasico", "classic"], ["Minimalista", "minimalist"]],
     business: [["Clasico", "classic"], ["Minimalista", "minimalist"], ["Moderno", "modern"]],
   }
-  const colors = [{id: 'red', name: "Rojo"}, {id: 'blue', name: "Azul"}, {id: 'yellow', name: "Amarillo"}, {id: 'green', name: "Verde"}, {id: 'purple', name: "Púrpura"}, {id: 'black', name: "Negro"}, {id: 'white', name: "Blanco"}]
+  const colors = [
+    { id: 'red', name: "Rojo", hex: "#FF0000" },
+    { id: 'blue', name: "Azul", hex: "#0000FF" },
+    { id: 'yellow', name: "Amarillo", hex: "#FFFF00" },
+    { id: 'green', name: "Verde", hex: "#00FF00" },
+    { id: 'purple', name: "Púrpura", hex: "#800080" },
+    { id: 'black', name: "Negro", hex: "#000000" },
+    { id: 'white', name: "Blanco", hex: "#FFFFFF" }
+  ];
   const colorCheck = {
     red: 'Rojo',
     blue: 'Azul',
@@ -289,6 +300,55 @@ const RaffleEditPage = ({}) => {
     if(mode === "active"){
       setRaffle(prev => ({...prev, isActive: !prev.isActive}))   
     }
+  }
+
+  const [pickerName, setPickerName] = useState("header")
+  const [colorValue, setColorValue] = useState("#ff0000");
+  const [pickerColor, setPickerColor] = useState({
+    header: "#ff0000",
+    background: "#ff0000",
+    accent: "#ff0000",
+    borders: "#ff0000",
+    color: "#ff0000",
+  });
+
+  useEffect(()=>{
+    if(raffle){
+      for (const [name, colorP] of Object.entries(raffle.colorPalette)) {
+        if(colors.map(color => color.id).includes(colorP)){
+          setPickerColor(prev => ({...prev, [name]: colors.find(color => color.id === colorP).hex}));
+        } else {
+          setPickerColor(prev => ({...prev, [name]: colorP}));
+        }
+      }
+  }
+    
+  }, [raffle])
+  
+  const openColorPicker = (name) => {
+    setPickerName(name)
+    setColorValue(pickerColor[name])
+    document.getElementById("color-picker").showModal()
+  }
+
+  const isValidHex = (val) => /^#([0-9A-F]{3}){1,2}$/i.test(val);
+
+  const handleColorInputChange = (e) => {
+    const val = e.target.value;
+    setColorValue(val);
+    if (isValidHex(val)) {
+      handleColorChange(val); // update picker only on valid color
+    }
+  }
+
+  const unFocusColor = ()=> {
+    setColorValue(pickerColor[pickerName])
+  }
+  
+  const handleColorChange = (newColor) => {
+    setPickerColor(prev => ({...prev, [pickerName]: newColor}));
+    handlePaletteChange({target: {name: pickerName, value: newColor}})
+    setColorValue(newColor)
   }
 
   const handleSave = async () => {
@@ -610,77 +670,108 @@ const RaffleEditPage = ({}) => {
                   name="colorPalette"
                   className={`w-full p-2 rounded-md border text-muted-foreground ${errors.colorPalette ? "border-red-500" : "border-input"} bg-background`}
                 >
-                  { `Encabezado: ${colorCheck[raffle.colorPalette?.header]}, Fondo: ${colorCheck[raffle.colorPalette?.background]}, Detalles: ${colorCheck[raffle.colorPalette?.accent]}, Bordes: ${colorCheck[raffle.colorPalette?.borders]}, Letra: ${colorCheck[raffle.colorPalette?.color]}`}
+                   {`Encabezado: ${colorCheck[raffle.colorPalette?.header] || raffle.colorPalette?.header}, Fondo: ${colorCheck[raffle.colorPalette?.background] || raffle.colorPalette?.background}, Detalles: ${colorCheck[raffle.colorPalette?.accent] || raffle.colorPalette?.accent}, Bordes: ${colorCheck[raffle.colorPalette?.borders] || raffle.colorPalette?.borders}, Letra: ${colorCheck[raffle.colorPalette?.color] || raffle.colorPalette?.color}`}
                 </div>
                 <dialog id="create-palette" className="rounded-md shadow-lg text-foreground">
                   <div className="space-y-5 p-5 w-[400px] max-w-full bg-background">
                     <h1 className="text-lg">Colores de Rifa</h1>
+                    <dialog id="color-picker" className="w-screen bg-transparent h-screen">
+                      <div className="flex h-full w-full items-center justify-center">
+                        <div className="bg-card p-6 space-y-4 rounded-lg text-foreground border-2 border-input">
+                          <HexColorPicker className="w-full" onChange={handleColorChange} color={pickerColor[pickerName]} />
+                          <footer className="flex max-w-full w-full gap-2 justify-between">
+                            <input className="px-2 w-[100px] bg-background border border-input rounded-sm" onBlur={unFocusColor} value={colorValue} onChange={handleColorInputChange}/>
+                            <button type="button" className="bg-muted py-1.5 px-4 rounded border border-input" onClick={()=>{document.getElementById("color-picker").close()}}>Cerrar</button>
+                          </footer>
+                        </div>
+                      </div>
+                    </dialog>
                     <div className="space-y-3">
-                      <div className="flex flex-col gap-2">
+                    <div className="flex flex-col w-full gap-2">
                         <label htmlFor="encabezado_color" className={`text-sm ${errors.colorPalette?.header && "text-red-500"}`}>Encabezado</label>
-                        <select 
-                          id="encabezado_color" 
-                          name="header" 
-                          value={raffle.colorPalette.header} 
-                          onChange={handlePaletteChange} 
-                          className={`w-full p-2 rounded-md bg-background border ${errors.colorPalette?.header ? "border-red-500" : "border-input"}`} >
-                            {colors.map((color, index) => (
-                              <option key={index} value={color.id} >{color.name}</option>
-                            ))}
-                        </select>
+                        <div className="w-full items-center max-w-full flex gap-2">
+                          <select 
+                            id="encabezado_color" 
+                            name="header" 
+                            value={raffle.colorPalette.header} 
+                            onChange={handlePaletteChange} 
+                            className={`grow p-2 rounded-md bg-background border ${errors.colorPalette?.header ? "border-red-500" : "border-input"}`} >
+                              {colors.map((color, index) => (
+                                <option key={index} value={color.id} >{color.name}</option>
+                              ))}
+                              <option value={pickerColor.header || 'Personalizado'} >{pickerColor.header || 'Personalizado'}</option>
+                          </select>
+                          <div style={{ backgroundColor: pickerColor.header }} className="h-[35px] aspect-square rounded border-2 border-input" onClick={()=>{openColorPicker("header")}}></div>
+                        </div>
                       </div>
                       <div className="flex flex-col gap-2">
                         <label htmlFor="fondo_color" className={`text-sm ${errors.colorPalette?.background && "text-red-500"}`}>Fondo</label>
-                        <select 
-                            id="fondo_color" 
-                            name="background" 
-                            value={raffle.colorPalette.background} 
-                            onChange={handlePaletteChange} 
-                            className={`w-full p-2 rounded-md bg-background border ${errors.colorPalette?.background ? "border-red-500" : "border-input"}`} >
-                            {colors.map((color, index) => (
-                              <option key={index} value={color.id} >{color.name}</option>
-                            ))}
-                        </select>
+                        <div className="w-full items-center max-w-full flex gap-2">
+                          <select 
+                              id="fondo_color" 
+                              name="background" 
+                              value={raffle.colorPalette.background} 
+                              onChange={handlePaletteChange} 
+                              className={`w-full max-w-full p-2 rounded-md bg-background border ${errors.colorPalette?.background ? "border-red-500" : "border-input"}`} >
+                              {colors.map((color, index) => (
+                                <option key={index} value={color.id} >{color.name}</option>
+                              ))}
+                               <option value={pickerColor.background || 'Personalizado'} >{pickerColor.background || 'Personalizado'}</option>
+                          </select>
+                          <div style={{ backgroundColor: pickerColor.background }} className="h-[35px] aspect-square rounded border-2 border-input" onClick={()=>{openColorPicker("background")}}></div>
+                        </div>
                       </div>
                       <div className="flex flex-col gap-2">
                         <label htmlFor="accento_color" className={`text-sm ${errors.colorPalette?.accent && "text-red-500"}`}>Detalles</label>
-                        <select 
-                        id="accento_color" 
-                        name="accent" 
-                        value={raffle.colorPalette.accent} 
-                        onChange={handlePaletteChange} 
-                        className={`w-full p-2 rounded-md bg-background border ${errors.colorPalette?.accent ? "border-red-500" : "border-input"}`} >
-                            {colors.map((color, index) => (
-                              <option key={index} value={color.id} >{color.name}</option>
-                            ))}
-                        </select>
+                        <div className="w-full items-center max-w-full flex gap-2">
+                          <select 
+                          id="accento_color" 
+                          name="accent" 
+                          value={raffle.colorPalette.accent} 
+                          onChange={handlePaletteChange} 
+                          className={`w-full max-w-full p-2 rounded-md bg-background border ${errors.colorPalette?.accent ? "border-red-500" : "border-input"}`} >
+                              {colors.map((color, index) => (
+                                <option key={index} value={color.id} >{color.name}</option>
+                              ))}
+                               <option value={pickerColor.accent || 'Personalizado'} >{pickerColor.accent || 'Personalizado'}</option>
+                          </select>
+                          <div style={{ backgroundColor: pickerColor.accent }} className="h-[35px] aspect-square rounded border-2 border-input" onClick={()=>{openColorPicker("accent")}}></div>
+                        </div>
                       </div> 
                       <div className="flex flex-col gap-2">
                         <label htmlFor="bordes_color" className={`text-sm  ${errors.colorPalette?.borders && "text-red-500"}`}>Bordes</label>
-                        <select 
-                            id="bordes_color" 
-                            name="borders" 
-                            value={raffle.colorPalette.borders} 
-                            onChange={handlePaletteChange} 
-                            className={`w-full p-2 rounded-md bg-background border ${errors.colorPalette?.borders ? "border-red-500" : "border-input"}`} >
-                            {colors.map((color, index) => (
-                              <option key={index} value={color.id} >{color.name}</option>
-                            ))}
-                        </select>
-                      </div>  
+                        <div className="w-full items-center max-w-full flex gap-2">
+                          <select 
+                              id="bordes_color" 
+                              name="borders" 
+                              value={raffle.colorPalette.borders} 
+                              onChange={handlePaletteChange} 
+                              className={`w-full max-w-full p-2 rounded-md bg-background border ${errors.colorPalette?.borders ? "border-red-500" : "border-input"}`} >
+                              {colors.map((color, index) => (
+                                <option key={index} value={color.id} >{color.name}</option>
+                              ))}
+                               <option value={pickerColor.borders || 'Personalizado'} >{pickerColor.borders || 'Personalizado'}</option>
+                          </select>
+                          <div style={{ backgroundColor: pickerColor.borders }} className="h-[35px] aspect-square rounded border-2 border-input" onClick={()=>{openColorPicker("borders")}}></div>
+                        </div>
+                      </div>   
                       <div className="flex flex-col gap-2">
                         <label htmlFor="color_color" className={`text-sm  ${errors.colorPalette?.color && "text-red-500"}`}>Letra</label>
-                        <select 
-                            id="color_color" 
-                            name="color" 
-                            value={raffle.colorPalette.color} 
-                            onChange={handlePaletteChange} 
-                            className={`w-full p-2 rounded-md bg-background border ${errors.colorPalette?.color ? "border-red-500" : "border-input"}`} >
-                            {colors.map((color, index) => (
-                              <option key={index} value={color.id} >{color.name}</option>
-                            ))}
-                        </select>
-                      </div>  
+                        <div className="w-full items-center max-w-full flex gap-2">
+                          <select 
+                              id="color_color" 
+                              name="color" 
+                              value={raffle.colorPalette.color} 
+                              onChange={handlePaletteChange} 
+                              className={`w-full max-w-full p-2 rounded-md bg-background border ${errors.colorPalette?.color ? "border-red-500" : "border-input"}`} >
+                              {colors.map((color, index) => (
+                                <option key={index} value={color.id} >{color.name}</option>
+                              ))}
+                               <option value={pickerColor.color || 'Personalizado'} >{pickerColor.color || 'Personalizado'}</option>
+                          </select>
+                          <div style={{ backgroundColor: pickerColor.color }} className="h-[35px] aspect-square rounded border-2 border-input" onClick={()=>{openColorPicker("color")}}></div>
+                        </div>
+                      </div>   
                     </div>
                     <footer className="flex items-center gap-3">
                     <Button

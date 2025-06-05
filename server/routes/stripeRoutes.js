@@ -47,14 +47,18 @@ router.post('/create-checkout-session', isAuthenticated, async (req, res) => {
     const return_url = `${baseUrl}${extraParams}`;
     const session = await stripe.checkout.sessions.create({
       mode: 'subscription',
-      customer_email: customerEmail,
+    customer_email: customerEmail,
       ui_mode: 'embedded',
+      locale: 'es',
       line_items: [
         {
           price: newPriceId,
           quantity: 1,
         },
       ],
+      subscription_data: {
+        trial_period_days: 30
+      },
       return_url,
     });
     res.json({ clientSecret: session.client_secret });

@@ -34,7 +34,7 @@ const EditRafflePage = () => {
   };
 
   const handleDownloadExcel = async (raffle) => {
-    downloadExcel(raffle.currentParticipants, 'raffle_participants.xlsx');
+    downloadExcel(raffle.currentParticipants, `${raffle.title}_raffle_participants.xlsx`);
   };
 
   const downloadExcel = (data, fileName = 'data.xlsx') => {
@@ -58,6 +58,8 @@ const EditRafflePage = () => {
           refactoredData.push(excelRow)
       }
     });
+
+    const sortedData = Array.from(refactoredData).sort((a, b) => a.Boleto - b.Boleto);
     // const refactoredData = data.map(ticket => ({
     //     Nombre: ticket.name,
     //     Telefono: ticket.phone,
@@ -72,7 +74,7 @@ const EditRafflePage = () => {
     //     Identificador: ticket.transactionID,
     //     Notas: ticket.notes ? ticket.notes.join(', ') : "",
     // }))
-    const worksheet = XLSX.utils.json_to_sheet(refactoredData);
+    const worksheet = XLSX.utils.json_to_sheet(sortedData);
   
     // Create a new workbook and append the worksheet
     const workbook = XLSX.utils.book_new();
