@@ -37,11 +37,39 @@ app.set('trust proxy', 1);
 app.use("/stripe/webhook", Webhook)
   app.use(express.static(path.join(__dirname, '../client/dist')))
 
+  app.use((req, res, next) => {
+    console.log('Incoming Host:', req.headers.host);
+    next();
+  });
 
-app.use(cors({
-  origin: process.env.CLIENT_URL || "http://localhost:3000", 
-  credentials: true             
-}));
+
+  app.use(cors({
+    origin: async (origin, callback) => {
+      if (!origin) return callback(null, true);
+  
+      const url = new URL(origin);
+      const hostname = url.hostname;
+  
+      if (hostname === 'rifaez.com' || hostname === 'domains.rifaez.com') {
+        return callback(null, true);
+      }
+  
+      const domainEntry = await CustomDomain.findOne({
+        $or: [
+          { domain: hostname, status: 'active' },
+          { subdomain: hostname, status: 'active' },
+        ],
+      });
+  
+      if (domainEntry) {
+        return callback(null, true);
+      }
+  
+      // If not allowed → reject
+      return callback(new Error('Not allowed by CORS'), false);
+    },
+    credentials: true,
+  }));
 
 
 app.use(express.json({ limit: '10kb' }));
@@ -164,10 +192,7 @@ passport.deserializeUser(async (storedSession, done) => {
   }
 });
 
-app.use((req, res, next) => {
-  console.log('Incoming Host:', req.headers.host);
-  next();
-});
+
 
 app.use('/api/raffle', raffleRoutes);
 app.use('/api/domains', domainRoutes)
