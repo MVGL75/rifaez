@@ -1,21 +1,81 @@
 import customDomain from '../models/CustomDomain.js';
 import dns from 'dns/promises';
+import axios from 'axios';
 dns.setServers(['8.8.8.8', '8.8.4.4']);
+
+async function createCustomHostname(hostname) {
+  try {
+    const response = await axios.post(
+      `https://api.cloudflare.com/client/v4/zones/bf7cf8a974e628dd5389769df3af9cee/custom_hostnames`,
+      {
+        hostname: hostname,
+        ssl: {
+          method: "http",
+          type: "dv",
+        },
+      },
+      {
+        headers: {
+          Authorization: `Bearer ${process.env.CLOUDFLARE_API_TOKEN}`,
+          'Content-Type': 'application/json',
+        },
+      }
+    );
+
+    console.log('Custom hostname created:', response.data);
+    return response.data;
+  } catch (error) {
+    console.error('Error creating custom hostname:', error.response?.data || error.message);
+    throw error;
+  }
+}
+
+
+const getCustomHostnameStatus = async (hostnameId) => {
+  try {
+    const response = await axios.get(
+      `https://api.cloudflare.com/client/v4/zones/bf7cf8a974e628dd5389769df3af9cee/custom_hostnames/${hostnameId}`,
+      {
+        headers: {
+          Authorization: `Bearer ${process.env.CLOUDFLARE_API_TOKEN}`,
+          'Content-Type': 'application/json',
+        },
+      }
+    );
+
+    return response.data;
+  } catch (error) {
+    console.error('Error fetching hostname status:', error.response?.data || error.message);
+    throw error;
+  }
+};
+
+
+// createCustomHostname("make.com")
+
 
 export const createDomain = async (req, res) => {
     const { userId, domain } = req.body;
     const entry = await customDomain.findOne({domain: domain});
-
-    if(entry) return res.json({
-        message: 'Please add the following TXT record to your DNS settings:',
+    if(entry){ 
+      if(userId === entry.userId.toString()){
+      return res.json({
+        message: 'Please add the following CNAME record to your DNS settings:',
         record: {
-          type: 'TXT',
-          name: `_raffle-verification.${entry.domain}`,
-          value: entry.verificationToken,
+          type: 'CNAME',
+          name: `subdomain`,
+          value: 'domains.rifaez.com',
         },
         status: 200,
       }
-    );
+    )
+    } else {
+      return res.json({
+        message: 'Este dominio ya esta registrado con otro usuario.',
+        status: 400,
+      })
+    }
+  }
 
     if (!userId || !domain) return res.status(400).json({ error: 'Missing data' });
   
@@ -42,92 +102,86 @@ export const createDomain = async (req, res) => {
     }
   
     return res.json({
-      message: 'Please add the following TXT record to your DNS settings:',
-      record: {
-        type: 'TXT',
-        name: `_raffle-verification.${domain}`,
-        value: verificationToken,
-      },
-      status: 200,
+      message: 'Please add the following CNAME record to your DNS settings:',
+        record: {
+          type: 'CNAME',
+          name: `subdomain`,
+          value: 'domains.rifaez.com',
+        },
+        status: 200,
     });
   }
 
-export const verifyDomain = async (req, res) => {
-    const { domain } = req.body;
-    const entry = await customDomain.findOne({domain: domain});
-    if (!entry) return res.status(404).json({ error: 'Domain not found' });
-  
-    try {
-      const records = await dns.resolveTxt(`_raffle-verification.${domain}`);
-      const flat = records.flat().join('');
-      if (flat === entry.verificationToken) {
-        entry.verified = true;
-        entry.lastVerifiedAt = new Date();
-        await entry.save();
-        return res.json({ 
-            status: 200,
-            record: {
-                domain: entry.domain,
-                rifaezDomain: process.env.CURRENT_DOMAIN,
-                serverIP: "127.0.0.1:4040",
-            },
-        });
-      }
-      return res.json({ error: 'Verification token does not match' });
-    } catch (err) {
-        console.log(err)
-      return res.json({ error: 'DNS lookup failed', detail: err.message });
-    }
-  }
 
   export const verifyCname = async (req, res) => {
     try {
-    const {domain, subdomain} = req.body
-      const records = await dns.resolveCname(subdomain + '.' + domain); // returns an array 
-      console.log(records)
-      const match = records.some(record => record === 'proxy.rifaez.com');
-      if(match){
-        const entry = await customDomain.findOne({domain: domain});
-        entry.subdomain = subdomain;
-        entry.status = 'active';
-        await entry.save();
-        console.log(entry)
-        return res.json({ valid: true, status: 200, domain: entry })
-      } else {
-        res.json({ valid: false, records });
-      }
+      const { domain, subdomain } = req.body;
+      const hostname = subdomain + '.' + domain;
+      console.log('Creating Custom Hostname for:', hostname);
+  
+      // Call Cloudflare API to create the custom hostname
+      const result = await createCustomHostname(hostname);
+  
+      // Extract hostname ID (needed to poll later)
+      const hostnameId = result.result?.id;
+      const sslStatus = result.result?.ssl?.status || 'unknown';
+  
+      console.log(`Custom hostname created with status: ${sslStatus}`);
+  
+      // Save initial entry in DB
+      const entry = await customDomain.findOne({ domain });
+      entry.subdomain = subdomain;
+      entry.status = sslStatus === 'active' ? 'active' : 'pending';
+      entry.hostnameId = hostnameId; // Save hostnameId so you can poll later
+      await entry.save();
+  
+      return res.json({
+        valid: true,
+        status: 200,
+        domain: entry,
+        hostnameId,
+        sslStatus,
+      });
     } catch (err) {
-      return res.json({ valid: false, error: err.message });
+      console.error('Error creating custom hostname:', err.response?.data || err.message);
+      return res.json({ valid: false, error: err.message, status: 400 });
     }
-  }
+  };
 
-
-import axios from 'axios';
-
-
-
-
-export const addCustomDomainToVercel = async (domain) => {
-  try {
-    const response = await axios.post(
-      `https://api.vercel.com/v10/projects/${process.env.VERCEL_PROJECT_ID}/domains`,
-      { name: domain },
-      {
-        headers: {
-          Authorization: `Bearer ${process.env.VERCEL_TOKEN}`,
-          'Content-Type': 'application/json',
-        },
+  export const pollHostnameStatus = async (req, res) => {
+    try {
+      const { hostnameId } = req.body;
+      const result = await getCustomHostnameStatus(hostnameId); // Your function to call Cloudflare API GET /custom_hostnames/:id
+  
+      const sslStatus = result.result?.ssl?.status || 'unknown';
+      console.log(`Polling hostname status: ${sslStatus}`);
+  
+      // Optionally update DB
+      const entry = await customDomain.findOne({ hostnameId });
+      if (entry) {
+        entry.status = sslStatus === 'active' ? 'active' : 'pending';
+        await entry.save();
       }
-    );
 
-    return {
-      success: true,
-      data: response.data,
-    };
-  } catch (err) {
-    return {
-      success: false,
-      error: err.response?.data || err.message,
-    };
-  }
-};
+      console.log(entry)
+  
+      return res.json({
+        valid: sslStatus === 'active',
+        status: 200,
+        sslStatus,
+        domain: entry,
+      });
+    } catch (err) {
+      console.error('Error polling hostname status:', err.response?.data || err.message);
+      return res.json({ valid: false, error: err.message, status: 400 });
+    }
+  };
+  
+  
+
+ 
+
+
+
+
+

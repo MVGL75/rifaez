@@ -179,28 +179,32 @@ const Payment = () => {
                       <span className="font-semibold">Titular:</span>{" "}
                       {method.accountHolder}
                     </p>
-                    <div className="flex items-center gap-2">
-                      <p className="font-semibold">Número de Cuenta:</p>
-                      <div
-                        onClick={() => handleCopyNumber(method.accountNumber)}
-                        variant="outline"
-                        size="sm"
-                        className="text-colorRaffle hover:text-colorRaffle-600"
-                      >
-                        {formatMethodNumber(method.accountNumber)}
+                    {method.accountNumber &&
+                      <div className="flex items-center gap-2">
+                        <p className="font-semibold">Número de Cuenta:</p>
+                        <div
+                          onClick={() => handleCopyNumber(method.accountNumber)}
+                          variant="outline"
+                          size="sm"
+                          className="text-colorRaffle hover:text-colorRaffle-600"
+                        >
+                          {formatMethodNumber(method.accountNumber)}
+                        </div>
                       </div>
-                    </div>
-                    <div className="flex items-center gap-2">
-                      <p className="font-semibold">Clabe:</p>
-                      <div
-                        onClick={() => handleCopyNumber(method.clabe)}
-                        variant="outline"
-                        size="sm"
-                        className="text-colorRaffle hover:text-colorRaffle-600"
-                      >
-                        {formatCLABE(method.clabe)}
-                      </div>
-                    </div>
+                    }
+                    {method.clabe &&   
+                        <div className="flex items-center gap-2">
+                          <p className="font-semibold">Clabe:</p>
+                          <div
+                            onClick={() => handleCopyNumber(method.clabe)}
+                            variant="outline"
+                            size="sm"
+                            className="text-colorRaffle hover:text-colorRaffle-600"
+                          >
+                            {formatCLABE(method.clabe)}
+                          </div>
+                        </div>
+                    }
                     {method.instructions &&
                     <div className="flex items-center gap-2">
                       <p className="font-semibold">Nota:</p>

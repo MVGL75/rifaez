@@ -187,8 +187,8 @@ const RaffleEditPage = ({}) => {
 
   const templates = {
     basic : [["Clasico", "classic"]],
-    pro: [["Clasico", "classic"], ["Minimalista", "minimalist"]],
-    business: [["Clasico", "classic"], ["Minimalista", "minimalist"], ["Moderno", "modern"]],
+    pro: [["Clasico", "classic"], ["Moderno", "modern"]],
+    business: [["Clasico", "classic"], ["Moderno", "modern"], ["Minimalista", "minimalist"]],
   }
   const colors = [
     { id: 'red', name: "Rojo", hex: "#FF0000" },
@@ -474,7 +474,7 @@ const RaffleEditPage = ({}) => {
           </div>
           <div>
             <label className={`block text-sm font-medium mb-2 ${errors.description && "text-red-500"}`}>
-              Descripcion
+              Descripcion <span className="text-muted-foreground">(Opcional)</span>
             </label>
             <textarea
               type="text"
@@ -818,13 +818,13 @@ const RaffleEditPage = ({}) => {
                   <option value="Inter">Inter</option>
                   <option value="Roboto">Roboto</option>
                   <option value="Open Sans">Open Sans</option>
-                  <option value="Manrope">Manrope</option>
-                  <option value="IBM Plex Sans">IBM Plex Sans</option>
-                  <option value="Work Sans">Work Sans</option>
-                  <option value="Source Sans 3">Source Sans 3</option>
-                  <option value="Noto Sans">Noto Sans</option>
                   <option value="Lato">Lato</option>
-                  <option value="DM Sans">DM Sans</option>
+                  <option value="IBM Plex Sans">IBM Plex Sans</option>
+                  <option value="Concert One">Concert One</option>
+                  <option value="Bowlby One">Bowlby One</option>
+                  <option value="Lilita One">Lilita One</option>
+                  <option value="Bungee">Bungee</option>
+                  <option value="Luckiest Guy">Luckiest Guy</option>
                 </select>
               </div>
               <div>

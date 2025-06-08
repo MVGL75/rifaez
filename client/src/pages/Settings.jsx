@@ -39,7 +39,8 @@ import {
   CircleAlert,
   CirclePlus,
   Trash2,
-  CircleCheck
+  CircleCheck,
+  RotateCcw
 } from 'lucide-react';
 
 
@@ -53,7 +54,7 @@ const api = axios.create({
 
 const SettingsPage = () => {
   const navigate = useNavigate();
-  const { logout, deleteUser, user, setUser, save, setAppError, setPopError, connectDomain, verifyDomain, verifyCNAME } = useAuth();
+  const { logout, deleteUser, user, setUser, save, setAppError, setPopError, connectDomain, verifyCNAME, pollHostname } = useAuth();
   const [activeSection, setActiveSection] = useState("account");
   const [theme, setTheme] = useState(user.theme ? user.theme : "system");
   const [language, setLanguage] = useState("es");
@@ -241,6 +242,7 @@ const removeMethod = async (methodInp) => {
     setErrors(newObj)
     return {error, value}
   }
+
  
   const handlePhoneChange = () => {
     setWasSubmitted(prev => ({...prev, phone: true}))
@@ -262,37 +264,30 @@ const removeMethod = async (methodInp) => {
     }
     setDomainV(e.target.value)
   }
+
+  const [domainError, setDomainError] = useState(null)
+  const [loadingCertificate, setLoadingCertificate] = useState(null)
+
+  const verifyCertificate = async () => {
+    setLoadingCertificate(true)
+    const res = await pollHostname(formData.domain)
+    if(res.status === 200){
+      setFormData(prev => ({...prev, domain: res.domain}))
+    }
+    setLoadingCertificate(false)
+  }
+
   const connectDomainFunc = async (type) => {
     if(type === "create"){
       const res = await connectDomain(domainV);
-      const newErr = {}
       if(res.status ===  200){
         setRecord({step: 1, ...res.record})
-        newErr.domain_verification = false
+        setDomainError(null)
       } else {
-        newErr.domain_verification = true
+        setDomainError(res.message)
       }
-      setErrors(prev => ({...prev, ...newErr}))
       return;
     } 
-   if(type === "verify"){
-      const res = await verifyDomain(domainV);
-      const newErr = {}
-      
-      if(res.status ===  200){
-        const newRecord = {
-          subdomainName: res.record.domain,
-          serverIP: res.record.serverIP,
-          ngrokDomain: res.record.ngrokDomain,
-        }
-        setRecord({step: 2, ...newRecord})
-        newErr.domain_verification = false
-      } else {
-        newErr.domain_verification = true
-      }
-      setErrors(prev => ({...prev, ...newErr}))
-      return;
-   }
     if(type === "cname"){
       if(!subdomainV){
         setWasSubmitted(prev => ({...prev, subdomain: true}))
@@ -1035,16 +1030,25 @@ const removeMethod = async (methodInp) => {
                       <div className="">{method.bank}</div>
                       <div onClick={()=>{removeMethod(method)}} className="bg-red-500 rounded-sm p-2"><Trash2 className="h-4 w-4 text-white"/></div>
                     </div>
-                    <div className="flex gap-3 flex-col px-4 py-4">
-                    <div className="flex flex-col gap-1 xs:gap-3 xs:flex-row xs:items-center">
+                    <div className="flex flex-col gap-5 xs:flex-row justify-between px-4 py-4">
+                    {(method.number || method.clabe) && (
+                    <div className="flex flex-col gap-3">
+                      {method.number &&
+                      <div className="flex flex-col gap-1 xs:gap-3 xs:flex-row xs:items-center">
                           <span className="text-muted-foreground">Numero de tarjeta</span>
                           <span>{formatMethodNumber(method.number)}</span>
-                          </div>
-                      <div className="flex flex-col gap-5 xs:flex-row xs:items-center justify-between">
+                        </div>
+                      }
+                      {method.clabe &&
                         <div className="flex flex-col gap-1 xs:gap-3 xs:flex-row xs:items-center">
                           <span className="text-muted-foreground">Cuenta Clabe</span>
                           <span>{formatCLABE(method.clabe)}</span>
-                          </div>
+                        </div>
+                        }
+                      </div>
+                     ) }
+                      <div className="flex flex-col xs:flex-row xs:items-end justify-between">
+                        
                         <div>{method.person}</div>
                       </div>
                     </div>
@@ -1148,6 +1152,17 @@ const removeMethod = async (methodInp) => {
               {formData.domain ? (
                  <div className="p-6 rounded-lg border border-input">
                   <h3 className="font-medium mb-4">Dominio Conectado</h3>
+                  {formData.domain.status === "active" ? (
+                    <div className="mb-4 text-sm text-muted-foreground">Certificado Activo, ya puedes usar tu dominio.</div>
+                  ) : (
+                    <div className="mb-4 text-sm text-muted-foreground space-y-2">
+                    <p>El estado de tu certificado sigue pendiente. Mientras no se active, no podrás utilizar el dominio. Haz clic en "Volver a verificar" para comprobar el estado nuevamente.</p>
+                        <button onClick={verifyCertificate} className="flex items-center gap-2 rounded bg-muted p-2 px-3 border border-input"> 
+                          <RotateCcw className="w-4 h-4" />
+                          <span>{loadingCertificate ? "Verificando..." : "Volver a verificar"}</span>
+                        </button>
+                  </div>
+                  )}
                   <div className="space-y-4">
                     <div className="relative">
                     <div
@@ -1180,7 +1195,7 @@ const removeMethod = async (methodInp) => {
                    {errors.domain_verification && <CircleX className="w-5 h-5 text-red-500 absolute right-5 top-1/2 -translate-y-1/2"/>}
                    {successDomain && <CircleCheck className="w-5 h-5 text-green-500 absolute right-5 top-1/2 -translate-y-1/2"/>}
                   </div>
-                  {record.step > 1 &&
+                  {record.step > 0 &&
                   <div className="relative">
                   <label className={`block mb-3 text-sm ${errors.subdomain && "text-red-500"}`}>Subdominio:</label>
                   <input
@@ -1194,51 +1209,46 @@ const removeMethod = async (methodInp) => {
                   </div>
                   }
                   {record.step === 0 && <Button onClick={()=>{connectDomainFunc("create")}} className="w-full">Conectar Dominio</Button> }
-                  {record.step === 1 && <Button onClick={()=>{connectDomainFunc("verify")}} className="w-full">Verificar</Button>}
-                  {record.step === 2 && <Button onClick={()=>{connectDomainFunc("cname")}} className="w-full">Verificar CNAME</Button>}
+                  {record.step === 1 && <Button onClick={()=>{connectDomainFunc("cname")}} className="w-full">Verificar CNAME</Button>}
+                  {domainError && 
+                      <div className="text-destructive">{domainError}</div>
+                  }
                 </div>
               </div>)}
               {record.step === 1 && (
-              <div className="p-4 bg-background border rounded">
-                <h2 className="text-base font-medium mb-2">Agrega este registro TXT a tu DNS:</h2>
+                <div className="p-4 bg-background border rounded mt-6">
+                <h2 className="text-base font-medium mb-2">Configura el CNAME en tu DNS:</h2>
                 <div className="space-y-1 text-sm">
-                  <p>Tipo: {record?.type}</p>
-                  <p>Nombre: {record?.name}</p>
-                  <p>Valor: {record?.value}</p>
+                  <p><strong>CNAME</strong> </p>
+                  <p>Tipo: CNAME</p>
+                  <p>Nombre: <code>{subdomainV || '(el nombre de tu subdominio)'}</code></p>
+                  <p>Valor: <code>domains.rifaez.com</code></p>
                 </div>
-                <p className="mt-4 text-sm text-foreground">
-                  Una vez que hayas agregado este registro a tu proveedor de dominio (como GoDaddy, Namecheap o Cloudflare),
-                  haz clic en “Verificar” para confirmar la propiedad del dominio.
+
+                <p className="mt-4 text-sm text-muted-foreground">
+                  Agrega este registro en el panel DNS de tu proveedor (como GoDaddy, Namecheap o Cloudflare).
+                  Esto permitirá que tu dominio apunte correctamente a nuestra plataforma. Si ya lo hiciste, puedes proceder con la verificación.
                 </p>
               </div>
-              )} {record.step === 2 && (
-              <div className="p-4 bg-background border rounded mt-6">
-                  <h2 className="text-base font-medium mb-2">Configura el CNAME o A Record en tu DNS:</h2>
+              )} 
+              {/* {record.step === 2 && (
+                  <div className="p-4 bg-background border rounded">
+                  <h2 className="text-base font-medium mb-2">Agrega este registro TXT a tu DNS:</h2>
                   <div className="space-y-1 text-sm">
-                    <p><strong>Opción 1: CNAME</strong> (recomendado si usas un subdominio)</p>
-                    <p>Tipo: CNAME</p>
-                    <p>Nombre: <code>{subdomainV || '(el nombre de tu subdominio)'}</code></p>
-                    <p>Valor: <code>proxy.rifaez.com</code></p>
+                    <p>Tipo: {record?.type}</p>
+                    <p>Nombre: {record?.name}</p>
+                    <p>Valor: {record?.value}</p>
                   </div>
-
-                  <div className="space-y-1 text-sm mt-4">
-                    <p><strong>Opción 2: A Record</strong> (si no puedes usar CNAME)</p>
-                    <p>Tipo: A</p>
-                    <p>Nombre: <code>{record.subdomainName}</code></p>
-                    <p>Valor: <code>{record.serverIP}</code></p>
-                  </div>
-
-                  <p className="mt-4 text-sm text-gray-600">
-                    Agrega uno de estos registros en el panel DNS de tu proveedor (como GoDaddy, Namecheap o Cloudflare).
-                    Esto permitirá que tu dominio apunte correctamente a nuestra plataforma. Si ya lo hiciste, puedes proceder con la verificación.
+                  <p className="mt-4 text-sm text-foreground">
+                    Una vez que hayas agregado este registro a tu proveedor de dominio (como GoDaddy, Namecheap o Cloudflare),
+                    haz clic en “Verificar” para confirmar la propiedad del dominio.
                   </p>
                 </div>
-
-                 )}
-                {record.step === 3 && (
-              <div className="p-4 bg-background border rounded mt-6">
-                  <h2 className="text-base font-medium mb-2">Exito, el dominio fue conectado.</h2>
-                </div>
+                 )} */}
+                {record.step === 2 && (
+                  <div className="p-4 bg-background border rounded mt-6">
+                      <h2 className="text-base font-medium mb-2">Exito, el dominio fue conectado.</h2>
+                    </div>
                  )}
             </div>
           </div>

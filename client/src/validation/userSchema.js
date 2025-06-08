@@ -23,14 +23,16 @@ export const methodSchema = Joi.object({
   person: Joi.string().required(),
   number: Joi.string()
     .pattern(/^\d{16}$/)
-    .required()
+    .empty('')
+    .optional()
     .messages({
       'string.pattern.base': 'Card number must be exactly 16 digits.',
       'string.empty': 'Card number is required.',
     }),
   clabe: Joi.string()
     .pattern(/^\d{18}$/)
-    .required()
+    .empty('')
+    .optional()
     .messages({
       'string.pattern.base': 'Cuenta clabe must be exactly 18 digits.',
       'string.empty': 'Cuenta clabe is required.',

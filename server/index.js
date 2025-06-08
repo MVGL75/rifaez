@@ -164,6 +164,11 @@ passport.deserializeUser(async (storedSession, done) => {
   }
 });
 
+app.use((req, res, next) => {
+  console.log('Incoming Host:', req.headers.host);
+  next();
+});
+
 app.use('/api/raffle', raffleRoutes);
 app.use('/api/domains', domainRoutes)
 

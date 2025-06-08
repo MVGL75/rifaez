@@ -15,11 +15,29 @@
     }
   }
 
-  @keyframes slideOut {
+  @keyframes slideInFromRight {
+    from {
+      transform: translateX(200%);
+    }
+    to {
+      transform: translateX(100%);
+    }
+  }
+
+  @keyframes slideOutLeft {
     from {
       transform: translateX(100%);
     }
     to {
       transform: translateX(200%);
+    }
+  }
+
+  @keyframes slideOutRight {
+    from {
+      transform: translateX(100%);
+    }
+    to {
+      transform: translateX(0);
     }
   }

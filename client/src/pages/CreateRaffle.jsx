@@ -89,8 +89,8 @@ const CreateRafflePage = ({userJustCreated, setUserJustCreated}) => {
 
   const templates = {
     basic : [["Clasico", "classic"]],
-    pro: [["Clasico", "classic"], ["Minimalista", "minimalist"]],
-    business: [["Clasico", "classic"], ["Minimalista", "minimalist"], ["Moderno", "modern"]],
+    pro: [["Clasico", "classic"], ["Moderno", "modern"]],
+    business: [["Clasico", "classic"], ["Moderno", "modern"], ["Minimalista", "minimalist"]],
   }
   const methods = {
     basic: 3,
@@ -222,12 +222,14 @@ const CreateRafflePage = ({userJustCreated, setUserJustCreated}) => {
     setWasSubmitted(prev => ({...prev, method: true}))
     const {error, value} = methodSchema.validate(newMethod, {abortEarly: false});
     let newObj = {}
+    console.log(error)
     if(error){
       error.details.forEach(error => {
         newObj[error.context.key] = error.message
       })
       
     }
+    console.log(newObj)
     setMethodErrors(newObj)
 
     if(error){
@@ -501,7 +503,7 @@ const CreateRafflePage = ({userJustCreated, setUserJustCreated}) => {
               </div>
               <div>
                 <label className={`block text-sm font-medium mb-2 ${errors.description && "text-red-500"}`}>
-                  Descripción
+                  Descripción <span className="text-muted-foreground">(Opcional)</span>
                 </label>
                 <textarea
                   name="description"
@@ -796,13 +798,13 @@ const CreateRafflePage = ({userJustCreated, setUserJustCreated}) => {
                   <option value="Inter">Inter</option>
                   <option value="Roboto">Roboto</option>
                   <option value="Open Sans">Open Sans</option>
-                  <option value="Manrope">Manrope</option>
-                  <option value="IBM Plex Sans">IBM Plex Sans</option>
-                  <option value="Work Sans">Work Sans</option>
-                  <option value="Source Sans 3">Source Sans 3</option>
-                  <option value="Noto Sans">Noto Sans</option>
                   <option value="Lato">Lato</option>
-                  <option value="DM Sans">DM Sans</option>
+                  <option value="IBM Plex Sans">IBM Plex Sans</option>
+                  <option value="Concert One">Concert One</option>
+                  <option value="Bowlby One">Bowlby One</option>
+                  <option value="Lilita One">Lilita One</option>
+                  <option value="Bungee">Bungee</option>
+                  <option value="Luckiest Guy">Luckiest Guy</option>
                 </select>
               </div>
               <div>
@@ -1003,19 +1005,28 @@ const CreateRafflePage = ({userJustCreated, setUserJustCreated}) => {
                             />
                         </div>
                   </div>
-                  <div className="flex gap-3 flex-col px-4 py-4">
-                  <div className="flex flex-col gap-1 xs:flex-row xs:items-center xs:gap-3">
-                        <span className="text-muted-foreground">Numero de tarjeta</span>
-                        <span>{formatMethodNumber(method.number)}</span>
+                  <div className="flex flex-col gap-5 xs:flex-row justify-between px-4 py-4">
+                    {(method.number || method.clabe) && (
+                    <div className="flex flex-col gap-3">
+                      {method.number &&
+                      <div className="flex flex-col gap-1 xs:gap-3 xs:flex-row xs:items-center">
+                          <span className="text-muted-foreground">Numero de tarjeta</span>
+                          <span>{formatMethodNumber(method.number)}</span>
                         </div>
-                    <div className="flex flex-col gap-5 xs:flex-row xs:items-center justify-between">
-                      <div className="flex flex-col gap-1 xs:flex-row xs:items-center xs:gap-3">
-                        <span className="text-muted-foreground">Cuenta Clabe</span>
-                        <span>{formatCLABE(method.clabe)}</span>
+                      }
+                      {method.clabe &&
+                        <div className="flex flex-col gap-1 xs:gap-3 xs:flex-row xs:items-center">
+                          <span className="text-muted-foreground">Cuenta Clabe</span>
+                          <span>{formatCLABE(method.clabe)}</span>
                         </div>
-                      <div>{method.person}</div>
+                        }
+                      </div>
+                     ) }
+                      <div className="flex flex-col xs:flex-row xs:items-end justify-between">
+                        
+                        <div>{method.person}</div>
+                      </div>
                     </div>
-                  </div>
                 </div>
                 ))}
                 </div>
@@ -1032,7 +1043,7 @@ const CreateRafflePage = ({userJustCreated, setUserJustCreated}) => {
                       <h3 className="text-lg font-medium mb-4">Agregar Metodo de Pago</h3>
                       <div className="flex flex-col gap-4 sm:grid sm:grid-cols-2 sm:gap-x-6 sm:gap-y-2 mb-4">
                         <div>
-                          <label className={`block text-sm font-medium mb-2 ${errors.method?.bank && "text-red-500"}`}>
+                          <label className={`block text-sm font-medium mb-2 ${methodErrors?.bank && "text-red-500"}`}>
                             Banco
                           </label>
                           <input
@@ -1040,12 +1051,12 @@ const CreateRafflePage = ({userJustCreated, setUserJustCreated}) => {
                             type="text"
                             value={newMethod.bank}
                             onChange={handleChange}
-                            className={`w-full p-2 rounded-md border ${errors.method?.bank ? "border-red-500" : "border-input"} bg-background`}
+                            className={`w-full p-2 rounded-md border ${methodErrors?.bank ? "border-red-500" : "border-input"} bg-background`}
                             placeholder="BBVA"
                           />
                         </div>
                         <div>
-                          <label className={`block text-sm font-medium mb-2 ${errors.method?.person && "text-red-500"}`}>
+                          <label className={`block text-sm font-medium mb-2 ${methodErrors?.person && "text-red-500"}`}>
                             Beneficiario
                           </label>
                           <input
@@ -1053,12 +1064,12 @@ const CreateRafflePage = ({userJustCreated, setUserJustCreated}) => {
                             type="text"
                             value={newMethod.person}
                             onChange={handleChange}
-                            className={`w-full p-2 rounded-md border ${errors.method?.person ? "border-red-500" : "border-input"} bg-background`}
+                            className={`w-full p-2 rounded-md border ${methodErrors?.person ? "border-red-500" : "border-input"} bg-background`}
                             placeholder="Pedro Carreras"
                           />
                         </div>
                         <div>
-                          <label className={`block text-sm font-medium mb-2 ${errors.method?.number && "text-red-500"}`}>
+                          <label className={`block text-sm font-medium mb-2 ${methodErrors?.number && "text-red-500"}`}>
                             Numero de Cuenta
                           </label>
                           <input
@@ -1066,12 +1077,12 @@ const CreateRafflePage = ({userJustCreated, setUserJustCreated}) => {
                             type="text"
                             value={formatMethodNumber(newMethod.number)}
                             onChange={handleChange}
-                            className={`w-full p-2 rounded-md border ${errors.method?.number ? "border-red-500" : "border-input"} bg-background`}
+                            className={`w-full p-2 rounded-md border ${methodErrors?.number ? "border-red-500" : "border-input"} bg-background`}
                             placeholder="1111 2222 3333 4444"
                           />
                         </div>
                         <div>
-                          <label className={`block text-sm font-medium mb-2 ${errors.method?.clabe && "text-red-500"}`}>
+                          <label className={`block text-sm font-medium mb-2 ${methodErrors?.clabe && "text-red-500"}`}>
                             Cuenta Clabe
                           </label>
                           <input
@@ -1079,13 +1090,13 @@ const CreateRafflePage = ({userJustCreated, setUserJustCreated}) => {
                             type="text"
                             value={formatCLABE(newMethod.clabe)}
                             onChange={handleChange}
-                            className={`w-full p-2 rounded-md border ${errors.method?.clabe ? "border-red-500" : "border-input"} bg-background`}
+                            className={`w-full p-2 rounded-md border ${methodErrors?.clabe ? "border-red-500" : "border-input"} bg-background`}
                             placeholder="002 180 00001183597 9"
                           />
                         </div>
                       </div>
                       <div className="mb-4">
-                      <label htmlFor="instructions" className={`block text-sm font-medium mb-2 ${errors.method?.instructions && "text-red-500"}`}>
+                      <label htmlFor="instructions" className={`block text-sm font-medium mb-2 ${methodErrors?.instructions && "text-red-500"}`}>
                             Nota (Opcional)
                           </label>
                         <textarea  
@@ -1093,7 +1104,7 @@ const CreateRafflePage = ({userJustCreated, setUserJustCreated}) => {
                           name="method_instructions" 
                           value={newMethod.instructions}
                           id="instructions"
-                          className={`w-full p-2 rounded-md border ${errors.method?.instructions ? "border-red-500" : "border-input"} bg-background`}
+                          className={`w-full p-2 rounded-md border ${methodErrors?.instructions ? "border-red-500" : "border-input"} bg-background`}
                           ></textarea>
                       </div>
                       <div className="flex justify-end space-x-2">

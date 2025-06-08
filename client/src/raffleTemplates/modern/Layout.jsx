@@ -127,7 +127,7 @@ const Layout = ({raffle}) => {
       </main>
 
       <WhatsWidget number={raffle.phone}/>
-      <footer className="bg-backgroundRaffle border-t border-borderRaffle text-colorRaffle">
+      <footer className="bg-headerRaffle border-t border-borderRaffle text-headerRaffle-foreground">
         <div className="max-w-[1400px] mx-auto px-4 sm:px-6 lg:px-8 py-6 flex items-center justify-center gap-3">
         <div className="flex flex-col items-center space-y-4">
           <div className="flex space-x-4">
@@ -148,7 +148,7 @@ const Layout = ({raffle}) => {
               {setPhoneFormat(raffle.phone)}
             </a>
           </div>
-          <div className="flex flex-col items-center gap-5 text-sm text-colorRaffle-600 mt-4">
+          <div className="flex flex-col items-center gap-5 text-sm text-headerRaffle-foreground mt-4">
             <div className="flex items-center gap-4 ">
               <p>Sitio desarrollado por</p>
               <Link to="/">

@@ -10,7 +10,7 @@ const plans = {
     [process.env.PRICE_ID_PRO]: {
         name: "pro",
         activeRaffles: 10, 
-        templates: ["classic", "minimalist"],
+        templates: ["classic", "modern"],
         workers: 5,
         rank: 2,
         methods: 10,

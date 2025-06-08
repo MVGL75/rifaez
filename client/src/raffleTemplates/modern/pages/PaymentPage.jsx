@@ -49,34 +49,38 @@ const PaymentMethodCard = ({ method, onCopy }) => {
                 </Button>
                 </div>
             </div>
-            <div  className="text-sm sm:text-base flex flex-col sm:flex-row sm:items-center gap-2">
-              <span className="font-semibold text-colorRaffle">Numero de Tarjeta: </span>
-              <div className='flex gap-2 items-center justify-between'>
-                <span className="text-colorRaffle-300 break-all">{formatMethodNumber(method.number)}</span>
-                  <Button
-                    variant="ghost"
-                    size="sm"
-                    className="ml-2 px-2 py-1 h-auto text-primaryRaffle hover:bg-blue-100 hover:text-primaryRaffle"
-                    onClick={() => onCopy(method.number)}
-                  >
-                    <Copy className="h-4 w-4 mr-1" /> <span className='hidden sm:block'>Copiar</span>
-                  </Button>
-              </div>
-            </div>
-            <div  className="text-sm sm:text-base flex flex-col sm:flex-row sm:items-center gap-2">
-              <span className="font-semibold text-colorRaffle">CLABE: </span>
-              <div className='flex gap-2 items-center justify-between'>
-                <span className="text-colorRaffle-300 break-all">{formatCLABE(method.clabe)}</span>
-                  <Button
-                    variant="ghost"
-                    size="sm"
-                    className="ml-2 px-2 py-1 h-auto text-primaryRaffle hover:bg-blue-100 hover:text-primaryRaffle"
-                    onClick={() => onCopy(method.clabe)}
-                  >
-                    <Copy className="h-4 w-4 mr-1" /> <span className='hidden sm:block'>Copiar</span>
-                  </Button>
+            {method.number &&
+              <div  className="text-sm sm:text-base flex flex-col sm:flex-row sm:items-center gap-2">
+                <span className="font-semibold text-colorRaffle">Numero de Tarjeta: </span>
+                <div className='flex gap-2 items-center justify-between'>
+                  <span className="text-colorRaffle-300 break-all">{formatMethodNumber(method.number)}</span>
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      className="ml-2 px-2 py-1 h-auto text-primaryRaffle hover:bg-blue-100 hover:text-primaryRaffle"
+                      onClick={() => onCopy(method.number)}
+                    >
+                      <Copy className="h-4 w-4 mr-1" /> <span className='hidden sm:block'>Copiar</span>
+                    </Button>
                 </div>
-            </div>
+              </div>
+            }
+            {method.clabe &&
+              <div  className="text-sm sm:text-base flex flex-col sm:flex-row sm:items-center gap-2">
+                <span className="font-semibold text-colorRaffle">CLABE: </span>
+                <div className='flex gap-2 items-center justify-between'>
+                  <span className="text-colorRaffle-300 break-all">{formatCLABE(method.clabe)}</span>
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      className="ml-2 px-2 py-1 h-auto text-primaryRaffle hover:bg-blue-100 hover:text-primaryRaffle"
+                      onClick={() => onCopy(method.clabe)}
+                    >
+                      <Copy className="h-4 w-4 mr-1" /> <span className='hidden sm:block'>Copiar</span>
+                    </Button>
+                  </div>
+              </div>
+            }
             {method.instructions &&
             <div  className="text-sm sm:text-base">
               <span className="font-semibold text-colorRaffle">Nota: </span>

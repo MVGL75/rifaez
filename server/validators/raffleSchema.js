@@ -28,14 +28,16 @@ export const methodSchema = Joi.object({
   person: Joi.string().required(),
   number: Joi.string()
     .pattern(/^\d{16}$/)
-    .required()
+    .empty('')
+    .optional()
     .messages({
       'string.pattern.base': 'Card number must be exactly 16 digits.',
       'string.empty': 'Card number is required.',
     }),
   clabe: Joi.string()
     .pattern(/^\d{18}$/)
-    .required()
+    .empty('')
+    .optional()
     .messages({
       'string.pattern.base': 'Cuenta clabe must be exactly 18 digits.',
       'string.empty': 'Cuenta clabe is required.',
@@ -49,20 +51,20 @@ const fonts = [
   "Inter",
   "Roboto",
   "Open Sans",
-  "Manrope",
-  "IBM Plex Sans",
-  "Work Sans",
-  "Source Sans 3",
-  "Noto Sans",
   "Lato",
-  "DM Sans"
+  "IBM Plex Sans",
+  "Concert One",
+  "Bowlby One",
+  "Lilita One",
+  "Bungee",
+  "Luckiest Guy"
 ];
 
 
 
 export const raffleValidationSchema = Joi.object({
   title: Joi.string().required(),
-  description: Joi.string().required(),
+  description: Joi.string().empty('').optional(),
   price: Joi.number().greater(0).required(),
   logo: Joi.object({
     url: Joi.string().required(),  

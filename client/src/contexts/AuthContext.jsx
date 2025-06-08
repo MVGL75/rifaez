@@ -97,18 +97,19 @@ export const AuthProvider = ({ children }) => {
     }
   };
 
-  const verifyDomain = async (domain) => {
+
+  const verifyCNAME = async (subdomain, domain) => {
     try {
-      const res = await api.post('/api/domains/verify', {domain});
+      const res = await api.post('/api/domains/verify/cname', {domain, subdomain});
       return res.data;
     } catch (err) {
       return { error: err.response?.data?.message || 'Connection failed' };
     }
   };
 
-  const verifyCNAME = async (subdomain, domain) => {
+  const pollHostname = async (domain) => {
     try {
-      const res = await api.post('/api/domains/verify/cname', {domain, subdomain});
+      const res = await api.post('/api/domains/poll_hostname_status', {hostnameId: domain.hostnameId});
       return res.data;
     } catch (err) {
       return { error: err.response?.data?.message || 'Connection failed' };
@@ -130,7 +131,7 @@ export const AuthProvider = ({ children }) => {
 
   return (
     <AuthContext.Provider 
-      value={{ user, login, logout, register, save, setUser, connectDomain, verifyDomain, verifyCNAME, appError, setAppError, popError, setPopError, deleteUser, linkAccount, sendRecoveryEmail}}>
+      value={{ user, login, logout, register, save, setUser, connectDomain, verifyCNAME, pollHostname, appError, setAppError, popError, setPopError, deleteUser, linkAccount, sendRecoveryEmail}}>
       {children}
     </AuthContext.Provider>
   );

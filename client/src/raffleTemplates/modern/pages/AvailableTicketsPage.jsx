@@ -221,7 +221,7 @@ const AvailableTicketsPage = ({ availableTickets, setAvailableTickets }) => {
 
       <PrizeSection raffle={raffle} />
       {raffle.extraInfo &&
-        <section className="w-full text-center px-4 space-y-3">
+        <section className="w-full text-center px-4 space-y-3 whitespace-pre-line">
           <div className=" p-4 text-colorRaffle">{raffle.extraInfo}</div>
         </section>
       }

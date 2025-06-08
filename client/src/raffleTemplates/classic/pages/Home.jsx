@@ -32,6 +32,7 @@ const Home = ({availableTickets, setAvailableTickets}) => {
   const [touchEnd, setTouchEnd] = useState(null);
   const purchaseFormRef = useRef(null);
   const [errors, setErrors] = useState({})
+  const [direction, setDirection] = useState("left");
   const [userInfo, setUserInfo] = useState({
     name: "",
     phone: "",
@@ -44,10 +45,12 @@ const Home = ({availableTickets, setAvailableTickets}) => {
  
   useEffect(() => {
     const timer = setInterval(() => {
-      setCurrentImageIndex((prev) => (prev + 1) % prizeImages.length);
+      const intDir = direction === "left" ? 1 : -1;
+      setCurrentImageIndex((prev) => (prev + intDir + prizeImages.length) % prizeImages.length);
     }, 3000);
     return () => clearInterval(timer);
-  }, []);
+  }, [direction]);
+
 
   useEffect(() => {
     const TOTAL_TICKETS = raffle.maxParticipants;
@@ -217,7 +220,7 @@ const Home = ({availableTickets, setAvailableTickets}) => {
     }
   };
 
-  const [direction, setDirection] = useState(1); // 1 = next, -1 = prev
+   // 1 = next, -1 = prev
 
 function goToNext() {
   setDirection(1);
@@ -230,24 +233,32 @@ function goToPrev() {
     prev === 0 ? prizeImages.length - 1 : prev - 1
   );
 }
+const touchStartX = useRef(0);
+const touchStartY = useRef(0);
 
-  const variants = {
-    enter: (direction) => ({
-      x: direction > 0 ? '100%' : '-100%',
-      opacity: 0,
-      position: 'absolute',
-    }),
-    center: {
-      x: 0,
-      opacity: 1,
-      position: 'absolute',
-    },
-    exit: (direction) => ({
-      x: direction < 0 ? '100%' : '-100%',
-      opacity: 0,
-      position: 'absolute',
-    }),
-  };
+const handleTouchStart = (e) => {
+  const touch = e.touches[0];
+  touchStartX.current = touch.clientX;
+  touchStartY.current = touch.clientY;
+};
+
+const handleTouchEnd = (e) => {
+  const touch = e.changedTouches[0];
+  const deltaX = touch.clientX - touchStartX.current;
+  const deltaY = touch.clientY - touchStartY.current;
+
+  if (Math.abs(deltaX) > Math.abs(deltaY)) {
+    // Horizontal swipe
+    if (deltaX > 0) {
+      setDirection("left")
+      setCurrentImageIndex((prev) => (prev + 1) % prizeImages.length);
+    } else {
+      setDirection("right")
+      setCurrentImageIndex((prev) => (prev - 1 + prizeImages.length) % prizeImages.length);  
+    }
+  }
+};
+
 
   return (
     <div className="flex flex-col items-center min-h-screen bg-backgroundRaffle">
@@ -267,13 +278,14 @@ function goToPrev() {
           {/* Image Carousel */}
           <div 
             className="relative h-[400px] mb-8 border-4 border-borderRaffle rounded-lg overflow-hidden"
-            onTouchStart={goToNext}
-            onClick={goToNext}
+            onTouchStart={handleTouchStart}
+            onTouchEnd={handleTouchEnd}
           >
              {prizeImages.map((img, index) => {
                     const isCurrent = index === currentImageIndex;
+                    const intDir = direction === "left" ? 1 : -1;
                     const isPrevious =
-                      index === (currentImageIndex - 1 + prizeImages.length) % prizeImages.length;
+                      index === (currentImageIndex - intDir + prizeImages.length) % prizeImages.length;
 
 
 
@@ -284,7 +296,15 @@ function goToPrev() {
                         alt={img.alt}
                         className="absolute top-0 -left-[100%] w-full h-full object-cover"
                         style={{
-                          animation: isCurrent ? 'slideInFromLeft 0.5s ease-in-out forwards' : isPrevious && 'slideOut 0.5s ease-in-out forwards'
+                          animation: isCurrent
+                          ? (direction === "left"
+                              ? 'slideInFromLeft 0.5s ease-in-out forwards'
+                              : 'slideInFromRight 0.5s ease-in-out forwards')
+                          : (isPrevious
+                              ? (direction === "left"
+                                  ? 'slideOutLeft 0.5s ease-in-out forwards'
+                                  : 'slideOutRight 0.5s ease-in-out forwards')
+                              : undefined)
                         }}
                       />
                     );
@@ -292,7 +312,7 @@ function goToPrev() {
           </div>
 
           {raffle.extraInfo &&
-            <section className="w-full text-center px-4 mb-4 space-y-3">
+            <section className="w-full text-center px-4 mb-4 space-y-3 whitespace-pre-line">
               <div className=" p-4 text-xl text-colorRaffle">{raffle.extraInfo}</div>
             </section>
           }

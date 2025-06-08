@@ -24,7 +24,7 @@ const Footer = ({raffle}) => {
     return parts.join('');
   }
   return (
-    <footer className={` py-8`}>
+    <footer className={`mt-auto bg-headerRaffle text-headerRaffle-foreground py-8`}>
       <div className="container mx-auto px-4">
         <div className="flex flex-col items-center space-y-4">
           <div className="flex space-x-4">
@@ -45,7 +45,7 @@ const Footer = ({raffle}) => {
               {setPhoneFormat(raffle.phone)}
             </a>
           </div>
-          <div className="flex flex-col items-center gap-5 text-sm text-colorRaffle-600 mt-4">
+          <div className="flex flex-col items-center gap-5 text-sm text-headerRaffle-foreground mt-4">
             <div className="flex items-center gap-4 ">
               <p>Sitio desarrollado por</p>
               <Link to="/">

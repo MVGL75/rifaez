@@ -28,6 +28,9 @@ const customDomainSchema = new mongoose.Schema({
     type: String,
     required: true,
   },
+  hostnameId: {
+    type: String,
+  },
   createdAt: {
     type: Date,
     default: Date.now,

@@ -1,8 +1,8 @@
-import React from 'react';
+import React, { useRef } from 'react';
 import { motion } from 'framer-motion';
 import { Card, CardContent, CardHeader, CardTitle } from '../components/ui/card';
 import { useEffect, useState } from 'react';
-import { Award, Gift } from 'lucide-react';
+import { Award, Gift, ChevronDown } from 'lucide-react';
 
 const PrizeInfo = ({ place, title, description, icon }) => {
   const IconComponent = icon || Award;
@@ -30,6 +30,7 @@ const PrizeInfo = ({ place, title, description, icon }) => {
 
 const PrizeSection = ({raffle}) => {
   const [currentImageIndex, setCurrentImageIndex] = useState(0);
+  const [direction, setDirection] = useState("left");
 
   const prizeImages = raffle.images && raffle.images?.length > 0 ? raffle.images.map((value, index) => {
     return { url: value.url, description: "", alt: `Imagen ${index}` }
@@ -37,12 +38,12 @@ const PrizeSection = ({raffle}) => {
  
   useEffect(() => {
     const timer = setInterval(() => {
-      setCurrentImageIndex((prev) => (prev + 1) % prizeImages.length);
+      const intDir = direction === "left" ? 1 : -1;
+      setCurrentImageIndex((prev) => (prev + intDir + prizeImages.length) % prizeImages.length);
     }, 3000);
     return () => clearInterval(timer);
-  }, []);
+  }, [direction]);
 
-  const [direction, setDirection] = useState(1); // 1 = next, -1 = prev
 
   function goToNext() {
     setDirection(1);
@@ -56,23 +57,31 @@ const PrizeSection = ({raffle}) => {
     );
   }
   
-    const variants = {
-      enter: (direction) => ({
-        x: direction > 0 ? '100%' : '-100%',
-        opacity: 0,
-        position: 'absolute',
-      }),
-      center: {
-        x: 0,
-        opacity: 1,
-        position: 'absolute',
-      },
-      exit: (direction) => ({
-        x: direction < 0 ? '100%' : '-100%',
-        opacity: 0,
-        position: 'absolute',
-      }),
-    };
+  const touchStartX = useRef(0);
+  const touchStartY = useRef(0);
+  
+  const handleTouchStart = (e) => {
+    const touch = e.touches[0];
+    touchStartX.current = touch.clientX;
+    touchStartY.current = touch.clientY;
+  };
+  
+  const handleTouchEnd = (e) => {
+    const touch = e.changedTouches[0];
+    const deltaX = touch.clientX - touchStartX.current;
+    const deltaY = touch.clientY - touchStartY.current;
+  
+    if (Math.abs(deltaX) > Math.abs(deltaY)) {
+      // Horizontal swipe
+      if (deltaX > 0) {
+        setDirection("left")
+        setCurrentImageIndex((prev) => (prev + 1) % prizeImages.length);
+      } else {
+        setDirection("right")
+        setCurrentImageIndex((prev) => (prev - 1 + prizeImages.length) % prizeImages.length);  
+      }
+    }
+  };
 
   return (
     <section className="px-2">
@@ -94,11 +103,16 @@ const PrizeSection = ({raffle}) => {
                {raffle.description}
               </p>
             </div>
-            <div className="md:w-1/2 relative md:h-[400px] bg-gray-200 h-[400px] overflow-hidden">
-            {prizeImages.map((img, index) => {
+            <div 
+              className="md:w-1/2 relative md:h-[400px] bg-gray-200 h-[400px] overflow-hidden"
+              onTouchStart={handleTouchStart}
+              onTouchEnd={handleTouchEnd}
+            >
+                {prizeImages.map((img, index) => {
                     const isCurrent = index === currentImageIndex;
+                    const intDir = direction === "left" ? 1 : -1;
                     const isPrevious =
-                      index === (currentImageIndex - 1 + prizeImages.length) % prizeImages.length;
+                      index === (currentImageIndex - intDir + prizeImages.length) % prizeImages.length;
 
 
 
@@ -109,7 +123,15 @@ const PrizeSection = ({raffle}) => {
                         alt={img.alt}
                         className="absolute top-0 -left-[100%] w-full h-full object-cover"
                         style={{
-                          animation: isCurrent ? 'slideInFromLeft 0.5s ease-in-out forwards' : isPrevious && 'slideOut 0.5s ease-in-out forwards'
+                          animation: isCurrent
+                          ? (direction === "left"
+                              ? 'slideInFromLeft 0.5s ease-in-out forwards'
+                              : 'slideInFromRight 0.5s ease-in-out forwards')
+                          : (isPrevious
+                              ? (direction === "left"
+                                  ? 'slideOutLeft 0.5s ease-in-out forwards'
+                                  : 'slideOutRight 0.5s ease-in-out forwards')
+                              : undefined)
                         }}
                       />
                     );
@@ -118,6 +140,7 @@ const PrizeSection = ({raffle}) => {
           </div>
         </Card>
       </motion.div>
+
 
       <div className="flex flex-col md:flex-row gap-4 sm:gap-6 justify-center">
         {raffle.additionalPrizes && raffle.additionalPrizes?.map((prize, index) => (
@@ -129,6 +152,15 @@ const PrizeSection = ({raffle}) => {
         ))
 }
       </div>
+      <motion.div
+            animate={{ y: [0, 10, 0] }}
+            transition={{ duration: 2, repeat: Infinity }}
+            className="flex justify-center items-center space-x-4 mb-8"
+          >
+            <ChevronDown className="text-colorRaffle" size={32} />
+            <p className="text-colorRaffle font-bold">LISTA DE BOLETOS ABAJO</p>
+            <ChevronDown className="text-colorRaffle" size={32} />
+      </motion.div>
     </section>
   );
 };
