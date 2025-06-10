@@ -1,7 +1,7 @@
 
 import React, { useState, useEffect, useRef, useMemo } from "react";
 import { motion } from "framer-motion";
-import { ShoppingCart, ChevronDown, SearchIcon, Shuffle } from "lucide-react";
+import { ShoppingCart, ChevronDown, SearchIcon, Shuffle, ArrowRight, ArrowLeft, CircleX } from "lucide-react";
 import { useNavigate, useOutletContext, useParams } from "react-router-dom";
 import { ticketInfoValidationSchema} from "../../../validation/ticketInfoSchemaValidate"
 import Countdown from "../../components/Countdown";
@@ -147,6 +147,9 @@ const Home = ({availableTickets, setAvailableTickets}) => {
     });
   };
 
+  const removeTicket = (ticket) =>{
+    setSelectedTickets(prev => prev.filter(t => t.id !== ticket.id))
+  }
   const handleChange = (e) => {
     const name = e.target.name
     let value = e.target.value
@@ -267,90 +270,36 @@ const handleTouchEnd = (e) => {
 
   return (
     <div className="flex flex-col items-center min-h-screen bg-backgroundRaffle">
-      <div className=" w-[1400px] max-w-[100vw] mx-auto px-4 py-8 relative">
+      <div className="flex flex-col bg-headerRaffle items-center w-full px-3 py-4 text-headerRaffle-foreground">
+      <h1 className="text-4xl xxs:text-5xl md:text-6xl font-bold mb-5 mt-2">
+       {raffle?.title}
+       </h1>
+        {raffle.description && <p className="mb-3 text-lg">{raffle.description}</p> }
+        <p className="mb-5 text-2xl">{formatSpanishDate(raffle?.endDate)}</p>
+      </div>
+      <div className=" w-[1400px] max-w-[100vw] mx-auto px-4 py-4 relative">
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.5 }}
+          className="mx-auto max-w-[800px]"
         >
           {/* Prize Amount */}
-          <div className="flex flex-col lg:flex-row lg:pt-20 gap-20">
-          <div className="lg:w-[40%] pt-10">
-            <h1 className="text-4xl xxs:text-5xl md:text-6xl font-bold text-colorRaffle mb-10 lg:mb-14">
-            {raffle?.title}
-            </h1>
-            <p className="mb-10 text-lg">{raffle.description}</p>
-            <div className="block lg:hidden grow">
-              <div 
-                className="relative h-[400px] mb-8 rounded-3xl overflow-hidden border-4 border-borderRaffle"
-                onTouchStart={handleTouchStart}
-                onTouchEnd={handleTouchEnd}
-              >
-                 {prizeImages.map((img, index) => {
-                    const isCurrent = index === currentImageIndex;
-                    const intDir = direction === "left" ? 1 : -1;
-                    const isPrevious =
-                      index === (currentImageIndex - intDir + prizeImages.length) % prizeImages.length;
-
-
-
-                    return (
-                      <img
-                        key={img.url}
-                        src={img.url}
-                        alt={img.alt}
-                        className="absolute top-0 -left-[100%] w-full h-full object-cover"
-                        style={{
-                          animation: isCurrent
-                          ? (direction === "left"
-                              ? 'slideInFromLeft 0.5s ease-in-out forwards'
-                              : 'slideInFromRight 0.5s ease-in-out forwards')
-                          : (isPrevious
-                              ? (direction === "left"
-                                  ? 'slideOutLeft 0.5s ease-in-out forwards'
-                                  : 'slideOutRight 0.5s ease-in-out forwards')
-                              : undefined)
-                        }}
-                      />
-                    );
-                  })}
-              </div>
-
-
-              {/* Prize Places */}
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-8">
-                {raffle?.additionalPrizes.map((prize, index) => (
-                <motion.div
-                key={index}
-                  whileHover={{ scale: 1.05 }}
-                  className="bg-cardRaffle p-4 rounded-lg"
-                >
-                  <h3 className="text-lg font-bold text-primaryRaffle">{prize.place}do Lugar</h3>
-                  <p>{prize.prize}</p>
-                </motion.div>
-                ))}
-              </div>
-              </div>
-            <div className="flex items-center gap-4 mb-3">
-              <span className="text-colorRaffle-300 font-semibold">Precio de Boleto</span>
-              <span>${raffle.price}</span>
-            </div>
+          <div className="flex flex-col pt-2 lg:pt-3 gap-8">
+          <div className="text-center flex flex-col items-center">
            
-            <div className="flex items-center gap-4 mb-8">
-              <span className="text-colorRaffle-300 font-semibold">Fecha de rifa</span>
-              <span>{formatSpanishDate(raffle?.endDate)}</span>
-            </div>
-            <button onClick={scrollToTicketSection} className="flex px-4 py-2 bg-primaryRaffle text-primaryRaffle-foreground rounded-lg items-center gap-2">
-              <span>Boletos</span>
-              <ChevronDown/>
+            <button onClick={scrollToTicketSection} className="flex px-4 py-2 text-colorRaffle rounded-lg items-center gap-2 text-center text-xl sm:text-2xl md:text-3xl font-bold">
+              <ChevronDown className="text-primaryRaffle w-[40px] md:w-[50px] h-[40px] md:h-[50px]"/>
+              <span className="uppercase">Lista De Boletos Abajo</span>
+              <ChevronDown className="text-primaryRaffle w-[40px] md:w-[50px] h-[40px] md:h-[50px]"/>
             </button>
           </div>
 
           {/* Image Carousel */}
 
-          <div className="hidden lg:block grow">
+          <div className="flex w-full gap-5 flex-col">
               <div 
-                className="relative h-[400px] mb-8 rounded-3xl overflow-hidden border-4 border-borderRaffle"
+                className="relative h-[400px] rounded-3xl overflow-hidden border-4 border-borderRaffle"
                 onTouchStart={handleTouchStart}
                 onTouchEnd={handleTouchEnd}
               >
@@ -403,6 +352,7 @@ const handleTouchEnd = (e) => {
           </div>
         </motion.div>
       </div>
+      <div className="uppercase w-full text-center py-4 px-3 bg-headerRaffle text-headerRaffle-foreground mb-8 text-xl">1 Boleto por $5</div>
       {raffle.extraInfo &&
         <section className="w-full text-center px-4 mb-4 space-y-3 whitespace-pre-line">
           <div className=" p-4 text-xl text-colorRaffle">{raffle.extraInfo}</div>
@@ -415,7 +365,7 @@ const handleTouchEnd = (e) => {
       </section>
 
       {/* Ticket Prices */}
-      <div className="w-full bg-lightTint py-8 border-t-2 border-b-2 border-borderRaffle py-20">
+      {/* <div className="w-full bg-lightTint py-8 border-t-2 border-b-2 border-borderRaffle py-20">
         <div className="max-w-4xl mx-auto px-4">
           <h2 className="text-2xl font-bold text-center mb-6">Precios de Boletos</h2>
           <div className="flex flex-col space-y-2 items-center">
@@ -433,42 +383,58 @@ const handleTouchEnd = (e) => {
             ))}
           </div>
         </div>
-      </div>
+      </div> */}
+
+      <section className="bg-headerRaffle text-center w-full text-headerRaffle-foreground flex flex-col items-center gap-5 px-3 py-6">
+        <div className="flex items-center justify-center gap-5">
+          <ChevronDown className="hidden md:block w-[50px] h-[50px]"/>
+          <span className="text-xl md:text-3xl">HAZ CLICK ABAJO EN TU NÚMERO DE LA SUERTE</span>
+          <ChevronDown className="hidden md:block w-[50px] h-[50px]"/>
+        </div>
+        {(selectedTickets && selectedTickets.length > 0) && 
+        <div className="space-y-4 flex flex-col items-center">
+        <button className="px-4 w-fit py-2 rounded-md bg-primaryRaffle text-primaryRaffle-foreground flex items-center gap-3">
+          <ArrowRight/>
+          <span className="text-lg" onClick={()=>{document.getElementById('purchase-form').showModal()}}>Apartar</span>
+          <ArrowLeft/>
+        </button>
+        <div className="flex flex-wrap gap-2 justify-center">
+              {selectedTickets.map(ticket => (
+                <span key={ticket.id} onClick={()=>{removeTicket(ticket)}} className="border border-primaryRaffle text-headerRaffle-foreground px-3 py-1 rounded-full cursor-pointer">
+                  #{ticket.number}
+                </span>
+              ))}
+          </div>
+           <p className="text-xl">
+           Total: ${selectedTickets.length * raffle?.price} MXN
+         </p>
+         </div>
+        }
+      </section>
 
       {/* Available Tickets Section */}
-      <div id="ticketsSection" className="w-full bg-backgroundRaffle py-12">
+      <div id="ticketsSection" className="w-full bg-backgroundRaffle py-10">
         <div className="w-[1400px] max-w-[100vw] mx-auto px-4 text-center">
           
           
           {/* Selected Tickets Display */}
-          <div ref={ticketSectionRef} className="mb-8 px-8 py-6 border border-borderRaffle rounded-lg text-left">
-            <div className="flex flex-col gap-4 sm:flex-row justify-between sm:items-center mb-4">
-              <h3 className="text-xl">Selecciona tus boletos </h3>
-              <div className="relative flex items-center gap-5">
+          <div ref={ticketSectionRef} className="mb-6 px-8 py-3 rounded-lg text-left">
+            <div className="flex gap-6 flex-col justify-between sm:items-center">
               <div className="relative w-full sm:w-auto">
-              <input value={searchTicket} onChange={(e)=>{setSearchTicket(e.target.value)}} className="border-2 bg-backgroundRaffle w-full sm:w-[300px] rounded-full px-4 pl-10 py-2 border-borderRaffle text-sm" type="text" />
+              <input placeholder="BUSCAR" value={searchTicket} onChange={(e)=>{setSearchTicket(e.target.value)}} className="border-2 bg-backgroundRaffle w-full sm:w-[300px] rounded-lg px-4 pl-10 py-2 border-borderRaffle text-base" type="text" />
               <SearchIcon className="w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2"/>
               </div>
-              <div className="absolute right-4 sm:right-auto  sm:relative">
-                <Shuffle className="w-5 h-5 sm:w-6 sm:h-6" onClick={handleSelectRandomTicket} />
-              </div>
+              <div className="flex gap-2 px-3 py-2 border-2 border-borderRaffle rounded-lg cursor-pointer justify-between" onClick={handleSelectRandomTicket}>
+                <span className="uppercase">Maquinita de la suerte</span>
+                <Shuffle className="w-6 h-6"  />
               </div>
             </div>
-            <div className="flex flex-wrap gap-2 justify-left">
-              {selectedTickets.map(ticket => (
-                <span key={ticket.id} className="bg-primaryRaffle text-primaryRaffle-foreground px-3 py-1 rounded-full">
-                  #{ticket.number}
-                </span>
-              ))}
-            </div>
-            <p className="mt-4 text-xl">
-              Total: ${selectedTickets.length * raffle?.price} MXN
-            </p>
+          
           </div>
 
           {/* Ticket Grid */}
           {filteredTickets.length > 0 ? (
-            <div className="py-4 border border-borderRaffle rounded-lg">
+            <div className="py-4 rounded-lg">
               <VirtuosoGrid
               totalCount={filteredTickets.length}
               itemContent={(index) => (
@@ -509,61 +475,69 @@ const handleTouchEnd = (e) => {
        
           {/* Purchase Form */}
           {selectedTickets.length > 0 && (
-            <motion.form
-              ref={purchaseFormRef}
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              className="mt-8 max-w-md mx-auto sticky bottom-0 bg-backgroundRaffle border border-borderRaffle rounded-lg px-4 py-4"
-              onSubmit={handlePurchase}
-              noValidate
-            >
-              <div className="space-y-4">
-                <input
-                  type="text"
-                  name="name"
-                  placeholder="Nombre Completo"
-                  className={`w-full bg-transparent p-3 rounded border ${errors.name ? "border-red-400" : "border-borderRaffle"}`}
-                  value={userInfo.name}
-                  onChange={handleChange}
-                  required
-                />
-                <input
-                  type="tel"
-                  name="phone"
-                  placeholder="Teléfono"
-                  className={`w-full p-3 bg-transparent rounded border ${errors.phone ? "border-red-400" : "border-borderRaffle"}`}
-                  value={setPhoneFormat()}
-                  onChange={handleChange}
-                  required
-                />
-
-                <div className="relative">
-                  <input
-                    type="text"
-                    placeholder="Estado"
-                    name="state"
-                    className={`w-full bg-transparent p-3 rounded border ${errors.state ? "border-red-400" : "border-borderRaffle"}`}
-                    value={userInfo.state}
-                    onChange={handleChange}
-                    required
-                  />
-                  {showSearch &&
-                  <div className="max-h-[200px] overflow-scroll flex flex-col absolute top-[calc(100%+5px)] border border-gray-700 bg-cardRaffle w-full rounded">
-                    {filteredStates.map(state => {
-                      return <div key={state} onClick={selectState} className="py-2 hover:bg-[rgba(0,0,0,0.2)]">{state}</div>
-                    })}
-                  </div>}
-                </div>
-                <Button
-                  type="submit"
-                  size="lg"
-                  className="w-full bg-primaryRaffle text-primaryRaffle-foreground hover:bg-primaryRaffle py-4 rounded-lg text-lg flex items-center justify-center gap-2"
+            <dialog id="purchase-form" className="bg-transparent w-screen h-screen">
+              <div className="flex w-full h-full items-center justify-center px-3">
+                <motion.form
+                  ref={purchaseFormRef}
+                  initial={{ opacity: 0, y: 20 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  className="mt-8 max-w-md mx-auto sticky bottom-0 bg-backgroundRaffle rounded-lg px-4 py-4"
+                  onSubmit={handlePurchase}
+                  noValidate
                 >
-                  <ShoppingCart size={22} />
-                  Comprar Boletos
-                </Button>
+                  <header className="flex justify-between items-center mb-4">
+                  <h1 className="text-lg">Apartar Boletos</h1>
+                  <CircleX onClick={()=>{document.getElementById('purchase-form').close()}} className="w-8 h-8"/>
+                  </header>
+                  <div className="space-y-4">
+                    <input
+                      type="text"
+                      name="name"
+                      placeholder="Nombre Completo"
+                      className={`w-full bg-transparent p-3 rounded border ${errors.name ? "border-red-400" : "border-borderRaffle"}`}
+                      value={userInfo.name}
+                      onChange={handleChange}
+                      required
+                    />
+                    <input
+                      type="tel"
+                      name="phone"
+                      placeholder="Teléfono"
+                      className={`w-full p-3 bg-transparent rounded border ${errors.phone ? "border-red-400" : "border-borderRaffle"}`}
+                      value={setPhoneFormat()}
+                      onChange={handleChange}
+                      required
+                    />
+
+                    <div className="relative">
+                      <input
+                        type="text"
+                        placeholder="Estado"
+                        name="state"
+                        className={`w-full bg-transparent p-3 rounded border ${errors.state ? "border-red-400" : "border-borderRaffle"}`}
+                        value={userInfo.state}
+                        onChange={handleChange}
+                        required
+                      />
+                      {showSearch &&
+                      <div className="max-h-[200px] overflow-scroll flex flex-col absolute top-[calc(100%+5px)] border border-gray-700 bg-cardRaffle w-full rounded">
+                        {filteredStates.map(state => {
+                          return <div key={state} onClick={selectState} className="py-2 hover:bg-[rgba(0,0,0,0.2)]">{state}</div>
+                        })}
+                      </div>}
+                    </div>
+                    <Button
+                      type="submit"
+                      size="lg"
+                      className="w-full bg-primaryRaffle text-primaryRaffle-foreground hover:bg-primaryRaffle py-4 px-6 sm:px-8 rounded-lg text-lg flex items-center justify-center gap-2"
+                    >
+                      <ShoppingCart size={22} />
+                      Comprar Boletos
+                    </Button>
+                  </div>
+                </motion.form>
               </div>
-            </motion.form>
+            </dialog>
           )}
         </div>
       </div>

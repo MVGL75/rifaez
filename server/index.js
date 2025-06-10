@@ -8,6 +8,7 @@ import raffleRoutes from './routes/raffleRoutes.js';
 import authRoutes from './routes/authRoutes.js';
 import domainRoutes from './routes/domainRoutes.js';
 import stripeRoutes from './routes/stripeRoutes.js';
+import CustomDomain from './models/CustomDomain.js';
 import path from "path";
 import Webhook from "./middleware/webhook.js"
 import cors from 'cors';
@@ -44,30 +45,7 @@ app.use("/stripe/webhook", Webhook)
 
 
   app.use(cors({
-    origin: async (origin, callback) => {
-      if (!origin) return callback(null, true);
-  
-      const url = new URL(origin);
-      const hostname = url.hostname;
-  
-      if (hostname === 'rifaez.com' || hostname === 'domains.rifaez.com') {
-        return callback(null, true);
-      }
-  
-      const domainEntry = await CustomDomain.findOne({
-        $or: [
-          { domain: hostname, status: 'active' },
-          { subdomain: hostname, status: 'active' },
-        ],
-      });
-  
-      if (domainEntry) {
-        return callback(null, true);
-      }
-  
-      // If not allowed → reject
-      return callback(new Error('Not allowed by CORS'), false);
-    },
+    origin: process.env.CLIENT_URL || "http://localhost:3000",
     credentials: true,
   }));
 
@@ -105,7 +83,8 @@ app.use(
         connectSrc: [
           "'self'",
           "https://api.stripe.com",
-          "https://www.facebook.com"
+          "https://www.facebook.com",
+          "https://rifaez.com",
         ],
         frameSrc: [
           "https://js.stripe.com",

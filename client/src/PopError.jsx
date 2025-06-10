@@ -28,7 +28,7 @@ export default function PopError({ message = "Ocurrio un error.", status = 400})
         </header>
 
         <p className="mb-10">{message}</p>
-        <button className="px-4 py-2 rounded-lg bg-primary text-primary-foreground" onClick={status === 808 ? ()=>{navigate("/pricing-plan")} : removeError}>Actualizar</button>
+        <button className="px-4 py-2 rounded-lg bg-primary text-primary-foreground" onClick={status === 808 ? ()=>{navigate("/pricing-plan")} : removeError}>{status === 808 ? "Actualizar" : "Cancelar"}</button>
 
       
     </dialog>

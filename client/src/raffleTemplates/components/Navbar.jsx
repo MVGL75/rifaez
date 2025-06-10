@@ -8,13 +8,13 @@ const Navbar = ({raffle}) => {
   const [isOpen, setIsOpen] = useState(false);
 
   return (
-    <nav className='bg-headerRaffle border-b-2 border-borderRaffle text-headerRaffle-foreground fixed w-full top-0 z-50'>
+    <nav className={`bg-headerRaffle ${raffle.template === "classic" ? "border-b-2 " : "border-y-[10px]"} border-borderRaffle text-headerRaffle-foreground fixed w-full top-0 z-50`}>
       <div className="w-[1400px] max-w-[100vw] box-border mx-auto px-4">
-        <div className="flex justify-between items-center h-16 ">
+        <div className={`flex justify-between items-center ${raffle.template === "classic" ? "h-16 " : "h-20"}`}>
           {/* Mobile menu button */}
-          <div className={`flex w-full h-full justify-between md:hidden ${raffle.logo_position === "right" && "flex-row-reverse"}`}>
+          <div className={`flex w-full h-full items-center justify-between md:hidden ${raffle.logo_position === "right" && "flex-row-reverse"}`}>
           <div className={`${raffle.logo_position === "center" && "absolute left-1/2 -translate-x-1/2"} h-[64px] flex gap-2 items-center`}>
-            <Link to="" className={`${raffle.logo_size === "sm" && "h-12"} ${raffle.logo_size === "md" && "h-14 "} ${raffle.logo_size === "lg" && "h-20 "} ${raffle.logo_type === "on" && " round-must border-borderRaffle border-2 rounded-full object-cover aspect-square overflow-hidden"} flex-shrink-0 flex items-center space-x-2 ${raffle.logo_size === "lg" && "translate-y-[10px]"}`}>
+            <Link to="" className={`${raffle.logo_size === "sm" && "h-12"} ${raffle.logo_size === "md" && "h-14 "} ${raffle.logo_size === "lg" && (raffle.template === "classic" ? "h-20" : "h-28")} ${raffle.logo_type === "on" && " round-must border-borderRaffle border-2 rounded-full object-cover aspect-square overflow-hidden"} flex-shrink-0 flex items-center space-x-2 ${raffle.logo_size === "lg" && "translate-y-[10px]"}`}>
               {raffle.logo?.url ?
                 <img alt="logo" className="h-full" src={raffle.logo.url}   />
                 : <DefaultLogo className="h-full"/> }
@@ -36,7 +36,7 @@ const Navbar = ({raffle}) => {
           {/* Desktop Navigation */}
           <div className={`hidden w-full justify-between ${raffle.logo_position === "right" && "flex-row-reverse"} md:flex md:items-center md:gap-8`}>
           <div className={`${raffle.logo_position === "center" && "absolute left-1/2 -translate-x-1/2"} h-[64px] flex gap-2 items-center`}>
-            <Link to="" className={`${raffle.logo_size === "sm" && "h-12"} ${raffle.logo_size === "md" && "h-14 "} ${raffle.logo_size === "lg" && "h-20 "} ${raffle.logo_type === "on" && "round-must border-borderRaffle border-2 rounded-full object-cover aspect-square overflow-hidden"} flex-shrink-0 flex items-center space-x-2 ${raffle.logo_size === "lg" && "translate-y-[10px]"}`}>
+            <Link to="" className={`${raffle.logo_size === "sm" && "h-12"} ${raffle.logo_size === "md" && "h-14 "} ${raffle.logo_size === "lg" && (raffle.template === "classic" ? "h-20" : "h-28")} ${raffle.logo_type === "on" && "round-must border-borderRaffle border-2 rounded-full object-cover aspect-square overflow-hidden"} flex-shrink-0 flex items-center space-x-2 ${raffle.logo_size === "lg" && "translate-y-[10px]"}`}>
               {raffle.logo?.url ?
                 <img alt="logo" className="h-full" src={raffle.logo.url}   />
                 : <DefaultLogo className="h-full"/> }
@@ -46,9 +46,11 @@ const Navbar = ({raffle}) => {
               }
             </div>
           
-            <div className="text-[15px] hidden md:flex md:items-center md:space-x-4">
+            <div className={`${raffle.template === "classic" ? " text-[15px] " : "text-lg"} hidden md:flex md:items-center md:space-x-4`}>
               <Link to="payment" className="hover:text-headerRaffle-foreground/80">Métodos de Pago</Link>
+              {raffle.template === "minimalist" && <div className="h-[28px] bg-white w-[1.5px]"></div>}
               <Link to="verify" className="hover:text-headerRaffle-foreground/80">Boletos Disponibles</Link>
+              {raffle.template === "minimalist" && <div className="h-[28px] bg-white w-[1.5px]"></div>}
               <Link to="contact" className="hover:text-headerRaffle-foreground/80">Contacto</Link>
             </div>
           </div>

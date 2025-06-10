@@ -25,7 +25,7 @@ export default function Countdown({targetDate}){
       }, [targetDate]);
 
     return  (
-        <section className="flex justify-center bg-lightTint rounded-xl py-2 max-w-full">
+        <section className="flex justify-center rounded-xl py-2 max-w-full border-borderRaffle border">
             <div className="w-[1100px] max-w-full py-6 px-2 sm:px-4 text-colorRaffle">
                 <div className="w-full flex">
                     <div className="flex flex-col-reverse sm:gap-5 items-center relative">

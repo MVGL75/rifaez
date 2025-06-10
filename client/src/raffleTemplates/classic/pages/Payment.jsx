@@ -250,7 +250,7 @@ const Payment = () => {
             </motion.div>
           ))}
         </div>
-        <section className='flex items-center justify-center text-colorRaffle'>
+        <section className='flex items-center justify-center text-center text-colorRaffle'>
           Tus boletos ya quedaron apartados tienes {raffle.timeLimitPay} dias(s) para realizar el pago.
       </section>
       </motion.div>
