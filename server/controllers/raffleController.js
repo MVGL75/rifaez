@@ -106,8 +106,8 @@ export const editRaffle = async (req, res) => {
     const raffleID = req.params.id
       try {
       const raffle = await Raffle.findOne({ shortId: raffleID }).lean();
-      const user = await User.findOne({ raffles: raffle._id });
       if(raffle){
+        const user = await User.findOne({ raffles: raffle._id });
         if(raffle.isActive){
           const cleanRaffle = sanitizeRaffle(raffle)
           const unavailableTickets = raffle.currentParticipants.flatMap(part => part.tickets);

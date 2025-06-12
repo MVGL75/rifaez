@@ -68,7 +68,7 @@ export const methodSchema = Joi.object({
 
 export const raffleValidationSchema = Joi.object({
   title: Joi.string().required(),
-  description: Joi.string().empty('').optional(),
+  description: Joi.string().allow('').optional(),
   price: Joi.number().greater(0).required(),
   maxParticipants: Joi.number().greater(0).required(),
  isActive: Joi.boolean().default(true),

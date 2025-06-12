@@ -85,7 +85,7 @@ export default function(raffle){
     const primary = Object.keys(colorShades).includes(raffle.colorPalette.accent) ? colorShades[raffle.colorPalette.accent] : generateColorShades(raffle.colorPalette.accent);
     // Default palette
     const settings = {
-        '--light-tint': background[1],
+        '--light-tint': background[3],
         '--light-color-tint': background[1],
         '--background-raffle': background[2],
         '--font-raffle': raffle.font ,

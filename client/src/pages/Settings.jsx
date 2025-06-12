@@ -562,8 +562,8 @@ const removeMethod = async (methodInp) => {
       price_id: import.meta.env.VITE_PRICE_ID_BASIC, 
       price: "$125",
       features: [
-        "1 Rifas Activas",
-        "1 Plantilla Disponibleo",
+        "1 Rifa Activa",
+        "1 Plantilla Disponible",
         "2 Trabajadores",
         "Dominio personalizado",
       ]

@@ -1,5 +1,6 @@
 
 import React from "react";
+import {Link} from "react-router-dom";
 import { Facebook, Phone } from "lucide-react";
 
 const Footer = ({raffle}) => {
@@ -22,30 +23,20 @@ const Footer = ({raffle}) => {
     return parts.join('');
   }
   return (
-    <footer className="bg-backgroundRaffle text-[#646464] py-8">
-      <div className="container mx-auto px-4">
-        <div className="flex flex-col items-center space-y-4">
-          <div className="flex space-x-4">
-            <a href="https://facebook.com" className="hover:text-primaryRaffle">
-              <Facebook size={24} />
-            </a>
-            <a href="tel:6673877638" className="hover:text-primaryRaffle">
-              <Phone size={24} />
-            </a>
-          </div>
-          <div className="text-center">
-            <p className="text-lg font-bold">PREGUNTAS AL WHATSAPP</p>
-            <a href={`tel:${raffle.phone}`} className="text-xl hover:text-primaryRaffle">
+    <footer className="bg-headerRaffle w-screen text-headerRaffle-foreground underline">
+        <div className="flex flex-col items-center w-full">
+          <div className="text-center w-full bg-borderRaffle px-3 py-3">
+            <p className="text-xl font-bold">PREGUNTAS AL WHATSAPP</p>
+            <a href={`tel:${raffle.phone}`} className="text-xl">
               {setPhoneFormat(raffle.phone)}
             </a>
           </div>
-          <div className="text-center text-sm text-[#646464] mt-4">
-            <p>Sitio desarrollado por</p>
-            <a href="/privacy" className="hover:text-primaryRaffle">
-              Aviso de Privacidad
-            </a>
+          <div className="text-center text-base px-3 py-3 ">
+            <a href="https://rifaez.com">Sistema desarrollado - Rifaez</a>
           </div>
-        </div>
+          <div className="mb-5">
+            <Link to="/contact">Contacto</Link>
+          </div>
       </div>
     </footer>
   );

@@ -4,9 +4,10 @@ import { motion } from "framer-motion";
 import { ShoppingCart, ChevronDown, SearchIcon, Shuffle, ArrowRight, ArrowLeft, CircleX } from "lucide-react";
 import { useNavigate, useOutletContext, useParams } from "react-router-dom";
 import { ticketInfoValidationSchema} from "../../../validation/ticketInfoSchemaValidate"
-import Countdown from "../../components/Countdown";
+import Countdown from "../../components/MinCountdown";
 import { Button } from "../../components/ui/button";
 import mexicanStates from "../../lib/mexicanStates";
+import TriDown from "../../components/TriDown";
 import { cn } from '../../lib/utils';
 import { VirtuosoGrid } from 'react-virtuoso';
 import axios from "axios";
@@ -72,10 +73,18 @@ const Home = ({availableTickets, setAvailableTickets}) => {
     setSelectedTickets(storedSelectedTickets.map(id => initialTickets.find(t => t.id === id)).filter(Boolean));
   }, [availableTickets]);
 
+  const [availableToggle, setAvailableToggle] = useState(true)
+
+  const showAvailableTickets = () => {
+    setAvailableToggle(prev => !prev)
+  }
+
   const filteredTickets = useMemo(() => {
-    if (!searchTicket) return allTickets;
-    return allTickets.filter(ticket => ticket.number.includes(searchTicket));
-  }, [allTickets, searchTicket]);
+    let avToggle = availableToggle ? availableToggle : availableToggle === undefined ? true : false
+    if (!searchTicket) return allTickets.filter(ticket => avToggle ? ticket : ticket.status === "available");
+  
+    return allTickets.filter(ticket => ticket.number.includes(searchTicket) &&( avToggle ? ticket : ticket.status === "available" ));
+  }, [allTickets, searchTicket, availableToggle]);
 
   const minSwipeDistance = 50;
 
@@ -270,36 +279,41 @@ const handleTouchEnd = (e) => {
 
   return (
     <div className="flex flex-col items-center min-h-screen bg-backgroundRaffle">
-      <div className="flex flex-col bg-headerRaffle items-center w-full px-3 py-4 text-headerRaffle-foreground">
-      <h1 className="text-4xl xxs:text-5xl md:text-6xl font-bold mb-5 mt-2">
+      <div className="flex flex-col bg-headerRaffle items-center font-semibold w-full px-3 py-2 text-headerRaffle-foreground ">
+      <h1 className="text-3xl uppercase lg:text-6xl mb-2 tracking-[-2.5px]">
        {raffle?.title}
        </h1>
         {raffle.description && <p className="mb-3 text-lg">{raffle.description}</p> }
-        <p className="mb-5 text-2xl">{formatSpanishDate(raffle?.endDate)}</p>
+        <p className="text-[22px] uppercase lg:text-2xl tracking-[-1.5px]">{formatSpanishDate(raffle?.endDate)}</p>
+        {raffle.countdown === "on" &&
+        <div className="w-[350px] max-w-full mb-5">
+        <Countdown targetDate={raffle.endDate}/>
+        </div>
+      }
       </div>
-      <div className=" w-[1400px] max-w-[100vw] mx-auto px-4 py-4 relative">
+      <div className=" w-[1400px] max-w-[100vw] mx-auto pb-3 relative">
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.5 }}
-          className="mx-auto max-w-[800px]"
+          className="mx-auto"
         >
           {/* Prize Amount */}
-          <div className="flex flex-col pt-2 lg:pt-3 gap-8">
-          <div className="text-center flex flex-col items-center">
+          <div className="flex flex-col items-center gap-1">
+          <div className="text-center flex w-full flex-col items-center">
            
-            <button onClick={scrollToTicketSection} className="flex px-4 py-2 text-colorRaffle rounded-lg items-center gap-2 text-center text-xl sm:text-2xl md:text-3xl font-bold">
-              <ChevronDown className="text-primaryRaffle w-[40px] md:w-[50px] h-[40px] md:h-[50px]"/>
-              <span className="uppercase">Lista De Boletos Abajo</span>
-              <ChevronDown className="text-primaryRaffle w-[40px] md:w-[50px] h-[40px] md:h-[50px]"/>
+            <button onClick={scrollToTicketSection} className="flex w-full py-2 text-colorRaffle justify-evenly lg:justify-center items-center gap-2 text-xl sm:text-2xl md:text-3xl font-semibold">
+              <TriDown fill={raffle.colorPalette.accent} className="w-[30px] lg:w-[45px]"/>
+              <span className="uppercase text-2xl lg:text-[35px] tracking-[-2px]">Lista De Boletos Abajo</span>
+              <TriDown fill={raffle.colorPalette.accent} className="w-[30px] lg:w-[45px]"/>
             </button>
           </div>
 
           {/* Image Carousel */}
 
-          <div className="flex w-full gap-5 flex-col">
+          <div className="flex w-full gap-5 flex-col px-[15px] w-[620px] max-w-full">
               <div 
-                className="relative h-[400px] rounded-3xl overflow-hidden border-4 border-borderRaffle"
+                className="relative h-[400px] rounded-md overflow-hidden border-4 border-borderRaffle"
                 onTouchStart={handleTouchStart}
                 onTouchEnd={handleTouchEnd}
               >
@@ -336,33 +350,30 @@ const handleTouchEnd = (e) => {
 
 
               {/* Prize Places */}
-              <div className="grid grid-cols-2 gap-4 mb-8">
-                {raffle?.additionalPrizes.map((prize, index) => (
-                <motion.div
-                key={index}
-                  whileHover={{ scale: 1.05 }}
-                  className="bg-cardRaffle p-4 rounded-lg"
-                >
-                  <h3 className="text-lg font-bold text-primaryRaffle">{prize.place}do Lugar</h3>
-                  <p>{prize.prize}</p>
-                </motion.div>
-                ))}
-              </div>
+              {(raffle?.additionalPrizes && raffle.additionalPrizes.length > 0) &&
+                <div className="grid grid-cols-2 gap-4 mb-8">
+                  {raffle?.additionalPrizes.map((prize, index) => (
+                  <motion.div
+                  key={index}
+                    whileHover={{ scale: 1.05 }}
+                    className="bg-cardRaffle p-4 rounded-lg"
+                  >
+                    <h3 className="text-lg font-bold text-primaryRaffle">{prize.place}do Lugar</h3>
+                    <p>{prize.prize}</p>
+                  </motion.div>
+                  ))}
+                </div>
+                }
               </div>
           </div>
         </motion.div>
       </div>
-      <div className="uppercase w-full text-center py-4 px-3 bg-headerRaffle text-headerRaffle-foreground mb-8 text-xl">1 Boleto por $5</div>
+      <div className="uppercase w-full text-center py-[5px] tracking-[-1px] px-3 bg-headerRaffle text-headerRaffle-foreground mb-8 text-base lg:text-xl">1 Boleto por $5</div>
       {raffle.extraInfo &&
         <section className="w-full text-center px-4 mb-4 space-y-3 whitespace-pre-line">
-          <div className=" p-4 text-xl text-colorRaffle">{raffle.extraInfo}</div>
+          <div className=" p-4 text-[19px] lg:text-[28px] lg:leading-[22px] tracking-[-1px] leading-[16px] text-colorRaffle">{raffle.extraInfo}</div>
         </section>
       }
-      <section className="w-[1400px] max-w-[100vw] px-4 mb-10">
-      {raffle.countdown === "on" &&
-        <Countdown targetDate={raffle.endDate}/>
-      }
-      </section>
 
       {/* Ticket Prices */}
       {/* <div className="w-full bg-lightTint py-8 border-t-2 border-b-2 border-borderRaffle py-20">
@@ -385,48 +396,61 @@ const handleTouchEnd = (e) => {
         </div>
       </div> */}
 
-      <section className="bg-headerRaffle text-center w-full text-headerRaffle-foreground flex flex-col items-center gap-5 px-3 py-6">
-        <div className="flex items-center justify-center gap-5">
-          <ChevronDown className="hidden md:block w-[50px] h-[50px]"/>
-          <span className="text-xl md:text-3xl">HAZ CLICK ABAJO EN TU NÚMERO DE LA SUERTE</span>
-          <ChevronDown className="hidden md:block w-[50px] h-[50px]"/>
+      <section className="bg-headerRaffle text-center w-full text-headerRaffle-foreground flex flex-col items-center gap-5 px-5 py-[10px]">
+        <div className="flex mx-auto items-center justify-center gap-5">
+          <TriDown fill="var(--header-raffle-foreground)" className="hidden lg:block w-[80px] h-[80px]"/>
+          <span className="text-[29px] tracking-[-1.5px] font-medium max-w-[510px] lg:max-w-[550px] lg:max-w-auto leading-[30px] lg:text-5xl">HAZ CLICK ABAJO EN TU NÚMERO DE LA SUERTE</span>
+          <TriDown fill="var(--header-raffle-foreground)" className="hidden lg:block w-[80px] h-[80px]"/>
         </div>
-        {(selectedTickets && selectedTickets.length > 0) && 
-        <div className="space-y-4 flex flex-col items-center">
-        <button className="px-4 w-fit py-2 rounded-md bg-primaryRaffle text-primaryRaffle-foreground flex items-center gap-3">
+        
+      </section>
+      {(selectedTickets && selectedTickets.length > 0) && 
+        <div className="space-y-4 flex w-full flex-col bg-headerRaffle py-3 items-center sticky z-[100] top-[80px] lg:top-[120px] left-0">
+        <button className="px-6 max-w-full w-fit py-2  rounded-md bg-primaryRaffle text-primaryRaffle-foreground flex justify-center items-center gap-3">
           <ArrowRight/>
           <span className="text-lg" onClick={()=>{document.getElementById('purchase-form').showModal()}}>Apartar</span>
           <ArrowLeft/>
         </button>
         <div className="flex flex-wrap gap-2 justify-center">
               {selectedTickets.map(ticket => (
-                <span key={ticket.id} onClick={()=>{removeTicket(ticket)}} className="border border-primaryRaffle text-headerRaffle-foreground px-3 py-1 rounded-full cursor-pointer">
+                <span key={ticket.id} onClick={()=>{removeTicket(ticket)}} className="border border-primaryRaffle text-headerRaffle-foreground px-3 py-1 rounded-sm cursor-pointer">
                   #{ticket.number}
                 </span>
               ))}
           </div>
-           <p className="text-xl">
+          <p className="text-yellow-400">{selectedTickets.length} BOLETOS SELECCIONADOS PARA ELIMINAR HAZ CLICK EN EL BOLETO</p>
+           <p className="text-lg">
            Total: ${selectedTickets.length * raffle?.price} MXN
          </p>
          </div>
         }
-      </section>
 
       {/* Available Tickets Section */}
       <div id="ticketsSection" className="w-full bg-backgroundRaffle py-10">
-        <div className="w-[1400px] max-w-[100vw] mx-auto px-4 text-center">
+        <div className="w-[1600px] max-w-[100vw] mx-auto px-4 text-center">
           
           
           {/* Selected Tickets Display */}
-          <div ref={ticketSectionRef} className="mb-6 px-8 py-3 rounded-lg text-left">
-            <div className="flex gap-6 flex-col justify-between sm:items-center">
-              <div className="relative w-full sm:w-auto">
-              <input placeholder="BUSCAR" value={searchTicket} onChange={(e)=>{setSearchTicket(e.target.value)}} className="border-2 bg-backgroundRaffle w-full sm:w-[300px] rounded-lg px-4 pl-10 py-2 border-borderRaffle text-base" type="text" />
-              <SearchIcon className="w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2"/>
+          <div ref={ticketSectionRef} className="mb-6 py-3 rounded-lg text-left">
+            <div className="flex gap-6 flex-col justify-between items-center">
+              <div className="relative w-full flex justify-center">
+              <input placeholder="BUSCAR" type="number" value={searchTicket} onChange={(e)=>{setSearchTicket(e.target.value)}} className="border-2 text-center max-w-full bg-backgroundRaffle uppercase font-bold w-[300px] rounded-sm px-4 py-2 border-borderRaffle text-lg" />
               </div>
-              <div className="flex gap-2 px-3 py-2 border-2 border-borderRaffle rounded-lg cursor-pointer justify-between" onClick={handleSelectRandomTicket}>
-                <span className="uppercase">Maquinita de la suerte</span>
-                <Shuffle className="w-6 h-6"  />
+              <div className="flex gap-2 max-w-full w-[300px] px-3 py-2 bg-cardRaffle border-2 border-borderRaffle rounded-sm cursor-pointer justify-center" onClick={handleSelectRandomTicket}>
+                <span className="uppercase text-lg font-medium">Maquinita de la suerte</span>
+              </div>
+              <div className="flex justify-between w-[320px] max-w-full items-center">
+                <div className="flex items-center gap-3">
+                  <div className="bg-lightTint rounded-sm w-[55px] h-[30px] border border-borderRaffle text-colorRaffle-600 line-through cursor-not-allowed flex items-center justify-center">000</div>
+                  <span>Pagados</span>
+                </div>
+                <div className="flex items-center gap-3">
+                  <div className="bg-backgroundRaffle rounded-sm w-[55px] h-[30px] border text-primaryRaffle border-primaryRaffle cursor-pointer"></div>
+                  <span>Disponibles</span>
+                </div>
+              </div>
+              <div className="flex gap-2 px-3 py-1 bg-cardRaffle border-2 border-borderRaffle text-center rounded-sm cursor-pointer justify-center" onClick={showAvailableTickets}>
+                <span className="uppercase font-medium">{availableToggle ? "Mostrar Solo Disponibles" : "VER LISTA COMPLETA"}</span>
               </div>
             </div>
           
@@ -445,7 +469,7 @@ const handleTouchEnd = (e) => {
                   isSelected={selectedTickets.some(st => st.id === filteredTickets[index].id)}
                 />
               )}
-              listClassName="grid grid-cols-5 px-4 md:grid-cols-10 gap-1"
+              listClassName="grid grid-cols-5 sm:grid-cols-8 md:grid-cols-10 gap-1"
               style={{ height: 500 }}
             />
             </div>
@@ -481,13 +505,14 @@ const handleTouchEnd = (e) => {
                   ref={purchaseFormRef}
                   initial={{ opacity: 0, y: 20 }}
                   animate={{ opacity: 1, y: 0 }}
-                  className="mt-8 max-w-md mx-auto sticky bottom-0 bg-backgroundRaffle rounded-lg px-4 py-4"
+                  className="mt-8 max-w-md mx-auto bg-backgroundRaffle text-left relative rounded-lg px-4 py-4"
                   onSubmit={handlePurchase}
                   noValidate
                 >
-                  <header className="flex justify-between items-center mb-4">
-                  <h1 className="text-lg">Apartar Boletos</h1>
-                  <CircleX onClick={()=>{document.getElementById('purchase-form').close()}} className="w-8 h-8"/>
+                   <CircleX onClick={()=>{document.getElementById('purchase-form').close()}} className="w-8 h-8 absolute right-0 top-0"/>
+                  <header className="mb-4 space-y-3">
+                  <h1 className="text-lg text-left leading-[24px]">LLENA TUS DATOS Y DA CLICK EN APARTAR</h1>
+                  <h2 className="text-primaryRaffle text-left">{selectedTickets.length} BOLETOS SELECCIONADOS</h2>
                   </header>
                   <div className="space-y-4">
                     <input
@@ -522,17 +547,17 @@ const handleTouchEnd = (e) => {
                       {showSearch &&
                       <div className="max-h-[200px] overflow-scroll flex flex-col absolute top-[calc(100%+5px)] border border-gray-700 bg-cardRaffle w-full rounded">
                         {filteredStates.map(state => {
-                          return <div key={state} onClick={selectState} className="py-2 hover:bg-[rgba(0,0,0,0.2)]">{state}</div>
+                          return <div key={state} onClick={selectState} className="py-2 px-2 hover:bg-[rgba(0,0,0,0.2)]">{state}</div>
                         })}
                       </div>}
                     </div>
+                    <p className="text-primaryRaffle">TU BOLETO SÓLO DURA {raffle.timeLimitPay * 24} HORAS APARTADO</p>
                     <Button
                       type="submit"
                       size="lg"
-                      className="w-full bg-primaryRaffle text-primaryRaffle-foreground hover:bg-primaryRaffle py-4 px-6 sm:px-8 rounded-lg text-lg flex items-center justify-center gap-2"
+                      className="w-full bg-primaryRaffle text-primaryRaffle-foreground hover:bg-primaryRaffle py-4 px-6 sm:px-8 rounded-sm text-lg text-center"
                     >
-                      <ShoppingCart size={22} />
-                      Comprar Boletos
+                      Apartar
                     </Button>
                   </div>
                 </motion.form>

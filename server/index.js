@@ -38,9 +38,60 @@ app.set('trust proxy', 1);
 app.use("/stripe/webhook", Webhook)
   app.use(express.static(path.join(__dirname, '../client/dist')))
 
-  app.use((req, res, next) => {
-    console.log('Incoming Host:', req.headers.host);
-    next();
+  app.use(async (req, res, next) => {
+    try {
+      const hostname = req.headers.host?.split(':')[0].toLowerCase();
+      console.log('Incoming Host:', hostname);
+  
+      // Is this a known custom domain?
+      const domainEntry = await CustomDomain.findOne({
+        $or: [
+          { domain: hostname, status: 'active' },
+        ],
+      });
+  
+      const isCustomDomain = !!domainEntry;
+  
+  
+      if (isCustomDomain) {
+        // Check if request path is allowed
+        const path = req.path;
+
+        const allowedRoutes = [
+          /^\/api\/raffle\/[^/]+\/payment$/ ,
+          /^\/api\/raffle\/[^/]+\/view$/ ,
+          /^\/api\/raffle\/[^/]+\/verify$/ ,
+           /^\/api\/raffle\/[^/]+$/ ,
+        ];
+
+      const isAllowed = allowedRoutes.some((regex) => {
+        return (
+          regex.test(req.path)
+        );
+      });
+
+      console.log(req.method, req.path)
+  
+        if (!isAllowed) {
+          console.log(`Blocked route for custom domain ${hostname}: ${path}`);
+          return res.status(403).send('Access forbidden for this domain.');
+        }
+      }
+  
+      // Attach tenant info for later use if needed
+      if (isCustomDomain) {
+        req.tenant = {
+          domain: domainEntry.domain,
+          subdomain: domainEntry.subdomain,
+          userId: domainEntry.userId,
+        };
+      }
+  
+      next();
+    } catch (err) {
+      console.error('Error in domain access middleware:', err.message);
+      res.status(500).send('Internal server error.');
+    }
   });
 
 
