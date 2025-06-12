@@ -89,8 +89,8 @@ const CreateRafflePage = ({userJustCreated, setUserJustCreated}) => {
 
   const templates = {
     basic : [["Clasico", "classic"]],
-    pro: [["Clasico", "classic"], ["Moderno", "modern"]],
-    business: [["Clasico", "classic"], ["Moderno", "modern"], ["Minimalista", "minimalist"]],
+    pro: [["Clasico", "classic"], ["Popular", "popular"]],
+    business: [["Clasico", "classic"], ["Popular", "popular"], ["Moderno", "modern"]],
   }
   const methods = {
     basic: 3,
@@ -805,6 +805,7 @@ const CreateRafflePage = ({userJustCreated, setUserJustCreated}) => {
                   <option value="Lilita One">Lilita One</option>
                   <option value="Bungee">Bungee</option>
                   <option value="Luckiest Guy">Luckiest Guy</option>
+                  <option value="Poppins">Poppins</option>
                 </select>
               </div>
               <div>

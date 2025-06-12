@@ -16,7 +16,7 @@ import Spinner from "../components/spinner";
 const TEMPLATES = {
   classic: classicLanding,
   modern: modernLanding,
-  minimalist: minimalistLanding,
+  popular: minimalistLanding,
 }
 
 function RaffleLanding() {

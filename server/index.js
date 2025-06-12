@@ -44,48 +44,48 @@ app.use("/stripe/webhook", Webhook)
       console.log('Incoming Host:', hostname);
   
       // Is this a known custom domain?
-      const domainEntry = await CustomDomain.findOne({
-        $or: [
-          { domain: hostname, status: 'active' },
-        ],
-      });
+      // const domainEntry = await CustomDomain.findOne({
+      //   $or: [
+      //     { domain: hostname, status: 'active' },
+      //   ],
+      // });
   
-      const isCustomDomain = !!domainEntry;
+      // const isCustomDomain = !!domainEntry;
   
   
-      if (isCustomDomain) {
-        // Check if request path is allowed
-        const path = req.path;
+      // if (isCustomDomain) {
+      //   // Check if request path is allowed
+      //   const path = req.path;
 
-        const allowedRoutes = [
-          /^\/api\/raffle\/[^/]+\/payment$/ ,
-          /^\/api\/raffle\/[^/]+\/view$/ ,
-          /^\/api\/raffle\/[^/]+\/verify$/ ,
-           /^\/api\/raffle\/[^/]+$/ ,
-        ];
+      //   const allowedRoutes = [
+      //     /^\/api\/raffle\/[^/]+\/payment$/ ,
+      //     /^\/api\/raffle\/[^/]+\/view$/ ,
+      //     /^\/api\/raffle\/[^/]+\/verify$/ ,
+      //      /^\/api\/raffle\/[^/]+$/ ,
+      //   ];
 
-      const isAllowed = allowedRoutes.some((regex) => {
-        return (
-          regex.test(req.path)
-        );
-      });
+      // const isAllowed = allowedRoutes.some((regex) => {
+      //   return (
+      //     regex.test(req.path)
+      //   );
+      // });
 
-      console.log(req.method, req.path)
+      // console.log(req.method, req.path)
   
-        if (!isAllowed) {
-          console.log(`Blocked route for custom domain ${hostname}: ${path}`);
-          return res.status(403).send('Access forbidden for this domain.');
-        }
-      }
+      //   if (!isAllowed) {
+      //     console.log(`Blocked route for custom domain ${hostname}: ${path}`);
+      //     return res.status(403).send('Access forbidden for this domain.');
+      //   }
+      // }
   
-      // Attach tenant info for later use if needed
-      if (isCustomDomain) {
-        req.tenant = {
-          domain: domainEntry.domain,
-          subdomain: domainEntry.subdomain,
-          userId: domainEntry.userId,
-        };
-      }
+      // // Attach tenant info for later use if needed
+      // if (isCustomDomain) {
+      //   req.tenant = {
+      //     domain: domainEntry.domain,
+      //     subdomain: domainEntry.subdomain,
+      //     userId: domainEntry.userId,
+      //   };
+      // }
   
       next();
     } catch (err) {

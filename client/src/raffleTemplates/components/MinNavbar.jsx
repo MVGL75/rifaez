@@ -51,7 +51,7 @@ const Navbar = ({raffle}) => {
             <div className='text-lg hidden lg:flex lg:items-center lg:space-x-4'>
               <Link to="payment" className="hover:text-headerRaffle-foreground/80">Métodos de Pago</Link>
               <div className="h-[28px] bg-white w-[1.5px]"></div>
-              <Link to="verify" className="hover:text-headerRaffle-foreground/80">Boletos Disponibles</Link>
+              <Link to="verify" className="hover:text-headerRaffle-foreground/80">Verificador de Boletos</Link>
               <div className="h-[28px] bg-white w-[1.5px]"></div>
               <Link to="contact" className="hover:text-headerRaffle-foreground/80">Contacto</Link>
             </div>

@@ -286,7 +286,7 @@ const handleTouchEnd = (e) => {
         {raffle.description && <p className="mb-3 text-lg">{raffle.description}</p> }
         <p className="text-[22px] uppercase lg:text-2xl tracking-[-1.5px]">{formatSpanishDate(raffle?.endDate)}</p>
         {raffle.countdown === "on" &&
-        <div className="w-[350px] max-w-full mb-5">
+        <div className="w-[350px] max-w-full mb-5 ">
         <Countdown targetDate={raffle.endDate}/>
         </div>
       }
@@ -313,7 +313,7 @@ const handleTouchEnd = (e) => {
 
           <div className="flex w-full gap-5 flex-col px-[15px] w-[620px] max-w-full">
               <div 
-                className="relative h-[400px] rounded-md overflow-hidden border-4 border-borderRaffle"
+                className="relative h-[400px] rounded-md overflow-hidden bg-lightTint border-4 border-borderRaffle"
                 onTouchStart={handleTouchStart}
                 onTouchEnd={handleTouchEnd}
               >
@@ -326,11 +326,9 @@ const handleTouchEnd = (e) => {
 
 
                     return (
-                      <img
-                        key={img.url}
-                        src={img.url}
-                        alt={img.alt}
-                        className="absolute top-0 -left-[100%] w-full h-full object-cover"
+                      <div 
+                      key={img.url}
+                        className="absolute top-0 -left-[100%] w-full h-full "
                         style={{
                           animation: isCurrent
                           ? (direction === "left"
@@ -342,7 +340,13 @@ const handleTouchEnd = (e) => {
                                   : 'slideOutRight 0.5s ease-in-out forwards')
                               : undefined)
                         }}
+                    >
+                      <img
+                        src={img.url}
+                        alt={img.alt}
+                        className="w-full h-full object-contain"
                       />
+                    </div>
                     );
                   })}
 
@@ -429,7 +433,7 @@ const handleTouchEnd = (e) => {
       <div id="ticketsSection" className="w-full bg-backgroundRaffle py-10">
         <div className="w-[1600px] max-w-[100vw] mx-auto px-4 text-center">
           
-          
+        
           {/* Selected Tickets Display */}
           <div ref={ticketSectionRef} className="mb-6 py-3 rounded-lg text-left">
             <div className="flex gap-6 flex-col justify-between items-center">
@@ -439,6 +443,8 @@ const handleTouchEnd = (e) => {
               <div className="flex gap-2 max-w-full w-[300px] px-3 py-2 bg-cardRaffle border-2 border-borderRaffle rounded-sm cursor-pointer justify-center" onClick={handleSelectRandomTicket}>
                 <span className="uppercase text-lg font-medium">Maquinita de la suerte</span>
               </div>
+              {raffle.purchasedTicketDisplay === "cross" &&
+              <>
               <div className="flex justify-between w-[320px] max-w-full items-center">
                 <div className="flex items-center gap-3">
                   <div className="bg-lightTint rounded-sm w-[55px] h-[30px] border border-borderRaffle text-colorRaffle-600 line-through cursor-not-allowed flex items-center justify-center">000</div>
@@ -449,9 +455,12 @@ const handleTouchEnd = (e) => {
                   <span>Disponibles</span>
                 </div>
               </div>
+             
               <div className="flex gap-2 px-3 py-1 bg-cardRaffle border-2 border-borderRaffle text-center rounded-sm cursor-pointer justify-center" onClick={showAvailableTickets}>
                 <span className="uppercase font-medium">{availableToggle ? "Mostrar Solo Disponibles" : "VER LISTA COMPLETA"}</span>
               </div>
+              </>
+              }
             </div>
           
           </div>

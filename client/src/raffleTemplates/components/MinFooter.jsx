@@ -25,7 +25,13 @@ const Footer = ({raffle}) => {
   return (
     <footer className="bg-headerRaffle w-screen text-headerRaffle-foreground underline">
         <div className="flex flex-col items-center w-full">
-          <div className="text-center w-full bg-borderRaffle px-3 py-3">
+          
+          <div className="text-center flex flex-col items-center gap-2 w-full bg-borderRaffle px-3 py-3">
+          { raffle.facebookUrl &&
+              <a href={raffle.facebookUrl} className="hover:text-primaryRaffle">
+                <Facebook size={24} />
+              </a>
+            }
             <p className="text-xl font-bold">PREGUNTAS AL WHATSAPP</p>
             <a href={`tel:${raffle.phone}`} className="text-xl">
               {setPhoneFormat(raffle.phone)}

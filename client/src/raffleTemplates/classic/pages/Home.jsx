@@ -277,7 +277,7 @@ const handleTouchEnd = (e) => {
 
           {/* Image Carousel */}
           <div 
-            className="relative h-[400px] mb-8 border-4 border-borderRaffle rounded-lg overflow-hidden"
+            className="relative h-[400px] mb-8 border-4 border-borderRaffle bg-lightTint rounded-lg overflow-hidden"
             onTouchStart={handleTouchStart}
             onTouchEnd={handleTouchEnd}
           >
@@ -290,23 +290,27 @@ const handleTouchEnd = (e) => {
 
 
                     return (
-                      <img
+                      <div 
                         key={img.url}
-                        src={img.url}
-                        alt={img.alt}
-                        className="absolute top-0 -left-[100%] w-full h-full object-cover"
-                        style={{
-                          animation: isCurrent
-                          ? (direction === "left"
-                              ? 'slideInFromLeft 0.5s ease-in-out forwards'
-                              : 'slideInFromRight 0.5s ease-in-out forwards')
-                          : (isPrevious
-                              ? (direction === "left"
-                                  ? 'slideOutLeft 0.5s ease-in-out forwards'
-                                  : 'slideOutRight 0.5s ease-in-out forwards')
-                              : undefined)
-                        }}
-                      />
+                          className="absolute top-0 -left-[100%] w-full h-full "
+                          style={{
+                            animation: isCurrent
+                            ? (direction === "left"
+                                ? 'slideInFromLeft 0.5s ease-in-out forwards'
+                                : 'slideInFromRight 0.5s ease-in-out forwards')
+                            : (isPrevious
+                                ? (direction === "left"
+                                    ? 'slideOutLeft 0.5s ease-in-out forwards'
+                                    : 'slideOutRight 0.5s ease-in-out forwards')
+                                : undefined)
+                          }}
+                      >
+                        <img
+                          src={img.url}
+                          alt={img.alt}
+                          className="w-full h-full object-contain"
+                        />
+                      </div>
                     );
                   })}
           </div>
@@ -317,7 +321,7 @@ const handleTouchEnd = (e) => {
             </section>
           }
 
-          <section className="max-w-[100vw] mb-10 px-5 bg-lightTint rounded-xl">
+          <section className="max-w-[100vw] mb-10 border-borderRaffle border px-5 bg-lightTint rounded-xl">
             {raffle.countdown === "on" &&
               <Countdown targetDate={raffle.endDate}/>
             }

@@ -187,9 +187,9 @@ const RaffleEditPage = ({}) => {
 
   const templates = {
     basic : [["Clasico", "classic"]],
-    pro: [["Clasico", "classic"], ["Moderno", "modern"]],
-    business: [["Clasico", "classic"], ["Moderno", "modern"], ["Minimalista", "minimalist"]],
-  }
+    pro: [["Clasico", "classic"], ["Popular", "popular"]],
+    business: [["Clasico", "classic"], ["Popular", "popular"], ["Moderno", "modern"]],
+}
   const colors = [
     { id: 'red', name: "Rojo", hex: "#FF0000" },
     { id: 'blue', name: "Azul", hex: "#0000FF" },
@@ -825,6 +825,7 @@ const RaffleEditPage = ({}) => {
                   <option value="Lilita One">Lilita One</option>
                   <option value="Bungee">Bungee</option>
                   <option value="Luckiest Guy">Luckiest Guy</option>
+                  <option value="Poppins">Poppins</option>
                 </select>
               </div>
               <div>

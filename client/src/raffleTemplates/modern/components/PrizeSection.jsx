@@ -104,7 +104,7 @@ const PrizeSection = ({raffle}) => {
               </p>
             </div>
             <div 
-              className="md:w-1/2 relative md:h-[400px] bg-gray-200 h-[400px] overflow-hidden"
+              className="md:w-1/2 relative md:h-[400px] bg-lightTint bg-gray-200 h-[400px] overflow-hidden"
               onTouchStart={handleTouchStart}
               onTouchEnd={handleTouchEnd}
             >
@@ -117,23 +117,27 @@ const PrizeSection = ({raffle}) => {
 
 
                     return (
-                      <img
-                        key={img.url}
-                        src={img.url}
-                        alt={img.alt}
-                        className="absolute top-0 -left-[100%] w-full h-full object-cover"
-                        style={{
-                          animation: isCurrent
-                          ? (direction === "left"
-                              ? 'slideInFromLeft 0.5s ease-in-out forwards'
-                              : 'slideInFromRight 0.5s ease-in-out forwards')
-                          : (isPrevious
+                      <div 
+                          key={img.url}
+                            className="absolute top-0 -left-[100%] w-full h-full "
+                            style={{
+                              animation: isCurrent
                               ? (direction === "left"
-                                  ? 'slideOutLeft 0.5s ease-in-out forwards'
-                                  : 'slideOutRight 0.5s ease-in-out forwards')
-                              : undefined)
-                        }}
-                      />
+                                  ? 'slideInFromLeft 0.5s ease-in-out forwards'
+                                  : 'slideInFromRight 0.5s ease-in-out forwards')
+                              : (isPrevious
+                                  ? (direction === "left"
+                                      ? 'slideOutLeft 0.5s ease-in-out forwards'
+                                      : 'slideOutRight 0.5s ease-in-out forwards')
+                                  : undefined)
+                            }}
+                        >
+                          <img
+                            src={img.url}
+                            alt={img.alt}
+                            className="w-full h-full object-contain"
+                          />
+                    </div>
                     );
                   })}
             </div>

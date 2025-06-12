@@ -57,7 +57,8 @@ const fonts = [
   "Bowlby One",
   "Lilita One",
   "Bungee",
-  "Luckiest Guy"
+  "Luckiest Guy",
+  "Poppins"
 ];
 
 
@@ -91,7 +92,7 @@ export const raffleValidationSchema = Joi.object({
       url: Joi.string().required(),  
       public_id: Joi.string().required()   
     })).max(10).required(),
-    template: Joi.string().valid('classic', 'modern', 'minimalist').required(),
+    template: Joi.string().valid('classic', 'modern', 'popular').required(),
     colorPalette: Joi.object({
       header: colorSchema,
       background: colorSchema,
