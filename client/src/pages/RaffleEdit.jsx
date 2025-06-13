@@ -14,6 +14,7 @@ import {
   Eye,
   Plus,
   ChevronLeft,
+  ChevronDown,
   Sun,
   Moon,
   CaptionsOff,
@@ -46,6 +47,9 @@ const RaffleEditPage = ({}) => {
   const [raffle, setRaffle] = useState(null); 
   const [errors, setErrors] = useState({})
   const [formError, setFormError] = useState(null)
+  const [dropdownFont, setDropdownFont] = useState(false)
+  const dropdownRef = useRef(null);
+  const dropdownFontOpenRef = useRef({state: dropdownFont, changed: false});
   const [initialActive, setInitialActive] = useState(null)
   const [filesArray, setFiles] = useState([])
   const [previews, setPreviews] = useState([])
@@ -147,6 +151,34 @@ const RaffleEditPage = ({}) => {
       }
     });
     setErrors({...errorsObj});
+  }
+
+
+  useEffect(() => {
+    dropdownFontOpenRef.current = {state: dropdownFont, changed: true};
+  }, [dropdownFont]);
+
+  useEffect(() => {
+    function handleClickOutside(event) {
+      if (dropdownFontOpenRef.current.state && !dropdownFontOpenRef.current.changed) {
+        if (dropdownRef.current && !dropdownRef.current.contains(event.target)) {
+          setDropdownFont(false);
+        }
+      } else {
+        dropdownFontOpenRef.current.changed = false;
+      }
+    }
+
+    document.addEventListener('click', handleClickOutside);
+
+    return () => {
+      document.removeEventListener('click', handleClickOutside);
+    };
+  }, []);
+
+  const selectFont = (font) => {
+    setRaffle( prev => ({...prev, font: font}) )
+    setDropdownFont(false)
   }
 
 
@@ -804,30 +836,34 @@ const RaffleEditPage = ({}) => {
                   <option value="right">Derecho</option>
                 </select>
             </div>
-            <div>
+            <div className="relative">
                 <label className={`block text-sm font-medium mb-2 ${errors.font && "text-red-500"}`}>
                   Fuentes
                 </label>
-                <select
-                  name="font"
-                  value={raffle.font}
-                  onChange={handleChange}
-                  className={`w-full p-2 rounded-md border ${errors.font ? "border-red-500" : "border-input"} bg-background`}
+                <div onClick={()=>{setDropdownFont(prev => !prev)}} className={`w-full flex justify-between items-center p-2 rounded-md border ${errors.font ? "border-red-500" : "border-input"} bg-background`}>
+                  <span>{raffle.font}</span>
+                  <ChevronDown className={`w-4 h-4 transition duration-200 ease-in ${dropdownFont ? "scale-y-[-1]": ""}`} />
+                </div>
+                {dropdownFont &&
+                <div
+                  ref={dropdownRef}
+                  className='w-full rounded-md border-2 z-[100] overflow-scroll cursor-pointer border-input bg-background absolute top-[calc(100%+10px)]'
                 >
-                  <option value="">Selecciona una fuente</option>
-                  <option value="Poppins">Poppins</option>
-                  <option value="Inter">Inter</option>
-                  <option value="Roboto">Roboto</option>
-                  <option value="Open Sans">Open Sans</option>
-                  <option value="Lato">Lato</option>
-                  <option value="IBM Plex Sans">IBM Plex Sans</option>
-                  <option value="Concert One">Concert One</option>
-                  <option value="Bowlby One">Bowlby One</option>
-                  <option value="Lilita One">Lilita One</option>
-                  <option value="Bungee">Bungee</option>
-                  <option value="Luckiest Guy">Luckiest Guy</option>
-                </select>
-              </div>
+                  <div className="py-1.5 px-4 cursor-pointer hover:bg-card" onClick={()=>{selectFont("Selecciona una fuente")}}>Selecciona una fuente</div>
+                    <div className="py-1.5 px-4 hover:bg-card cursor-pointer font-[Poppins]" onClick={()=>{selectFont("Poppins")}}>Poppins</div>
+                    <div className="py-1.5 px-4 hover:bg-card cursor-pointer font-[Inter]" onClick={()=>{selectFont("Inter")}}>Inter</div>
+                    <div className="py-1.5 px-4 hover:bg-card cursor-pointer font-[Roboto]" onClick={()=>{selectFont("Roboto")}}>Roboto</div>
+                    <div className="py-1.5 px-4 hover:bg-card cursor-pointer font-['Open_Sans']"onClick={()=>{selectFont("Open Sans")}}>Open Sans</div>
+                    <div className="py-1.5 px-4 hover:bg-card cursor-pointer font-[Lato]"onClick={()=>{selectFont("Lato")}}>Lato</div>
+                    <div className="py-1.5 px-4 hover:bg-card cursor-pointer font-['IBM_Plex_Sans']" onClick={()=>{selectFont("IBM Plex Sans")}}>IBM Plex Sans</div>
+                    <div className="py-1.5 px-4 hover:bg-card cursor-pointer font-['Concert_One']" onClick={()=>{selectFont("Concert One")}}>Concert One</div>
+                    <div className="py-1.5 px-4 hover:bg-card cursor-pointer font-['Bowlby_One']" onClick={()=>{selectFont("Bowlby One")}}>Bowlby One</div>
+                    <div className="py-1.5 px-4 hover:bg-card cursor-pointer font-['Lilita_One']" onClick={()=>{selectFont("Lilita One")}}>Lilita One</div>
+                    <div className="py-1.5 px-4 hover:bg-card cursor-pointer font-[Bungee]" onClick={()=>{selectFont("Bungee")}}>Bungee</div>
+                    <div className="py-1.5 px-4 hover:bg-card cursor-pointer font-['Luckiest_Guy']" onClick={()=>{selectFont("Luckiest Guy")}}>Luckiest Guy</div>
+                  </div>
+              }
+                </div>
               <div>
               <label htmlFor="countdown" className={`block text-sm font-medium mb-2 ${errors.countdown && "text-red-500"}`}>
                   Temporizador de cuenta regresiva
