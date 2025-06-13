@@ -135,7 +135,7 @@ const PrizeSection = ({raffle}) => {
                           <img
                             src={img.url}
                             alt={img.alt}
-                            className="w-full h-full object-contain"
+                            className="w-full h-full object-cover"
                           />
                     </div>
                     );

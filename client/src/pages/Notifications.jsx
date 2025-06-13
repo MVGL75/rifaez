@@ -1,28 +1,72 @@
 import { useEffect, useState } from "react"
 import { useAuth } from "../contexts/AuthContext"
 import { Button } from "@/components/ui/button";
+import axios from "axios";
+const api = axios.create({
+  baseURL: import.meta.env.VITE_CURRENT_HOST,
+  withCredentials: true, // same as fetch's credentials: 'include'
+});
 export default function Notifications({setSelectedRaffle}){
-    const { user } = useAuth()
+    const { user, setUser, setAppError } = useAuth()
     const [notifications, setNotifications] = useState([]);
     const [contactMessage, setContactMessage] = useState({})
 
+
+
     useEffect(() => {
-    if (user?.raffles) {
-        const all = [];
-        user.raffles.forEach(raffle => {
-        if (raffle.notifications) {
-            const modifiedNotifications = raffle.notifications.map(n => ({...n, fromId: raffle.id, fromName: raffle.title }))
-            all.push(...modifiedNotifications);
+      async function viewNotifications(params) {
+        try {
+        if (user?.raffles) {
+          const all = [];
+          for (const raffle of user.raffles) {
+            if (raffle.notifications && raffle.notifications.length > 0) {
+              const modifiedNotifications = raffle.notifications.filter(n => !n.read).map(n => ({...n, fromId: raffle.id, fromName: raffle.title }));
+              setUser(prev => ({...prev, raffles: prev.raffles.map(raffle => ({...raffle, notifications: raffle.notifications.map(notify => ({...notify, read: true}))}))}))
+              all.push(...modifiedNotifications);
+            }
+          }
+          setNotifications(all);
+          for (const raffle of user.raffles) {
+            if (raffle.notifications && raffle.notifications.length > 0) {
+              for (const notification of raffle.notifications) {
+                  await api.post(`/api/raffle/${raffle.id}/${notification.id}/view_notify`);
+              }
+            }
+          }
         }
-        });
-        setNotifications(all);
-    }
-    }, [user.raffles]);
+        } catch (error) {
+            setAppError(error)
+        }
+      }
+    viewNotifications()
+    }, []);
 
     const openContactModal = (contact) => {
         setContactMessage(contact)
         document.getElementById("contact-message").showModal();
     }
+
+    const calcTimeAgo = (notifyDate) => {
+      const getToday = new Date();
+      const notificationDate = new Date(notifyDate);
+      const diffInMs = getToday - notificationDate;
+      const diffInSeconds = Math.floor(diffInMs / 1000);
+      const diffInMinutes = Math.floor(diffInSeconds / 60);
+      const diffInHours = Math.floor(diffInMinutes / 60);
+      const diffInDays = Math.floor(diffInHours / 24);
+  
+      if (diffInDays > 0) {
+          return `Hace ${diffInDays} días`;
+      } else if (diffInHours > 0) {
+          return `Hace ${diffInHours} horas`;
+      } else if (diffInMinutes > 0) {
+          return `Hace ${diffInMinutes} minutos`;
+      } else if (diffInSeconds > 0) {
+          return `Hace ${diffInSeconds} segundos`;
+      } else {
+          return "Justo ahora";
+      }
+  };
 
     return (
         <div className="space-y-10 px-8">
@@ -59,15 +103,15 @@ export default function Notifications({setSelectedRaffle}){
             </div>
         </dialog>
             {notifications && notifications.length > 0 ? (
-              notifications.map((notification) => (
+              notifications.map((notification, index) => (
                 <div
-                  key={notification.id}
+                  key={index}
                   className={`rounded-lg w-full overflow-hidden ${
-                    notification.type === "pending"
+                    notification.category === "pending"
                       ? "bg-yellow-50 border border-yellow-200"
                       : "bg-muted/50 border border-gray-200"
                   }`}
-                  onClick={notification.type === "contact" ? ()=>{openContactModal(notification.contact)} : null}
+                  onClick={notification.category === "contact" ? ()=>{openContactModal(notification.contact)} : null}
                 >
                     <div className="flex items-center justify-between p-4">
                         <span className="text-base">{notification.fromName}</span>
@@ -77,13 +121,13 @@ export default function Notifications({setSelectedRaffle}){
                   <div className="flex items-center justify-between p-4 bg-background ">
                     <span className="text-base">
                       {notification.message}
-                      {notification.type === "pending" && (
+                      {notification.category === "pending" && (
                         <span className="ml-2 text-yellow-600">
                           (Pendiente - {notification.amount})
                         </span>
                       )}
                     </span>
-                    <span className="text-sm text-gray-500">{notification.time}</span>
+                    <span className="text-sm text-gray-500">{calcTimeAgo(notification.time)}</span>
                   </div>
                 </div>
               ))

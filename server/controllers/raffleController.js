@@ -172,6 +172,11 @@ export const editRaffle = async (req, res) => {
       return res.json({message: error.details, status: 400})
     }
     raffle.currentParticipants.push(value)
+    raffle.notifications.push({
+      category: "sale",
+      message: `Transacción #${value.transactionID}`,
+      time: new Date()
+    })
     await updateStats(raffle, "dailySales", amount);
     await raffle.save()
     res.json({message: "Contact Sent", status: 200})
@@ -203,6 +208,18 @@ export const editRaffle = async (req, res) => {
       }
     } else {
       res.json({message: "already marked as paid", status: 400})
+    }
+  }
+  export const viewNotification = async (req, res)=>{
+    const {id, notificationid} = req.params
+    const raffle = await Raffle.findById(id);
+    const notification = raffle.notifications.id(notificationid)
+    if(!notification?.read){
+      notification.read = true
+      await raffle.save();
+      res.json({message: "marked as read", status: 200})
+    } else {
+      res.json({message: "already read", status: 200})
     }
   }
   export const addNote = async (req, res)=>{
@@ -264,6 +281,8 @@ export const editRaffle = async (req, res) => {
     });
     return ticket
   }
+
+
 
 
   async function updateStats(raffle, type, amount) {

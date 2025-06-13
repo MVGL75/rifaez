@@ -82,7 +82,7 @@ const SettingsPage = () => {
     email: user.username || "juan@example.com",
     companyName: user.companyName,
     logo: user.logo || undefined,
-    facebookUrl: user.facebookUrl || null,
+    facebookUrl: user.facebookUrl || "",
     phone: user.phone,
     domain: user.domain,
   });
@@ -101,7 +101,7 @@ const SettingsPage = () => {
         email: user.username || "juan@example.com",
         companyName: user.companyName,
         logo: user.logo || undefined,
-        facebookUrl: user.facebookUrl,
+        facebookUrl: user.facebookUrl || "",
         phone: user.phone,
         domain: user.domain,
       });
@@ -473,6 +473,7 @@ const removeMethod = async (methodInp) => {
     setLoading(true);
     setWasSubmitted({form: true});
     const {error, value} = formValidate();
+    console.log(error, value)
     if(error){
       setLoading(false);
       return;

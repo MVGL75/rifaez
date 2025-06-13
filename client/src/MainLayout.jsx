@@ -21,7 +21,7 @@ export default function({selectedRaffle, setSelectedRaffle}){
 
     useEffect(() => {
     if (user?.raffles) {
-        const all = user.raffles.reduce((acc, value) => acc + (value.notifications?.length || 0 ) ,0)
+        const all = user.raffles.reduce((acc, value) => acc + (value.notifications.filter(n => !n.read).length || 0 ) ,0)
         setNotificationsLength(all)
     }
     }, [user.raffles]);

@@ -23,7 +23,11 @@ const AvailableTicketsPage = ({ availableTickets, setAvailableTickets }) => {
   const newMexicanStates = mexicanStates.filter(state => state !== "Extranjero");
   const [filteredStates, setFilteredStates] = useState([...newMexicanStates, "Extranjero"]);
   const [showSearch, setShowSearch] = useState(false);
-  const [buyerInfo, setBuyerInfo] = useState({})
+  const [buyerInfo, setBuyerInfo] = useState({
+    name: "",
+    phone: "",
+    state: "",
+  })
   const [wasSubmitted, setWasSubmitted] = useState(null)
   const [allTickets, setAllTickets] = useState([]);
   const [buyerPopUp, setBuyerPopUp] = useState(false)

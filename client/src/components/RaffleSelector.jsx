@@ -7,16 +7,16 @@ const RaffleSelector = ({ raffles, selectedRaffle, onSelect }) => {
   const [isOpen, setIsOpen] = React.useState(false);
 
   return (
-    <div className="relative">
+    <div className="relative w-full">
       <button
         onClick={() => setIsOpen(!isOpen)}
         className="w-full flex items-center justify-between p-3 rounded-lg border border-input bg-background hover:bg-accent transition-colors"
       >
-        <div className="flex items-center space-x-2">
-          <span className="font-medium">{selectedRaffle?.title || "Seleccionar Rifa"}</span>
-          {selectedRaffle?.notifications?.length > 0 && (
+        <div className="max-w-full overflow-x-auto flex items-center space-x-2">
+          <span className="font-medium max-w-full whitespace-nowrap">{selectedRaffle?.title || "Seleccionar Rifa"}</span>
+          {selectedRaffle.notifications.filter(n => !n.read).length > 0 && (
             <div className="bg-red-500 text-white text-xs px-1.5 py-0.5 rounded-full">
-              {selectedRaffle.notifications.length > 9 ? '+9' : selectedRaffle.notifications.length}
+              {selectedRaffle.notifications.filter(n => !n.read).length > 9 ? '+9' : selectedRaffle.notifications.filter(n => !n.read).length}
             </div>
           )}
         </div>

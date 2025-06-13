@@ -795,6 +795,7 @@ const CreateRafflePage = ({userJustCreated, setUserJustCreated}) => {
                   className={`w-full p-2 rounded-md border ${errors.font ? "border-red-500" : "border-input"} bg-background`}
                 >
                   <option value="">Selecciona una fuente</option>
+                  <option value="Poppins">Poppins</option>
                   <option value="Inter">Inter</option>
                   <option value="Roboto">Roboto</option>
                   <option value="Open Sans">Open Sans</option>
@@ -805,7 +806,6 @@ const CreateRafflePage = ({userJustCreated, setUserJustCreated}) => {
                   <option value="Lilita One">Lilita One</option>
                   <option value="Bungee">Bungee</option>
                   <option value="Luckiest Guy">Luckiest Guy</option>
-                  <option value="Poppins">Poppins</option>
                 </select>
               </div>
               <div>

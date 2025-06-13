@@ -523,9 +523,9 @@ const RaffleEditPage = ({}) => {
                 </p>
               </div> */}
             </div>
-            <div className="max-h-[300px] mt-4 rounded-lg overflow-hidden relative">
+            <div className="w-full h-[300px] mt-4 rounded-lg overflow-hidden relative">
               {previews.map((url, index) => (
-                <img key={index} className={carousel !== index ? "hidden" : ""} src={url} alt={`Image ${index}`} />
+                <img key={index} className={carousel !== index ? "hidden" : "w-full h-full object-contain"} src={url} alt={`Image ${index}`} />
               ))}
               {previews && previews.length > 1 &&
               <>
@@ -815,6 +815,7 @@ const RaffleEditPage = ({}) => {
                   className={`w-full p-2 rounded-md border ${errors.font ? "border-red-500" : "border-input"} bg-background`}
                 >
                   <option value="">Selecciona una fuente</option>
+                  <option value="Poppins">Poppins</option>
                   <option value="Inter">Inter</option>
                   <option value="Roboto">Roboto</option>
                   <option value="Open Sans">Open Sans</option>
@@ -825,7 +826,6 @@ const RaffleEditPage = ({}) => {
                   <option value="Lilita One">Lilita One</option>
                   <option value="Bungee">Bungee</option>
                   <option value="Luckiest Guy">Luckiest Guy</option>
-                  <option value="Poppins">Poppins</option>
                 </select>
               </div>
               <div>

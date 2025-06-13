@@ -210,6 +210,18 @@ const RaffleSchema = new mongoose.Schema({
                     default: []
                 },
                 paidParticipants: { type: Number, default: 0 }
+            },
+            notifications: {
+                type: [{
+                    category: String,
+                    read: {
+                        type: Boolean, 
+                        default: false,
+                    },
+                    message: String,
+                    time: { type: Date, default: Date.now },
+                }],
+                default: []
             }
         }
 )
@@ -240,43 +252,43 @@ RaffleSchema.virtual('totalVisits').get(function () {
     }
 };
 
-RaffleSchema.virtual('notifications').get(function () {
-    const getToday = new Date();
-    const getTodayIso = getToday.toISOString().split('T')[0]; 
-    const notifications = [];
-    let id = 0;
+// RaffleSchema.virtual('notifications').get(function () {
+//     const getToday = new Date();
+//     const getTodayIso = getToday.toISOString().split('T')[0]; 
+//     const notifications = [];
+//     let id = 0;
 
-    const curr = this.currentParticipants?.filter((part) => part.date.split('T')[0] === getTodayIso);
-    if (curr && curr.length > 0) {
-        curr.forEach((participant) => {
-            id += 1;
-            const notifyTime = calcTimeAgo(participant.date);
-            notifications.push({
-                id: id,
-                type: "sale",
-                message: `Transacción #${participant.transactionID}`,
-                time: notifyTime
-            });
-        });
-    }
-    const cont = this.contact?.filter((part) => part.date.split('T')[0] === getTodayIso);
+//     const curr = this.currentParticipants?.filter((part) => part.date.split('T')[0] === getTodayIso);
+//     if (curr && curr.length > 0) {
+//         curr.forEach((participant) => {
+//             id += 1;
+//             const notifyTime = calcTimeAgo(participant.date);
+//             notifications.push({
+//                 id: id,
+//                 type: "sale",
+//                 message: `Transacción #${participant.transactionID}`,
+//                 time: notifyTime
+//             });
+//         });
+//     }
+//     const cont = this.contact?.filter((part) => part.date.split('T')[0] === getTodayIso);
 
-    if (cont && cont.length > 0) {
-        cont.forEach((contact) => {
-            id += 1;
-            const notifyTime = calcTimeAgo(contact.date);
-            notifications.push({
-                id: id,
-                type: "contact",
-                contact,
-                message: `Te contactó ${contact.name}`,
-                time: notifyTime
-            });
-        });
-    }
+//     if (cont && cont.length > 0) {
+//         cont.forEach((contact) => {
+//             id += 1;
+//             const notifyTime = calcTimeAgo(contact.date);
+//             notifications.push({
+//                 id: id,
+//                 type: "contact",
+//                 contact,
+//                 message: `Te contactó ${contact.name}`,
+//                 time: notifyTime
+//             });
+//         });
+//     }
 
-    return notifications;
-});
+//     return notifications;
+// });
 
 
 RaffleSchema.pre('save', function (next) {

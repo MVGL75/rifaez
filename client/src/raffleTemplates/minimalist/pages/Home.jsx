@@ -53,13 +53,14 @@ const Home = ({availableTickets, setAvailableTickets}) => {
 
   useEffect(() => {
     const TOTAL_TICKETS = raffle.maxParticipants;
+    const pad = TOTAL_TICKETS.toString().length < 5 ? TOTAL_TICKETS.toString().length : 5
     const initialTickets = Array.from({ length: TOTAL_TICKETS }, (_, i) => {
       const number = i + 1;
       let status = "purchased"
       if(availableTickets.includes(number)) status = "available"
       return {
         id: number,
-        number: String(number).padStart(3, '0'),
+        number: String(number).padStart(pad, '0'),
         status,
       };
     });
@@ -280,7 +281,7 @@ const handleTouchEnd = (e) => {
   return (
     <div className="flex flex-col items-center min-h-screen bg-backgroundRaffle">
       <div className="flex flex-col bg-headerRaffle items-center font-semibold w-full px-3 py-2 text-headerRaffle-foreground ">
-      <h1 className="text-3xl uppercase lg:text-6xl mb-2 tracking-[-2.5px]">
+      <h1 className="text-3xl uppercase text-center lg:text-6xl mb-2 tracking-[-2.5px]">
        {raffle?.title}
        </h1>
         {raffle.description && <p className="mb-3 text-lg">{raffle.description}</p> }
@@ -344,7 +345,7 @@ const handleTouchEnd = (e) => {
                       <img
                         src={img.url}
                         alt={img.alt}
-                        className="w-full h-full object-contain"
+                        className="w-full h-full object-cover"
                       />
                     </div>
                     );
@@ -372,10 +373,21 @@ const handleTouchEnd = (e) => {
           </div>
         </motion.div>
       </div>
-      <div className="uppercase w-full text-center py-[5px] tracking-[-1px] px-3 bg-headerRaffle text-headerRaffle-foreground mb-8 text-base lg:text-xl">1 Boleto por $5</div>
+      <div className="uppercase w-full text-center flex flex-col gap-1 py-[5px] tracking-[-1px] px-3 bg-headerRaffle text-headerRaffle-foreground mb-8 text-base lg:text-xl">
+        <span>1 Boleto por ${raffle.price * 1}</span>
+        <span>2 Boleto por ${raffle.price * 2}</span>
+        <span>3 Boleto por ${raffle.price * 3}</span>
+        <span>4 Boleto por ${raffle.price * 4}</span>
+        <span>5 Boleto por ${raffle.price * 5}</span>
+        <span>10 Boleto por ${raffle.price * 10}</span>
+        <span>25 Boleto por ${raffle.price * 25}</span>
+        <span>30 Boleto por ${raffle.price * 30}</span>
+        <span>50 Boleto por ${raffle.price * 50}</span>
+        <span>100 Boleto por ${raffle.price * 100}</span>
+      </div>
       {raffle.extraInfo &&
         <section className="w-full text-center px-4 mb-4 space-y-3 whitespace-pre-line">
-          <div className=" p-4 text-[19px] lg:text-[28px] lg:leading-[22px] tracking-[-1px] leading-[16px] text-colorRaffle">{raffle.extraInfo}</div>
+          <div className=" p-4 text-[19px] lg:text-[28px] lg:leading-[30px] tracking-[-1px] leading-[16px] text-colorRaffle">{raffle.extraInfo}</div>
         </section>
       }
 
@@ -409,7 +421,7 @@ const handleTouchEnd = (e) => {
         
       </section>
       {(selectedTickets && selectedTickets.length > 0) && 
-        <div className="space-y-4 flex w-full flex-col bg-headerRaffle py-3 items-center sticky z-[100] top-[80px] lg:top-[120px] left-0">
+        <div className="space-y-4 flex w-full flex-col bg-headerRaffle py-5 items-center sticky z-[100] top-[70px] lg:top-[110px] left-0">
         <button className="px-6 max-w-full w-fit py-2  rounded-md bg-primaryRaffle text-primaryRaffle-foreground flex justify-center items-center gap-3">
           <ArrowRight/>
           <span className="text-lg" onClick={()=>{document.getElementById('purchase-form').showModal()}}>Apartar</span>
@@ -422,7 +434,7 @@ const handleTouchEnd = (e) => {
                 </span>
               ))}
           </div>
-          <p className="text-yellow-400">{selectedTickets.length} BOLETOS SELECCIONADOS PARA ELIMINAR HAZ CLICK EN EL BOLETO</p>
+          <p className="text-yellow-400 text-center">{selectedTickets.length} BOLETOS SELECCIONADOS PARA ELIMINAR HAZ CLICK EN EL BOLETO</p>
            <p className="text-lg">
            Total: ${selectedTickets.length * raffle?.price} MXN
          </p>
@@ -447,7 +459,7 @@ const handleTouchEnd = (e) => {
               <>
               <div className="flex justify-between w-[320px] max-w-full items-center">
                 <div className="flex items-center gap-3">
-                  <div className="bg-lightTint rounded-sm w-[55px] h-[30px] border border-borderRaffle text-colorRaffle-600 line-through cursor-not-allowed flex items-center justify-center">000</div>
+                  <div className="bg-colorRaffle border-borderRaffle text-colorRaffle rounded-sm w-[55px] h-[30px] border line-through cursor-not-allowed flex items-center justify-center">000</div>
                   <span>Pagados</span>
                 </div>
                 <div className="flex items-center gap-3">
@@ -478,7 +490,7 @@ const handleTouchEnd = (e) => {
                   isSelected={selectedTickets.some(st => st.id === filteredTickets[index].id)}
                 />
               )}
-              listClassName="grid grid-cols-5 sm:grid-cols-8 md:grid-cols-10 gap-1"
+              listClassName="grid grid-cols-5 sm:grid-cols-8 md:grid-cols-10 gap-[3px]"
               style={{ height: 500 }}
             />
             </div>
@@ -581,16 +593,16 @@ const handleTouchEnd = (e) => {
 
 const TicketItem = ({ ticket, onClick, isSelected }) => {
   const ticketClasses = cn(
-    "p-2 border rounded-md text-center font-medium transition-all duration-200 transform text-xs sm:text-sm",
+    "p-2 border rounded-sm text-center font-medium transition-all duration-200 transform text-xs sm:text-sm",
     {
-      "bg-lightTint border-borderRaffle text-colorRaffle-600 line-through cursor-not-allowed": ticket.status === 'purchased',
+      "bg-colorRaffle border-borderRaffle text-colorRaffle cursor-not-allowed": ticket.status === 'purchased',
       "bg-primaryRaffle border-0 text-primaryRaffle-foreground shadow-md scale-105": ticket.status === 'available' && isSelected,
-      "bg-backgroundRaffle text-primaryRaffle border-primaryRaffle hover:bg-primaryRaffle-300 hover:text-primaryRaffle-foreground cursor-pointer": ticket.status === 'available' && !isSelected,
+      "bg-backgroundRaffle text-colorRaffle border-primaryRaffle hover:bg-primaryRaffle-300 hover:text-primaryRaffle-foreground cursor-pointer": ticket.status === 'available' && !isSelected,
     }
   );
 
   return (
-    <div className="p-0.5">
+    <div className="">
     <motion.div
       onClick={ticket.status === 'available' ? () => onClick(ticket) : undefined}
       className={ticketClasses}

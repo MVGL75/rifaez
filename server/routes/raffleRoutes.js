@@ -1,5 +1,5 @@
 import express from 'express';
-import { createRaffle, viewUpdateRaffle, addNote, findRaffle, deleteRaffle, editFindRaffle, editRaffle, paymentRaffle, markPaid, verifyRaffle } from '../controllers/raffleController.js';
+import { createRaffle, viewUpdateRaffle, addNote, findRaffle, deleteRaffle, editFindRaffle, editRaffle, paymentRaffle, markPaid, viewNotification, verifyRaffle } from '../controllers/raffleController.js';
 import isAuthenticated from '../middleware/isAuthenticated.js';
 import upload from '../middleware/upload.js';
 import hasPermission from '../middleware/hasPermission.js';
@@ -18,6 +18,7 @@ router.post('/create', isAuthenticated, catchAsync(checkPlan), upload.array('ima
 router.post('/delete/:id', isAuthenticated, hasPermission, catchAsync(deleteRaffle));
 router.post('/edit/:id', isAuthenticated, hasPermission, upload.array('images', 10), catchAsync(rafflePlan("edit")), catchAsync(editRaffle));
 router.post('/:id/:ticketID/mark_paid', isAuthenticated, hasPermission, catchAsync(markPaid));
+router.post('/:id/:notificationid/view_notify', isAuthenticated, hasPermission, catchAsync(viewNotification));
 
 
 router.post('/:id/:ticketID/add_note', isAuthenticated, hasPermission, catchAsync(addNote));
