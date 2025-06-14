@@ -11,7 +11,7 @@ const api = axios.create({
   withCredentials: true,
 });
 
-const TicketsPage = () => {
+const TicketsPage = ({test}) => {
   const { id } = useParams();
   const [ticketNumber, setTicketNumber] = useState("");
   const [success, setSuccess] = useState(null)
@@ -38,6 +38,9 @@ const TicketsPage = () => {
 
   const handleVerification = async (e) => {
     e.preventDefault();
+    if(test){
+      return
+    }
     const res = await api.post(`/api/raffle/${id}/verify`, { query: ticketNumber })
     if(res.data.status === 200){
       setSuccess({message: 'success', ticket: res.data.ticket})

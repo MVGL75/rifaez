@@ -19,10 +19,91 @@ const TEMPLATES = {
   popular: minimalistLanding,
 }
 
+const dataTemplate = {
+  additionalPrizes: [],
+  availableTickets: Array.from({ length: 10000 }, (_, i) => i + 1).filter(n => ![33, 35, 67, 109, 844, 1203].includes(n)), // assuming tickets missing were 33,35,67
+  border_corner: "round",
+  business_name: "Rifaez",
+  colorPalette: {
+    header: 'black',
+    background: 'white',
+    accent: '#3782f2',
+    borders: '#3782f2',
+    color: 'black',
+  },
+  countdown: "off",
+  description: "",
+  email: "ejemplo@gmail.com",
+  endDate: "2025-08-01T00:00:00.000Z",
+  extraInfo: `Con tu boleto liquidado participas por:
+
+CHALLENGER 2016 - 10 JUNIO
+
+BONO:
+
+PIDIENDO Y PAGANDO EN LAS
+
+PRIMERAS 24 HORAS DE
+
+LANZAR EL AUTO:
+
+$10,000 MXN EXTRAS
+
+BONO FORÁNEO:
+
+$5,000 MXN
+
+PRONTO PAGO`,
+  facebookUrl: "https://facebook.com/rifaezmx",
+  font: "Poppins",
+  images: [
+    {
+      url: '/challenger2016.jpg',
+    },
+    {
+      url: '/challenger2016_2.jpg',
+    },
+  ],
+  isActive: true,
+  logo: {
+    url: '/RifaezLogo.png',
+    public_id: 'uploads/zchgelxpvqx1bhuntts0',
+    _id: '684c882f8c1698c4eacdcf55',
+  },
+  logo_display_name: true,
+  logo_position: "center",
+  logo_size: "lg",
+  logo_type: "on",
+  maxParticipants: 10000,
+  paymentMethods: [
+    {
+      bank: "BBVA",
+      person: "Juan Pérez",
+      number: "1234567890",
+      clabe: "012345678901234567",
+      instructions: "Envía tu comprobante al WhatsApp una vez realizado el pago.",
+    },
+    {
+      bank: "Santander",
+      person: "Laura Gómez",
+      number: "0987654321",
+      clabe: "765432109876543210",
+      instructions: "Envía tu comprobante al WhatsApp una vez realizado el pago.",
+    },
+  ],
+  phone: "6711132200",
+  price: 100,
+  purchasedTicketDisplay: "cross",
+  template: "popular",
+  timeLimitPay: 2,
+  title: "Dodge Challenger 2016",
+};
+
 function RaffleLanding() {
   const { id } = useParams();
   const [raffleData, setRaffle] = useState(null);
   const [isFirstVisit, setIsFirstVisit] = useState(true);
+  const [modeTest, setModeTest] = useState(false)
   const [isRaffleOver, setRaffleOver] = useState(false);
   const [loading, setLoading] = useState(false);
   const [notFound, setNotFound] = useState(null);
@@ -58,8 +139,25 @@ function RaffleLanding() {
         setLoading(false)
       } 
     };
+    if(id === "template_classic"){
+      const raffle = {...dataTemplate, template: "classic"}
+      setCustomRaffle(raffle);
+      setModeTest(true)
+      setRaffle(raffle)
+    } else if(id === "template_popular"){
+      const raffle = {...dataTemplate, template: "popular"}
+      setCustomRaffle(raffle);
+      setModeTest(true)
+      setRaffle(raffle)
+    } else if (id === "template_modern"){
+      const raffle = {...dataTemplate, template: "modern"}
+      setCustomRaffle(raffle);
+      setModeTest(true)
+      setRaffle(raffle)
+    } else {
+      fetchRaffle();
+    }
 
-    fetchRaffle();
   }, [id]);
   if(loading) return (
     <div className="w-screen h-screen flex items-center justify-center">
@@ -71,7 +169,7 @@ function RaffleLanding() {
   if (!raffleData) return null;
   const Layout = TEMPLATES[raffleData.template] || classicLanding;
   return (
-    <Layout raffle={raffleData}/>
+    <Layout raffle={raffleData} test={modeTest}/>
   );
 }
 

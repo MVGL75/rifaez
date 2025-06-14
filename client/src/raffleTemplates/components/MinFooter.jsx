@@ -2,6 +2,7 @@
 import React from "react";
 import {Link} from "react-router-dom";
 import { Facebook, Phone } from "lucide-react";
+import Logo from "../../Logo";
 
 const Footer = ({raffle}) => {
   const setPhoneFormat = (phone) => {
@@ -23,10 +24,10 @@ const Footer = ({raffle}) => {
     return parts.join('');
   }
   return (
-    <footer className="bg-headerRaffle w-screen text-headerRaffle-foreground underline">
+    <footer className="bg-headerRaffle w-screen text-headerRaffle-foreground">
         <div className="flex flex-col items-center w-full">
           
-          <div className="text-center flex flex-col items-center gap-2 w-full bg-borderRaffle px-3 py-3">
+          <div className="text-center underline flex flex-col items-center gap-2 w-full bg-borderRaffle px-3 py-3">
           { raffle.facebookUrl &&
               <a href={raffle.facebookUrl} className="hover:text-primaryRaffle">
                 <Facebook size={24} />
@@ -38,9 +39,14 @@ const Footer = ({raffle}) => {
             </a>
           </div>
           <div className="text-center text-base px-3 py-3 ">
-            <a href="https://rifaez.com">Sistema desarrollado - Rifaez</a>
+          <div className="flex items-center gap-4 ">
+              <p className="no-underline mt-1">Sitio desarrollado por</p>
+              <Link to="/">
+                <Logo/>
+              </Link>
+            </div>
           </div>
-          <div className="mb-5">
+          <div className="mb-5 underline">
             <Link to="/contact">Contacto</Link>
           </div>
       </div>

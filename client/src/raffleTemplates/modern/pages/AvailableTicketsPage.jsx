@@ -15,7 +15,7 @@ const api = axios.create({
 });
 
 
-const AvailableTicketsPage = ({ availableTickets, setAvailableTickets }) => {
+const AvailableTicketsPage = ({ availableTickets, setAvailableTickets, test }) => {
   const raffle = useOutletContext()
   const navigate = useNavigate();
   const { toast } = useToast();
@@ -167,8 +167,16 @@ const AvailableTicketsPage = ({ availableTickets, setAvailableTickets }) => {
       alert("Por favor selecciona al menos un boleto");
       return;
     }
+    const newSelectedTickets = selectedTickets.map(ticket => ticket.id)
+    if(test){
+      localStorage.setItem('selectedTickets', JSON.stringify(newSelectedTickets));
+      localStorage.setItem('userInfo', JSON.stringify(value));
+      setAvailableTickets(prev => prev.filter(p => !newSelectedTickets.includes(p)))
+      setSelectedTickets([])
+      navigate('../pago');
+      return
+    }
     if(isValid){
-      const newSelectedTickets = selectedTickets.map(ticket => ticket.id)
       const res = await api.post(`/api/raffle/${id}/payment`, {...value, tickets: newSelectedTickets})
       if(res.data.status === 200){
         localStorage.setItem('selectedTickets', JSON.stringify(newSelectedTickets));

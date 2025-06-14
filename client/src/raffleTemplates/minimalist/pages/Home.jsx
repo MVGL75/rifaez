@@ -16,7 +16,7 @@ const api = axios.create({
   withCredentials: true,
 });
 
-const Home = ({availableTickets, setAvailableTickets}) => {
+const Home = ({availableTickets, setAvailableTickets, test}) => {
   const newMexicanStates = mexicanStates.filter(state => state !== "Extranjero")
   const navigate = useNavigate();
   const raffle = useOutletContext();
@@ -219,8 +219,16 @@ const Home = ({availableTickets, setAvailableTickets}) => {
       alert("Por favor selecciona al menos un boleto");
       return;
     }
+    const newSelectedTickets = selectedTickets.map(ticket => ticket.id)
+    if(test){
+      localStorage.setItem('selectedTickets', JSON.stringify(newSelectedTickets));
+      localStorage.setItem('userInfo', JSON.stringify(value));
+      setAvailableTickets(prev => prev.filter(p => !newSelectedTickets.includes(p)))
+      setSelectedTickets([])
+      navigate('payment');
+      return
+    }
     if(isValid){
-      const newSelectedTickets = selectedTickets.map(ticket => ticket.id)
       const res = await api.post(`/api/raffle/${id}/payment`, {...value, tickets: newSelectedTickets})
       if(res.data.status === 200){
         localStorage.setItem('selectedTickets', JSON.stringify(newSelectedTickets));
@@ -421,7 +429,7 @@ const handleTouchEnd = (e) => {
         
       </section>
       {(selectedTickets && selectedTickets.length > 0) && 
-        <div className="space-y-4 flex w-full flex-col bg-headerRaffle py-5 items-center sticky z-[100] top-[70px] lg:top-[110px] left-0">
+        <div className="space-y-4 flex w-full flex-col bg-headerRaffle py-6 items-center sticky z-[100] top-[65px] lg:top-[110px] left-0">
         <button className="px-6 max-w-full w-fit py-2  rounded-md bg-primaryRaffle text-primaryRaffle-foreground flex justify-center items-center gap-3">
           <ArrowRight/>
           <span className="text-lg" onClick={()=>{document.getElementById('purchase-form').showModal()}}>Apartar</span>

@@ -9,16 +9,16 @@ import Layout from "./Layout"
 import RaffleNotFound from "../RaffleNotFound"
 import { useEffect, useState } from "react";
 
-function Landing({raffle}) {
+function Landing({raffle, test}) {
   const [availableTickets, setAvailableTickets] = useState(raffle.availableTickets || [])
 
   return (
     <>
        <Routes>
         <Route path="/" element={<Layout raffle={raffle} />}>
-          <Route index  element={<TicketVerificationRaffle availableTickets={availableTickets} setAvailableTickets={setAvailableTickets}/>} />
+          <Route index  element={<TicketVerificationRaffle availableTickets={availableTickets} setAvailableTickets={setAvailableTickets} test={test}/>} />
           <Route path="contacto"  element={<ContactRaffle />} />
-          <Route path="verificar"  element={<TicketRaffle />} />
+          <Route path="verificar"  element={<TicketRaffle test={test} />} />
           <Route path="pago"  element={<PaymentRaffle  />} />
           <Route path="*" element={<RaffleNotFound />} />
         </Route>

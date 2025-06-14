@@ -11,7 +11,7 @@ const api = axios.create({
   withCredentials: true,
 });
 
-const TicketVerification = () => {
+const TicketVerification = ({test}) => {
   const { id } = useParams();
   const [ticketNumber, setTicketNumber] = useState("");
   const [success, setSuccess] = useState(null)
@@ -38,6 +38,9 @@ const TicketVerification = () => {
 
   const handleVerification = async (e) => {
     e.preventDefault();
+    if(test){
+      return
+    }
     const res = await api.post(`/api/raffle/${id}/verify`, { query: ticketNumber })
     if(res.data.status === 200){
       setSuccess({message: 'success', ticket: res.data.ticket})
@@ -56,9 +59,9 @@ const TicketVerification = () => {
         >
           {raffle.logo?.url ?
                 <div className={`h-32 ${raffle.logo_type === "on" && "border-borderRaffle border-2 rounded-full object-cover aspect-square overflow-hidden"} mb-6`}>
-                <img alt="logo" className="h-32 object-cover mx-auto mb-6" src={raffle.logo.url}  />
+                <img alt="logo" className="h-32 object-cover mx-auto" src={raffle.logo.url}  />
             </div>
-                : <DefaultLogo className="rounded-full w-32 h-32 mx-auto mb-6"/> }
+                : <DefaultLogo className="rounded-full w-32 h-32 mx-auto"/> }
           <h1 className="text-3xl font-bold text-colorRaffle mb-4">
             VERIFICADOR DE BOLETOS
           </h1>

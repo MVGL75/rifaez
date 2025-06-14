@@ -16,7 +16,7 @@ const api = axios.create({
 });
 
 
-const Home = ({availableTickets, setAvailableTickets}) => {
+const Home = ({availableTickets, setAvailableTickets, test}) => {
   const newMexicanStates = mexicanStates.filter(state => state !== "Extranjero")
   const navigate = useNavigate();
   const raffle = useOutletContext();
@@ -205,8 +205,16 @@ const Home = ({availableTickets, setAvailableTickets}) => {
       alert("Por favor selecciona al menos un boleto");
       return;
     }
+    const newSelectedTickets = selectedTickets.map(ticket => ticket.id)
+    if(test){
+      localStorage.setItem('selectedTickets', JSON.stringify(newSelectedTickets));
+      localStorage.setItem('userInfo', JSON.stringify(value));
+      setAvailableTickets(prev => prev.filter(p => !newSelectedTickets.includes(p)))
+      setSelectedTickets([])
+      navigate('payment');
+      return
+    }
     if(isValid){
-      const newSelectedTickets = selectedTickets.map(ticket => ticket.id)
       const res = await api.post(`/api/raffle/${id}/payment`, {...value, tickets: newSelectedTickets})
       if(res.data.status === 200){
         localStorage.setItem('selectedTickets', JSON.stringify(newSelectedTickets));

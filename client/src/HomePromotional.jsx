@@ -4,8 +4,8 @@ import { Button } from "./raffleTemplates/components/ui/button"
 import { Line } from "react-chartjs-2";
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/home_components/ui/card';
 import { motion } from "framer-motion";
-import { ChevronRight, Shuffle, Rocket, CheckCircle, Zap, Award, BarChart, Users, Palette, Globe, MessageCircle, Search, Ticket, Check, Router, PanelsTopLeft, ChartBar, Server, User, Tag, MapPin, Phone, MessageSquare } from "lucide-react"
-import { useNavigate } from "react-router-dom"
+import { ChevronRight, Shuffle, Rocket, CheckCircle, Zap, Award, BarChart, Users, Palette, Globe, MessageCircle, Search, Ticket, Check, Router, PanelsTopLeft, ChartBar, Server, User, Tag, MapPin, Phone, MessageSquare, Grid3X3 } from "lucide-react"
+import { Link, useNavigate } from "react-router-dom"
 import { useState, useEffect, useRef } from "react";
 import { Chart } from "chart.js";
 export default function HomePromotional(){
@@ -387,6 +387,37 @@ export default function HomePromotional(){
                               </div>
                             </div>
                       </div>
+              </div>
+            </section> 
+            <section className="mx-auto py-20 max-w-[100vw] sm:px-14 px-8 w-[700px] customLg:w-[1400px]">
+                <div className="flex flex-col customLg:flex-row h-full max-w-full justify-between customLg:items-center gap-10">
+                    <div className="grow flex flex-col justify-center items-center gap-5">
+                    <div className="flex items-center justify-center w-20 h-20 shadow-lg rounded-full">
+                                <Grid3X3 className="w-10 h-10 text-primary"/>
+                        </div>
+                        <h1 className="text-3xl">Plantillas</h1>
+                        <p className="max-w-[400px] text-center">Ve las plantillas únicas que ofrece Rifaez para potenciar tus rifas al máximo.</p>
+                    </div>
+                    <div className="grow flex flex-col gap-8">
+                      <Link to="/raffle/template_classic">
+                        <div className="bg-white flex items-center justify-between shadow-lg hover:shadow-primary hover:text-primary w-full px-6 py-4 text-lg rounded-lg">
+                          <span>Clasica</span>
+                          <ChevronRight className="w-6 h-6"/>
+                        </div>
+                      </Link>
+                      <Link to="/raffle/template_popular">
+                        <div className="bg-white flex items-center justify-between shadow-lg hover:shadow-primary hover:text-primary w-full px-6 py-4 text-lg rounded-lg">
+                          <span>Popular</span>
+                          <ChevronRight className="w-6 h-6"/>
+                        </div>
+                      </Link>
+                      <Link to="/raffle/template_modern">
+                        <div className="bg-white flex items-center justify-between shadow-lg hover:shadow-primary hover:text-primary w-full px-6 py-4 text-lg rounded-lg">
+                          <span>Moderna</span>
+                          <ChevronRight className="w-6 h-6"/>
+                        </div>
+                      </Link>
+                    </div>
               </div>
             </section>  
             <section className="mx-auto py-20 max-w-[100vw] sm:px-14 px-8 w-[700px] customLg:w-[1400px]">
