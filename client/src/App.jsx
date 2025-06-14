@@ -157,8 +157,11 @@ const AppContent = () => {
   }, []);
 
   useEffect(() => {
+    console.log("check", user)
     if (user) {
+      console.log(user.raffles)
       const raffles = user?.raffles?.length > 0 ? user?.raffles : [null];
+      console.log(raffles)
       setSelectedRaffle(raffles[0]);
     }
   }, [user]);
@@ -191,108 +194,109 @@ const AppContent = () => {
   }
 
   
-
-  return (
-    <>
-      <Routes>
-      <Route path="/" element={<HomePromotional/>} />
-        <Route
-          path="/raffle-admin"
-          element={
-            <MainLayout
-              selectedRaffle={selectedRaffle}
-              setSelectedRaffle={setSelectedRaffle}
-            />
-          }
-        >
-          {appError ? (
-            <Route path="*" element={<AppError />} />
-          ) : (
-            <>
-              <Route
-                index
-                element={
-                  <ProtectedRoute>
-                    <RaffleSelected selectedRaffle={selectedRaffle}>
+  if(selectedRaffle && user){
+    return (
+      <>
+        <Routes>
+        <Route path="/" element={<HomePromotional/>} />
+          <Route
+            path="/raffle-admin"
+            element={
+              <MainLayout
+                selectedRaffle={selectedRaffle}
+                setSelectedRaffle={setSelectedRaffle}
+              />
+            }
+          >
+            {appError ? (
+              <Route path="*" element={<AppError />} />
+            ) : (
+              <>
+                <Route
+                  index
+                  element={
+                    <ProtectedRoute>
+                      <RaffleSelected selectedRaffle={selectedRaffle}>
+                        <RaffleFinalizedCheck selectedRaffle={selectedRaffle}>
+                          <HomePage selectedRaffle={selectedRaffle} />
+                          </RaffleFinalizedCheck>
+                      </RaffleSelected>
+                    </ProtectedRoute>
+                  }
+                />
+                <Route
+                  path="stats"
+                  element={
+                    <ProtectedRoute>
+                      <RaffleSelected selectedRaffle={selectedRaffle}>
                       <RaffleFinalizedCheck selectedRaffle={selectedRaffle}>
-                        <HomePage selectedRaffle={selectedRaffle} />
+                        <StatsPage selectedRaffle={selectedRaffle} />
                         </RaffleFinalizedCheck>
-                    </RaffleSelected>
-                  </ProtectedRoute>
-                }
-              />
-              <Route
-                path="stats"
-                element={
-                  <ProtectedRoute>
-                    <RaffleSelected selectedRaffle={selectedRaffle}>
-                    <RaffleFinalizedCheck selectedRaffle={selectedRaffle}>
-                      <StatsPage selectedRaffle={selectedRaffle} />
-                      </RaffleFinalizedCheck>
-                    </RaffleSelected>
-                  </ProtectedRoute>
-                }
-              />
-              <Route
-                path="create"
-                element={
-                  <ProtectedRoute>
-                    <CheckPlan userJustCreated={userJustCreated}>
-                      <CreateRafflePage userJustCreated={userJustCreated} setUserJustCreated={setUserJustCreated} />
-                    </CheckPlan>
-                  </ProtectedRoute>
-                }
-              />
-              <Route
-                path="edit"
-                element={
-                  <ProtectedRoute>
-                    <EditRafflePage />
-                  </ProtectedRoute>
-                }
-              />
-              <Route
-                path="edit/:id"
-                element={
-                  <ProtectedRoute>
-                    <RaffleEditPage />
-                  </ProtectedRoute>
-                }
-              />
-              <Route
-                path="settings"
-                element={
-                  <ProtectedRoute>
-                    <SettingsPage />
-                  </ProtectedRoute>
-                }
-              />
-              <Route path="notifications" setSelectedRaffle={setSelectedRaffle} element={<ProtectedRoute><NotificationsPage/></ProtectedRoute>}/>
-              <Route
-                path="ticket/:raffleID/:transactionID"
-                element={
-                  <ProtectedRoute>
-                    <TicketDetails />
-                  </ProtectedRoute>
-                }
-              />
-              
-              <Route path="*" element={<AppNotFound />} />
-            </>
-          )}
-        </Route>
-        <Route path="/login" element={<RedirectHome />} />
-          <Route path="/register" element={<RedirectHome />} />
-        <Route path="/privacy-policy" element={<PrivacyPolicy/>} />
-          <Route path="/reset-password" element={<RecoverPass/>}/>
-        <Route path="/pricing-plan" element={<PricingPlan />} />
-        <Route path="/checkout" element={<CheckoutForm />} />
-        <Route path="/checkout/return" element={<Return setUserJustCreated={setUserJustCreated} />} />
-        <Route path="/raffle/:id/*" element={<RaffleLanding />}></Route>
-      </Routes>
-      {popError && <PopError message={popError.message} status={popError.status} />}
-    </>
-  );
+                      </RaffleSelected>
+                    </ProtectedRoute>
+                  }
+                />
+                <Route
+                  path="create"
+                  element={
+                    <ProtectedRoute>
+                      <CheckPlan userJustCreated={userJustCreated}>
+                        <CreateRafflePage userJustCreated={userJustCreated} setUserJustCreated={setUserJustCreated} />
+                      </CheckPlan>
+                    </ProtectedRoute>
+                  }
+                />
+                <Route
+                  path="edit"
+                  element={
+                    <ProtectedRoute>
+                      <EditRafflePage />
+                    </ProtectedRoute>
+                  }
+                />
+                <Route
+                  path="edit/:id"
+                  element={
+                    <ProtectedRoute>
+                      <RaffleEditPage />
+                    </ProtectedRoute>
+                  }
+                />
+                <Route
+                  path="settings"
+                  element={
+                    <ProtectedRoute>
+                      <SettingsPage />
+                    </ProtectedRoute>
+                  }
+                />
+                <Route path="notifications" setSelectedRaffle={setSelectedRaffle} element={<ProtectedRoute><NotificationsPage/></ProtectedRoute>}/>
+                <Route
+                  path="ticket/:raffleID/:transactionID"
+                  element={
+                    <ProtectedRoute>
+                      <TicketDetails />
+                    </ProtectedRoute>
+                  }
+                />
+                
+                <Route path="*" element={<AppNotFound />} />
+              </>
+            )}
+          </Route>
+          <Route path="/login" element={<RedirectHome />} />
+            <Route path="/register" element={<RedirectHome />} />
+          <Route path="/privacy-policy" element={<PrivacyPolicy/>} />
+            <Route path="/reset-password" element={<RecoverPass/>}/>
+          <Route path="/pricing-plan" element={<PricingPlan />} />
+          <Route path="/checkout" element={<CheckoutForm />} />
+          <Route path="/checkout/return" element={<Return setUserJustCreated={setUserJustCreated} />} />
+          <Route path="/raffle/:id/*" element={<RaffleLanding />}></Route>
+        </Routes>
+        {popError && <PopError message={popError.message} status={popError.status} />}
+      </>
+    );
+  } 
 };
 
 const App = () => {

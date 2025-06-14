@@ -5,7 +5,6 @@ import { ChevronDown, Bell } from "lucide-react";
 
 const RaffleSelector = ({ raffles, selectedRaffle, onSelect }) => {
   const [isOpen, setIsOpen] = React.useState(false);
-
   return (
     <div className="relative w-full">
       <button
