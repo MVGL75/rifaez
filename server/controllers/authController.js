@@ -354,7 +354,7 @@ export const save = async(req, res)=> {
   async function setUserForClient(req, user){
     const popUser = await user.populate('raffles')
     const safeUser = sanitizeUser(popUser)
-    const domain = await CustomDomain.findOne({userId: user._id, status: { $in: ['pending', 'active'] }})
+    const domain = await CustomDomain.findOne({userId: user._id, status: { $in: ['verified', 'unverified'] }})
     return {...safeUser, currentPlan: plans[user.planId]?.name, planStatus: user.subscriptionStatus,  asWorker: req.user.asWorker, domain: domain || false}
   }
 

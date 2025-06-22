@@ -2,9 +2,23 @@
 import React, { useEffect } from "react";
 import { motion } from "framer-motion";
 import { ChevronDown, Bell } from "lucide-react";
-
+import { Link } from "react-router-dom";
 const RaffleSelector = ({ raffles, selectedRaffle, onSelect }) => {
   const [isOpen, setIsOpen] = React.useState(false);
+  if(selectedRaffle === "null"){
+    return (
+      <div className="relative w-full">
+      <Link
+        to="create"
+        className="w-full flex items-center justify-between p-3 rounded-lg border border-input bg-background hover:bg-accent transition-colors"
+      >
+        <div className="max-w-full overflow-x-auto flex items-center space-x-2">
+          <span className="font-medium max-w-full whitespace-nowrap">Crear Rifa +</span>
+        </div>
+      </Link>
+    </div>
+    )
+  }
   return (
     <div className="relative w-full">
       <button

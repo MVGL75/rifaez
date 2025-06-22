@@ -90,17 +90,19 @@ export const AuthProvider = ({ children }) => {
 
   const connectDomain = async (domain) => {
     try {
+      console.log(domain, user._id, "hi")
       const res = await api.post('/api/domains', {domain, userId: user._id});
       return res.data;
     } catch (err) {
+      console.log(err)
       return { error: err.response?.data?.message || 'Connection failed' };
     }
   };
 
 
-  const verifyCNAME = async (subdomain, domain) => {
+  const verifyCNAME = async (domain) => {
     try {
-      const res = await api.post('/api/domains/verify/cname', {domain, subdomain});
+      const res = await api.post('/api/domains/verify/cname', {domain});
       return res.data;
     } catch (err) {
       return { error: err.response?.data?.message || 'Connection failed' };

@@ -14,11 +14,10 @@ const customDomainSchema = new mongoose.Schema({
     lowercase: true,
     trim: true,
   },
-  subdomain: {
+  domainType: {
     type: String,
-    // required: true,
-    lowercase: true,
-    trim: true,
+    enum: ['apex', 'subdomain'],
+    requires: true,
   },
   verified: {
     type: Boolean,
@@ -40,8 +39,8 @@ const customDomainSchema = new mongoose.Schema({
   },
   status: {
     type: String,
-    enum: ['active', 'pending', 'expired'],
-    default: 'pending',
+    enum: ['verified', 'unverified', 'expired'],
+    default: 'unverified',
   },
 });
 

@@ -84,7 +84,7 @@ const SettingsPage = () => {
     logo: user.logo || undefined,
     facebookUrl: user.facebookUrl || "",
     phone: user.phone,
-    domain: user.domain,
+    domain: user.domain ,
   });
 
   const handleLogout = () => {
@@ -266,7 +266,9 @@ const removeMethod = async (methodInp) => {
   }
 
   const [domainError, setDomainError] = useState(null)
+  const [domainType, setDomainType] = useState(null)
   const [loadingCertificate, setLoadingCertificate] = useState(null)
+  const [spinnerDomain, setSpinnerDomain] = useState(false)
 
   const verifyCertificate = async () => {
     setLoadingCertificate(true)
@@ -279,24 +281,22 @@ const removeMethod = async (methodInp) => {
 
   const connectDomainFunc = async (type) => {
     if(type === "create"){
+      setSpinnerDomain(true)
       const res = await connectDomain(domainV);
       if(res.status ===  200){
+        setDomainType(res.type)
         setRecord({step: 1, ...res.record})
         setDomainError(null)
       } else {
-        setDomainError(res.message)
+        setDomainError(res.error)
       }
+      setSpinnerDomain(false)
       return;
     } 
-    if(type === "cname"){
-      if(!subdomainV){
-        setWasSubmitted(prev => ({...prev, subdomain: true}))
-        setErrors(prev => ({...prev, subdomain: true}))
-        return;
-      }
-      const res = await verifyCNAME(subdomainV, domainV);
+    if(type === "verify"){
+      const res = await verifyCNAME(domainV);
       const newErr = {}
-      if(res.status ===  200){
+      if(res.verificationStatus ===  "verified"){
         setRecord({step: 3})
         setFormData(prev => ({...prev, domain: res.domain }))
         newErr.domain_verification = false
@@ -1153,7 +1153,7 @@ const removeMethod = async (methodInp) => {
               {formData.domain ? (
                  <div className="p-6 rounded-lg border border-input">
                   <h3 className="font-medium mb-4">Dominio Conectado</h3>
-                  {formData.domain.status === "active" ? (
+                  {formData.domain.status === "verified" ? (
                     <div className="mb-4 text-sm text-muted-foreground">Certificado Activo, ya puedes usar tu dominio.</div>
                   ) : (
                     <div className="mb-4 text-sm text-muted-foreground space-y-2">
@@ -1171,81 +1171,78 @@ const removeMethod = async (methodInp) => {
                     >{formData.domain.domain}</div>
                       <CircleCheck className="w-5 h-5 text-green-500 absolute right-5 top-1/2 -translate-y-1/2"/>
                     </div>
-                    <div className="relative">
-                    <label className="block mb-3 text-sm ">Subdominio:</label>
-                    <div
-                      className="w-full p-2 rounded-md border bg-background"
-                    >{formData.domain.subdomain}</div>
-                    </div>
                      <Button onClick={()=>{setFormData(prev => ({...prev, domain: false}))}} className="w-full">Cambiar Dominio</Button> 
                   </div>
                 </div>
               ) : (
-              <div className="p-6 rounded-lg border border-input">
-                <h3 className="font-medium mb-4">Conectar Dominio</h3>
-                <div className="space-y-4">
-                  <div className="relative">
-                  <input
-                    disabled={record.step !== 0}
-                    type="text"
-                    value={domainV}
-                    onChange={handleDomainChange}
-                    placeholder="ejemplo.com"
-                    className="w-full p-2 rounded-md border border-input bg-background"
-                  />
-                   {errors.domain_verification && <CircleX className="w-5 h-5 text-red-500 absolute right-5 top-1/2 -translate-y-1/2"/>}
-                   {successDomain && <CircleCheck className="w-5 h-5 text-green-500 absolute right-5 top-1/2 -translate-y-1/2"/>}
-                  </div>
-                  {record.step > 0 &&
-                  <div className="relative">
-                  <label className={`block mb-3 text-sm ${errors.subdomain && "text-red-500"}`}>Subdominio:</label>
-                  <input
-                    name="subdomain"
-                    type="text"
-                    value={subdomainV}
-                    onChange={handleDomainChange}
-                    placeholder="rifas"
-                    className={`w-full p-2 rounded-md border ${errors.subdomain ? "border-red-500" : "border-input"} bg-background`}
-                  />
-                  </div>
-                  }
-                  {record.step === 0 && <Button onClick={()=>{connectDomainFunc("create")}} className="w-full">Conectar Dominio</Button> }
-                  {record.step === 1 && <Button onClick={()=>{connectDomainFunc("cname")}} className="w-full">Verificar CNAME</Button>}
-                  {domainError && 
-                      <div className="text-destructive">{domainError}</div>
-                  }
-                </div>
-              </div>)}
+               
+                  <div className="p-6 rounded-lg border border-input">
+                  {spinnerDomain ? (
+                        <Spinner className="w-20 h-20 mx-auto" />
+                    ) : (
+                      <>
+                        <h3 className="font-medium mb-4">Conectar Dominio</h3>
+                        <div className="space-y-4">
+                          <div className="relative">
+                          <input
+                            disabled={record.step !== 0}
+                            type="text"
+                            value={domainV}
+                            onChange={handleDomainChange}
+                            placeholder="ejemplo.com"
+                            className="w-full p-2 rounded-md border border-input bg-background"
+                          />
+                          {errors.domain_verification && <CircleX className="w-5 h-5 text-red-500 absolute right-5 top-1/2 -translate-y-1/2"/>}
+                          {successDomain && <CircleCheck className="w-5 h-5 text-green-500 absolute right-5 top-1/2 -translate-y-1/2"/>}
+                          </div>
+                          {record.step === 0 && <Button onClick={()=>{connectDomainFunc("create")}} className="w-full">Conectar Dominio</Button> }
+                          {record.step === 1 && <Button onClick={()=>{connectDomainFunc("verify")}} className="w-full">Verificar DNS</Button>}
+                          {domainError && 
+                              <div className="text-destructive">{domainError}</div>
+                          }
+      
+                        </div>
+                        </>
+                      )}
+                     </div>
+              
+            )}
               {record.step === 1 && (
-                <div className="p-4 bg-background border rounded mt-6">
-                <h2 className="text-base font-medium mb-2">Configura el CNAME en tu DNS:</h2>
-                <div className="space-y-1 text-sm">
-                  <p><strong>CNAME</strong> </p>
-                  <p>Tipo: CNAME</p>
-                  <p>Nombre: <code>{subdomainV || '(el nombre de tu subdominio)'}</code></p>
-                  <p>Valor: <code>domains.rifaez.com</code></p>
-                </div>
+                <>
+                {domainType === "apex" &&
+                    <div className="p-4 bg-background border rounded mt-6">
+                      <h2 className="text-base font-medium mb-2">Configura tu DNS:</h2>
+                      <div className="space-y-1 text-sm">
+                        <p><strong>ANAME o ALIAS</strong> </p>
+                      <p> Agrega un registro ANAME o ALIAS apuntando a <code className="bg-blue-100 p-0.5">rifaez.onrender.com</code></p>
+                      </div>
+                      <div className="space-y-1 mt-4 text-sm">
+                        <p><strong>A</strong> </p>
+                      <p> Agrega un registro A apuntando a <code className="bg-blue-100 p-0.5">216.24.57.1</code></p>
+                      </div>
 
-                <p className="mt-4 text-sm text-muted-foreground">
-                  Agrega este registro en el panel DNS de tu proveedor (como GoDaddy, Namecheap o Cloudflare).
-                  Esto permitirá que tu dominio apunte correctamente a nuestra plataforma. Si ya lo hiciste, puedes proceder con la verificación.
-                </p>
-              </div>
-              )} 
-              {/* {record.step === 2 && (
-                  <div className="p-4 bg-background border rounded">
-                  <h2 className="text-base font-medium mb-2">Agrega este registro TXT a tu DNS:</h2>
-                  <div className="space-y-1 text-sm">
-                    <p>Tipo: {record?.type}</p>
-                    <p>Nombre: {record?.name}</p>
-                    <p>Valor: {record?.value}</p>
+                      <p className="mt-4 text-sm text-muted-foreground">
+                        Agrega este registro en el panel DNS de tu proveedor (como GoDaddy, Namecheap o Cloudflare).
+                        Esto permitirá que tu dominio apunte correctamente a nuestra plataforma. Si ya lo hiciste, puedes proceder con la verificación.
+                      </p>
+                    </div>
+                }
+                {domainType === "subdomain" && 
+                  <div className="p-4 bg-background border rounded mt-6">
+                    <h2 className="text-base font-medium mb-2">Configura tu DNS:</h2>
+                    <div className="space-y-1 text-sm">
+                      <p><strong>CNAME</strong> </p>
+                    <p> Agrega un registro CNAME apuntando a <code className="bg-blue-100 p-0.5">rifaez.onrender.com</code></p>
+                    </div>
+
+                    <p className="mt-4 text-sm text-muted-foreground">
+                      Agrega este registro en el panel DNS de tu proveedor (como GoDaddy, Namecheap o Cloudflare).
+                      Esto permitirá que tu dominio apunte correctamente a nuestra plataforma. Si ya lo hiciste, puedes proceder con la verificación.
+                    </p>
                   </div>
-                  <p className="mt-4 text-sm text-foreground">
-                    Una vez que hayas agregado este registro a tu proveedor de dominio (como GoDaddy, Namecheap o Cloudflare),
-                    haz clic en “Verificar” para confirmar la propiedad del dominio.
-                  </p>
-                </div>
-                 )} */}
+                }
+                </>
+              )} 
                 {record.step === 2 && (
                   <div className="p-4 bg-background border rounded mt-6">
                       <h2 className="text-base font-medium mb-2">Exito, el dominio fue conectado.</h2>

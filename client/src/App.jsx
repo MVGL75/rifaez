@@ -42,10 +42,10 @@ const ProtectedRoute = ({ children }) => {
   return children;
 };
 const RaffleSelected = ({ children, selectedRaffle }) => {
-  if (selectedRaffle) {
-    return children;
-  } else if (selectedRaffle !== false){
-      return <NoRaffle/>
+  if (selectedRaffle === "null") {
+    return <NoRaffle/>;
+  } else if (selectedRaffle){
+      return children;
   }
   return null;
 };
@@ -137,6 +137,7 @@ const AppContent = () => {
     try {
       try {
         const res = await api.get("/auth/user");
+        console.log(res)
         if (res.data?.status === 401) return;
         const user = res.data;
         const raffles = user?.raffles?.length > 0 ? user?.raffles : [null];
@@ -157,11 +158,8 @@ const AppContent = () => {
   }, []);
 
   useEffect(() => {
-    console.log("check", user)
     if (user) {
-      console.log(user.raffles)
-      const raffles = user?.raffles?.length > 0 ? user?.raffles : [null];
-      console.log(raffles)
+      const raffles = user?.raffles?.length > 0 ? user?.raffles : ["null"];
       setSelectedRaffle(raffles[0]);
     }
   }, [user]);
