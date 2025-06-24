@@ -1,11 +1,9 @@
 import Raffle from '../models/Raffle.js';
 import {User} from '../models/Users.js'
-import sanitizeUser from '../utils/sanitize.js';
 import sanitizeRaffle from '../utils/sanitizeRaffle.js';
 import { raffleValidationSchema } from '../validators/raffleSchema.js';
 import { ticketInfoValidationSchema } from '../validators/ticketInfoSchemaValidate.js';
-import CustomDomain from '../models/CustomDomain.js';
-import AppError from '../utils/AppError.js';
+import setUserForClient from '../functions/userClient.js';
 import { getNextTransactionId, RaffleCounter } from '../models/RaffleCounter.js';
 import { v2 as cloudinary } from 'cloudinary';
 import plans from "../seed/plans.js"
@@ -319,50 +317,6 @@ export const editRaffle = async (req, res) => {
   
 
 
-  async function setUserForClient(req, user){
-    const popUser = await user.populate('raffles')
-    const safeUser = sanitizeUser(popUser)
-    const domain = await CustomDomain.findOne({userId: user._id, status: 'active'})
-    return {...safeUser, currentPlan: plans[user.planId]?.name, planStatus: user.subscriptionStatus,  asWorker: req.user.asWorker, domain: domain || false}
-  }
-
 
 
   
-
-  // async function handleDB(id) {
-  //   const raffles = await Raffle.find({});
-    
-  //   for (const raffle of raffles) {
-  //     let dateObj = {};
-  //     const dailySales = raffle.stats.dailySales
-  //       .filter(day => {
-  //         if(!dateObj[day.date]){
-  //           const seenHours = new Set();
-  //           const timeArray = [];
-    
-  //           for (const hour of day.time) {
-  //             if (!seenHours.has(hour.hour)) {
-  //               seenHours.add(hour.hour);
-  //               timeArray.push(hour);
-  //             }
-  //         }
-  //           dateObj[day.date] = timeArray
-  //           return true;
-  //         }
-  //       })
-  //       .map(day => ({
-  //         ...day,
-  //         time: day.time.filter(hour =>
-  //           dateObj[day.date].some(h => h.hour === hour.hour)
-  //         ),
-  //       }));
-  
-  //     raffle.stats.dailySales = dailySales;
-  //     console.log(raffle.stats.dailySales)
-  //     await raffle.save();
-  //   }
-  // }
-  
-
-  // handleDB("683bc594c182578b0a194efa")

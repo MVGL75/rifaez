@@ -1,9 +1,8 @@
 import {User} from '../models/Users.js'
 import Raffle from '../models/Raffle.js';
 import { registerSchema, saveSchema, workerSchema, methodSchema } from '../validators/registerSchema.js';
-import CustomDomain from '../models/CustomDomain.js';
-import sanitizeUser from '../utils/sanitize.js';
 import { v2 as cloudinary } from 'cloudinary';
+import setUserForClient from '../functions/userClient.js';
 import plans from '../seed/plans.js';
 import passport from 'passport';
 import AppError from '../utils/AppError.js';
@@ -351,12 +350,7 @@ export const save = async(req, res)=> {
   }
 
 
-  async function setUserForClient(req, user){
-    const popUser = await user.populate('raffles')
-    const safeUser = sanitizeUser(popUser)
-    const domain = await CustomDomain.findOne({userId: user._id, status: { $in: ['verified', 'unverified'] }})
-    return {...safeUser, currentPlan: plans[user.planId]?.name, planStatus: user.subscriptionStatus,  asWorker: req.user.asWorker, domain: domain || false}
-  }
+
 
   export const addWorker = async (req, res) => {
     const {email, password} = req.body

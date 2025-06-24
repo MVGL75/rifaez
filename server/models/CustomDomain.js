@@ -17,7 +17,7 @@ const customDomainSchema = new mongoose.Schema({
   domainType: {
     type: String,
     enum: ['apex', 'subdomain'],
-    requires: true,
+    required: true,
   },
   verified: {
     type: Boolean,

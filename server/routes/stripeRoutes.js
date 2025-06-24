@@ -2,9 +2,8 @@ import express from 'express';
 import Stripe from 'stripe';
 import AppError from '../utils/AppError.js';
 import { User } from "../models/Users.js"
-import sanitizeUser from '../utils/sanitize.js';
+import setUserForClient from '../functions/userClient.js';
 import isAuthenticated from '../middleware/isAuthenticated.js';
-import CustomDomain from '../models/CustomDomain.js';
 import plans from '../seed/plans.js';
 import customDomain from '../middleware/customDomain.js';
 const stripe = new Stripe(process.env.STRIPE_SECRET_KEY, {
@@ -261,13 +260,6 @@ const findUser = async(req, res) => {
   if(!user) return res.json({ message: 'User not found', status: 401 });
   const clientUser = await setUserForClient(req, user)
   return res.json(clientUser);
-}
-
-async function setUserForClient(req, user){
-  const popUser = await user.populate('raffles')
-  const safeUser = sanitizeUser(popUser)
-  const domain = await CustomDomain.findOne({userId: user._id, status: 'active'})
-  return {...safeUser, currentPlan: plans[user.planId]?.name, planStatus: user.subscriptionStatus,  asWorker: req.user.asWorker, domain: domain || false}
 }
 
 

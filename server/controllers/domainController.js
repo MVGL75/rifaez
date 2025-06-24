@@ -1,7 +1,4 @@
 import customDomain from '../models/CustomDomain.js';
-import { User } from '../models/Users.js';
-import sanitizeUser from '../utils/sanitize.js';
-import plans from '../seed/plans.js';
 import dns from 'dns/promises';
 import axios from 'axios';
 import renderApi from '@api/render-api';
@@ -29,7 +26,6 @@ async function createCustomHostname(hostname) {
       }
     );
 
-    console.log('Custom hostname created:', response.data);
     return response.data;
   } catch (error) {
     console.error('Error creating custom hostname:', error.response?.data || error.message);
@@ -64,26 +60,6 @@ const getCustomHostnameStatus = async (hostnameId) => {
 export const createDomain = async (req, res) => {
     const { userId, domain } = req.body;
 
-  //   const entry = await customDomain.findOne({domain: domain});
-  //   if(entry){ 
-  //     if(userId === entry.userId.toString()){
-  //     return res.json({
-  //       message: 'Please add the following CNAME record to your DNS settings:',
-  //       record: {
-  //         type: 'CNAME',
-  //         name: `subdomain`,
-  //         value: 'domains.rifaez.com',
-  //       },
-  //       status: 200,
-  //     }
-  //   )
-  //   } else {
-  //     return res.json({
-  //       message: 'Este dominio ya esta registrado con otro usuario.',
-  //       status: 400,
-  //     })
-  //   }
-  // }
 
     if (!userId || !domain) return res.status(400).json({ error: 'Missing data' });
   
@@ -104,21 +80,22 @@ export const createDomain = async (req, res) => {
     if (existingDomain) {
       try {
         const response = await renderApi.createCustomDomain({name: domainBody.domain}, {serviceId: process.env.RENDER_SERVICE_ID})
-        // await renderApi.deleteCustomDomain({serviceId: process.env.RENDER_SERVICE_ID, customDomainIdOrName: existingDomain.domain})
+        await renderApi.deleteCustomDomain({serviceId: process.env.RENDER_SERVICE_ID, customDomainIdOrName: existingDomain.domain})
         existingDomain.domain = domain;
         existingDomain.verificationToken = verificationToken;
         existingDomain.status = "unverified";
+        existingDomain.domainType = response.data[0].domainType;
         savedDomain = await existingDomain.save();
         console.log(response, "data")
         if(response.data[0].domainType === "apex"){
           return res.json({
               status: 200,
-              type: "apex"
+              domain: savedDomain
           });
         } else {
           return res.json({
               status: 200,
-              type: "subdomain"
+              domain: savedDomain
           });
         }
         
@@ -148,7 +125,7 @@ export const createDomain = async (req, res) => {
       try {
         const response = await renderApi.createCustomDomain({name: domainBody.domain}, {serviceId: process.env.RENDER_SERVICE_ID})
         console.log(response, "data")
-        savedDomain = await customDomain.create(domainBody);
+        savedDomain = await customDomain.create({...domainBody, domainType: response.data[0].domainType});
         if(response.data[0].domainType === "apex"){
           return res.json({
             message: 'Please add the following CNAME record to your DNS settings:',
@@ -207,7 +184,6 @@ export const createDomain = async (req, res) => {
   export const verifyCname = async (req, res) => {
     try {
       const { domain } = req.body;
-      console.log('Creating Custom Hostname for:', domain);
   
       await renderApi.refreshCustomDomain({
         serviceId: process.env.RENDER_SERVICE_ID,
@@ -215,30 +191,19 @@ export const createDomain = async (req, res) => {
       })
 
       const result = await renderApi.retrieveCustomDomain({serviceId: process.env.RENDER_SERVICE_ID, customDomainIdOrName: domain})
+
   
       // Extract hostname ID (needed to poll later)
       const verificationStatus = result.data.verificationStatus;
 
       const entry = await customDomain.findOne({ domain });
-      // console.log(entry)
       entry.status = verificationStatus;
       entry.hostnameId = result.data.id; // Save hostnameId so you can poll later
       await entry.save();
-
-      if(verificationStatus === "verified"){
-        const user = await User.findById(req.user._id)
-        const clientUser = await setUserForClient(req, user)
-        return res.json({
-          domain: entry,
-          verificationStatus,
-          user: clientUser,
-        });
-      } else {
-        return res.json({
-          domain: entry,
-          verificationStatus,
-        });
-      }
+      return res.json({
+        domain: entry,
+        verificationStatus,
+      });
       
     } catch (err) {
       console.error('Error creating custom hostname:', err.response?.data || err.message);
@@ -246,12 +211,7 @@ export const createDomain = async (req, res) => {
     }
   };
 
-  async function setUserForClient(req, user){
-    const popUser = await user.populate('raffles')
-    const safeUser = sanitizeUser(popUser)
-    const domain = await customDomain.findOne({userId: user._id, status: { $in: ['verified', 'unverified'] }})
-    return {...safeUser, currentPlan: plans[user.planId]?.name, planStatus: user.subscriptionStatus,  asWorker: req.user.asWorker, domain: domain || false}
-  }
+
 
   export const pollHostnameStatus = async (req, res) => {
     try {
@@ -259,7 +219,6 @@ export const createDomain = async (req, res) => {
       const result = await getCustomHostnameStatus(hostnameId); // Your function to call Cloudflare API GET /custom_hostnames/:id
   
       const sslStatus = result.result?.ssl?.status || 'unknown';
-      console.log(`Polling hostname status: ${sslStatus}`);
   
       // Optionally update DB
       const entry = await customDomain.findOne({ hostnameId });
@@ -268,7 +227,6 @@ export const createDomain = async (req, res) => {
         await entry.save();
       }
 
-      console.log(entry)
   
       return res.json({
         valid: sslStatus === 'active',
