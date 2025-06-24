@@ -97,8 +97,9 @@ const RedirectHome = () => {
 };
 const AppContent = () => {
 
-  const isCustomDomain = !window.location.host.endsWith('rifaez.com');
-  if(false){
+  const isCustomDomain = !window.location.host.endsWith(import.meta.env.VITE_CURRENT_DOMAIN);
+
+  if(isCustomDomain || window.location.host !== import.meta.env.VITE_CURRENT_DOMAIN){
     return (
       <Routes>
         <Route path="/:id/*" element={<RaffleLanding />}></Route>

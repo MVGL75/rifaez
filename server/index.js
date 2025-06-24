@@ -44,49 +44,19 @@ app.use("/stripe/webhook", Webhook)
       console.log('Incoming Host:', hostname);
   
       // Is this a known custom domain?
-      const domainEntry = await CustomDomain.findOne({
-        $or: [
-          { domain: hostname, status: 'verified' },
-        ],
-      });
+      const domainEntry = await CustomDomain.findOne({ domain: hostname, status: 'verified' })
   
       const isCustomDomain = !!domainEntry;
   
-  
-      if (isCustomDomain) {
-        // Check if request path is allowed
-        const path = req.path;
-
-        const allowedRoutes = [
-          /^\/api\/raffle\/[^/]+\/payment$/ ,
-          /^\/api\/raffle\/[^/]+\/view$/ ,
-          /^\/api\/raffle\/[^/]+\/verify$/ ,
-           /^\/api\/raffle\/[^/]+$/ ,
-        ];
-
-      const isAllowed = allowedRoutes.some((regex) => {
-        return (
-          regex.test(req.path)
-        );
-      });
-
-      console.log(req.method, req.path)
-  
-        if (!isAllowed) {
-          console.log(`Blocked route for custom domain ${hostname}: ${path}`);
-          return res.status(403).send('Access forbidden for this domain.');
-        }
-      }
   
       // Attach tenant info for later use if needed
       if (isCustomDomain) {
         req.tenant = {
           domain: domainEntry.domain,
-          subdomain: domainEntry.subdomain,
           userId: domainEntry.userId,
         };
       }
-  
+      
       next();
     } catch (err) {
       console.error('Error in domain access middleware:', err.message);

@@ -6,6 +6,7 @@ import sanitizeUser from '../utils/sanitize.js';
 import isAuthenticated from '../middleware/isAuthenticated.js';
 import CustomDomain from '../models/CustomDomain.js';
 import plans from '../seed/plans.js';
+import customDomain from '../middleware/customDomain.js';
 const stripe = new Stripe(process.env.STRIPE_SECRET_KEY, {
   apiVersion: '2022-11-15'
 });
@@ -14,6 +15,8 @@ const stripe = new Stripe(process.env.STRIPE_SECRET_KEY, {
 const router = express.Router();
 
 const checkPriceId = [process.env.PRICE_ID_BASIC, process.env.PRICE_ID_PRO, process.env.PRICE_ID_BUSINESS]
+
+router.use(customDomain)
 
 
 router.post('/create-checkout-session', isAuthenticated, async (req, res) => {

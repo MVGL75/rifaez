@@ -6,7 +6,11 @@ import crypto from "crypto";
 import upload from '../middleware/upload.js';
 import isWorker from '../middleware/isWorker.js';
 import catchAsync from '../utils/catchAsync.js';
+import customDomain from '../middleware/customDomain.js';
 const router = express.Router();
+
+
+router.use(customDomain)
 
 router.post('/register', catchAsync(register));
 router.post('/delete_user', catchAsync(deleteUser));
