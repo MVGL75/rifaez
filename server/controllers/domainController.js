@@ -1,60 +1,56 @@
 import customDomain from '../models/CustomDomain.js';
-import dns from 'dns/promises';
 import axios from 'axios';
 import renderApi from '@api/render-api';
 renderApi.auth(process.env.RENDER_API_KEY);
 
 
-dns.setServers(['8.8.8.8', '8.8.4.4']);
 
-async function createCustomHostname(hostname) {
-  try {
-    const response = await axios.post(
-      `https://api.cloudflare.com/client/v4/zones/bf7cf8a974e628dd5389769df3af9cee/custom_hostnames`,
-      {
-        hostname: hostname,
-        ssl: {
-          method: "http",
-          type: "dv",
-        },
-      },
-      {
-        headers: {
-          Authorization: `Bearer ${process.env.CLOUDFLARE_API_TOKEN}`,
-          'Content-Type': 'application/json',
-        },
-      }
-    );
+// async function createCustomHostname(hostname) {
+//   try {
+//     const response = await axios.post(
+//       `https://api.cloudflare.com/client/v4/zones/bf7cf8a974e628dd5389769df3af9cee/custom_hostnames`,
+//       {
+//         hostname: hostname,
+//         ssl: {
+//           method: "http",
+//           type: "dv",
+//         },
+//       },
+//       {
+//         headers: {
+//           Authorization: `Bearer ${process.env.CLOUDFLARE_API_TOKEN}`,
+//           'Content-Type': 'application/json',
+//         },
+//       }
+//     );
 
-    return response.data;
-  } catch (error) {
-    console.error('Error creating custom hostname:', error.response?.data || error.message);
-    throw error;
-  }
-}
-
-
-const getCustomHostnameStatus = async (hostnameId) => {
-  try {
-    const response = await axios.get(
-      `https://api.cloudflare.com/client/v4/zones/bf7cf8a974e628dd5389769df3af9cee/custom_hostnames/${hostnameId}`,
-      {
-        headers: {
-          Authorization: `Bearer ${process.env.CLOUDFLARE_API_TOKEN}`,
-          'Content-Type': 'application/json',
-        },
-      }
-    );
-
-    return response.data;
-  } catch (error) {
-    console.error('Error fetching hostname status:', error.response?.data || error.message);
-    throw error;
-  }
-};
+//     return response.data;
+//   } catch (error) {
+//     console.error('Error creating custom hostname:', error.response?.data || error.message);
+//     throw error;
+//   }
+// }
 
 
-// createCustomHostname("make.com")
+// const getCustomHostnameStatus = async (hostnameId) => {
+//   try {
+//     const response = await axios.get(
+//       `https://api.cloudflare.com/client/v4/zones/bf7cf8a974e628dd5389769df3af9cee/custom_hostnames/${hostnameId}`,
+//       {
+//         headers: {
+//           Authorization: `Bearer ${process.env.CLOUDFLARE_API_TOKEN}`,
+//           'Content-Type': 'application/json',
+//         },
+//       }
+//     );
+
+//     return response.data;
+//   } catch (error) {
+//     console.error('Error fetching hostname status:', error.response?.data || error.message);
+//     throw error;
+//   }
+// };
+
 
 
 export const createDomain = async (req, res) => {
@@ -75,8 +71,6 @@ export const createDomain = async (req, res) => {
     
     let savedDomain;
 
-    // console.log(existingDomain)
-    // return;
     if (existingDomain) {
       try {
         const response = await renderApi.createCustomDomain({name: domainBody.domain}, {serviceId: process.env.RENDER_SERVICE_ID})
@@ -85,8 +79,9 @@ export const createDomain = async (req, res) => {
         existingDomain.verificationToken = verificationToken;
         existingDomain.status = "unverified";
         existingDomain.domainType = response.data[0].domainType;
+        existingDomain.hostnameId = response.data[0].id;
+        existingDomain.createdAt = new Date();
         savedDomain = await existingDomain.save();
-        console.log(response, "data")
         if(response.data[0].domainType === "apex"){
           return res.json({
               status: 200,
@@ -114,7 +109,7 @@ export const createDomain = async (req, res) => {
           500: 'Ha ocurrido un error inesperado en el servidor.',
           503: 'El servidor no está disponible en este momento.',
         };
-        const message = status || errorTranslations.status || 'Error desconocido';
+        const message = errorTranslations[status] || 'Error desconocido';
         
         return res.status(status).json({
           message,
@@ -124,29 +119,16 @@ export const createDomain = async (req, res) => {
     } else {
       try {
         const response = await renderApi.createCustomDomain({name: domainBody.domain}, {serviceId: process.env.RENDER_SERVICE_ID})
-        console.log(response, "data")
-        savedDomain = await customDomain.create({...domainBody, domainType: response.data[0].domainType});
+        savedDomain = await customDomain.create({...domainBody, domainType: response.data[0].domainType, hostnameId: response.data[0].id });
         if(response.data[0].domainType === "apex"){
           return res.json({
-            message: 'Please add the following CNAME record to your DNS settings:',
-              record: {
-                type: 'CNAME',
-                name: `subdomain`,
-                value: 'domains.rifaez.com',
-              },
-              status: 200,
-              type: "apex"
+            status: 200,
+            domain: savedDomain
           });
         } else {
           return res.json({
-            message: 'Please add the following CNAME record to your DNS settings:',
-              record: {
-                type: 'CNAME',
-                name: `subdomain`,
-                value: 'rifaez.onrender.com',
-              },
               status: 200,
-              type: "subdomain"
+              domain: savedDomain
           });
         }
         
@@ -165,7 +147,8 @@ export const createDomain = async (req, res) => {
           500: 'Ha ocurrido un error inesperado en el servidor.',
           503: 'El servidor no está disponible en este momento.',
         };
-        const message = status || errorTranslations.status || 'Error desconocido';
+
+        const message = errorTranslations[status] || 'Error desconocido';
         
         return res.status(status).json({
           message,
@@ -198,7 +181,6 @@ export const createDomain = async (req, res) => {
 
       const entry = await customDomain.findOne({ domain });
       entry.status = verificationStatus;
-      entry.hostnameId = result.data.id; // Save hostnameId so you can poll later
       await entry.save();
       return res.json({
         domain: entry,
@@ -212,33 +194,47 @@ export const createDomain = async (req, res) => {
   };
 
 
-
-  export const pollHostnameStatus = async (req, res) => {
+  export const deleteDomain = async (req, res) => {
     try {
-      const { hostnameId } = req.body;
-      const result = await getCustomHostnameStatus(hostnameId); // Your function to call Cloudflare API GET /custom_hostnames/:id
+      const { domainId } = req.body
+      const domain = await customDomain.findByIdAndDelete(domainId)
+      await renderApi.deleteCustomDomain({serviceId: process.env.RENDER_SERVICE_ID, customDomainIdOrName: domain.hostnameId})    
+      res.json({message: "deletion succesful"});
+    } catch (err) {
+      console.error('Error deleting custom hostname:', err.response?.data || err.message);
+      return res.status(400).json({ valid: false, error: err.message, status: 400 });
+    }
+      
+  }
+
+
+
+  // export const pollHostnameStatus = async (req, res) => {
+  //   try {
+  //     const { hostnameId } = req.body;
+  //     const result = await getCustomHostnameStatus(hostnameId); // Your function to call Cloudflare API GET /custom_hostnames/:id
   
-      const sslStatus = result.result?.ssl?.status || 'unknown';
+  //     const sslStatus = result.result?.ssl?.status || 'unknown';
   
-      // Optionally update DB
-      const entry = await customDomain.findOne({ hostnameId });
-      if (entry) {
-        entry.status = sslStatus === 'active' ? 'active' : 'pending';
-        await entry.save();
-      }
+  //     // Optionally update DB
+  //     const entry = await customDomain.findOne({ hostnameId });
+  //     if (entry) {
+  //       entry.status = sslStatus === 'active' ? 'active' : 'pending';
+  //       await entry.save();
+  //     }
 
   
-      return res.json({
-        valid: sslStatus === 'active',
-        status: 200,
-        sslStatus,
-        domain: entry,
-      });
-    } catch (err) {
-      console.error('Error polling hostname status:', err.response?.data || err.message);
-      return res.json({ valid: false, error: err.message, status: 400 });
-    }
-  };
+  //     return res.json({
+  //       valid: sslStatus === 'active',
+  //       status: 200,
+  //       sslStatus,
+  //       domain: entry,
+  //     });
+  //   } catch (err) {
+  //     console.error('Error polling hostname status:', err.response?.data || err.message);
+  //     return res.json({ valid: false, error: err.message, status: 400 });
+  //   }
+  // };
   
   
 

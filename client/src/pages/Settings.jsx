@@ -16,31 +16,22 @@ import {
   Upload, 
   Moon, 
   Sun, 
-  Languages, 
-  AlertTriangle, 
   Plus, 
   Link as LinkIcon, 
-  FileText, 
   LogOut, 
-  Mail, 
-  Lock, 
-  Building, 
   Check, 
   X, 
-  DollarSign, 
   CreditCard as PaymentIcon, 
   Wallet as Bank,
   Users,
   Facebook,
   Phone,
   Save,
-  Info,
   CircleX,
   CircleAlert,
   CirclePlus,
   Trash2,
   CircleCheck,
-  RotateCcw
 } from 'lucide-react';
 
 
@@ -54,7 +45,7 @@ const api = axios.create({
 
 const SettingsPage = () => {
   const navigate = useNavigate();
-  const { logout, deleteUser, user, setUser, save, setAppError, setPopError, connectDomain, verifyCNAME, pollHostname } = useAuth();
+  const { logout, deleteUser, user, setUser, save, setAppError, setPopError, connectDomain, verifyCNAME, domainDisconnect } = useAuth();
   const [activeSection, setActiveSection] = useState("account");
   const [theme, setTheme] = useState(user.theme ? user.theme : "system");
   const [language, setLanguage] = useState("es");
@@ -74,6 +65,7 @@ const SettingsPage = () => {
   const [domainError, setDomainError] = useState(null)
   const [loadingCertificate, setLoadingCertificate] = useState(null)
   const [spinnerDomain, setSpinnerDomain] = useState(false)
+  const [verifyLoading, setVerifyLoading] = useState(false)
   const [workers, setWorkers] = useState(user.workers || [])
   const [successMessage, setSuccessMessage] = useState("")
   const [passwordObj, setPasswordObj] = useState({})
@@ -263,14 +255,7 @@ const removeMethod = async (methodInp) => {
 
   
 
-  const verifyCertificate = async () => {
-    setLoadingCertificate(true)
-    const res = await pollHostname(formData.domain)
-    if(res.status === 200){
-      setFormData(prev => ({...prev, domain: res.domain}))
-    }
-    setLoadingCertificate(false)
-  }
+
 
   const connectDomainFunc = async (type) => {
     if(type === "create"){
@@ -286,6 +271,7 @@ const removeMethod = async (methodInp) => {
       return;
     } 
     if(type === "verify"){
+      setVerifyLoading(true)
       const res = await verifyCNAME(formData.domain?.domain);
       const newErr = {}
       if(res.verificationStatus ===  "verified"){
@@ -294,7 +280,18 @@ const removeMethod = async (methodInp) => {
       } else {
         newErr.domain_verification = true
       }
+      setVerifyLoading(false)
       setErrors(prev => ({...prev, ...newErr}))
+    }
+  }
+
+  const handleDomainDisconnect = async () => {
+    try {
+      await domainDisconnect(user.domain)
+      setUser(prev => ({...prev, domain: undefined }))
+      document.getElementById("confirm-d").close()
+    } catch (error) {
+      setAppError(error)
     }
   }
 
@@ -1129,6 +1126,22 @@ const removeMethod = async (methodInp) => {
       case "domains":
         return (
           <div className="space-y-6">
+             <dialog id="confirm-d" className="bg-background px-5 py-5 space-y-5 rounded-lg w-[400px] max-w-[calc(100vw-18px)] text-foreground">
+                  <div className="text-base">
+                      ¿Deseas desconectar tu dominio?
+                  </div> 
+                    <footer className="flex gap-3">
+                    <Button
+                            variant="outline"
+                            onClick={()=>{document.getElementById("confirm-d").close()}}
+                          >Cancelar</Button>
+                      <Button
+                        variant="destructive"
+                        onClick={handleDomainDisconnect}
+                        className="flex items-center"
+                      >Desconectar</Button>
+                    </footer>
+                </dialog>
             <h2 className="text-2xl font-semibold">Dominios</h2>
             
             <div className="space-y-4">
@@ -1136,18 +1149,11 @@ const removeMethod = async (methodInp) => {
                 <>
                  {formData.domain.status === "verified" ? (
                  <div className="p-6 rounded-lg border border-input">
-                  <h3 className="font-medium mb-4">Dominio Conectado</h3>
-                  {formData.domain.status === "verified" ? (
+                  <header className="flex justify-between mb-4">
+                    <h3 className="font-medium">Dominio Conectado</h3>
+                    <button onClick={()=>{document.getElementById("confirm-d").showModal()}} className="bg-destructive rounded-lg p-1"><X className="w-4 h-4"/></button>
+                  </header>
                     <div className="mb-4 text-sm text-muted-foreground">Certificado Activo, ya puedes usar tu dominio.</div>
-                  ) : (
-                    <div className="mb-4 text-sm text-muted-foreground space-y-2">
-                    <p>El estado de tu certificado sigue pendiente. Mientras no se active, no podrás utilizar el dominio. Haz clic en "Volver a verificar" para comprobar el estado nuevamente.</p>
-                        <button onClick={verifyCertificate} className="flex items-center gap-2 rounded bg-muted p-2 px-3 border border-input"> 
-                          <RotateCcw className="w-4 h-4" />
-                          <span>{loadingCertificate ? "Verificando..." : "Volver a verificar"}</span>
-                        </button>
-                  </div>
-                  )}
                   <div className="space-y-4">
                     <div className="relative">
                     <div
@@ -1175,7 +1181,7 @@ const removeMethod = async (methodInp) => {
                           {errors.domain_verification && <CircleX className="w-5 h-5 text-red-500 absolute right-5 top-1/2 -translate-y-1/2"/>}
                           {successDomain && <CircleCheck className="w-5 h-5 text-green-500 absolute right-5 top-1/2 -translate-y-1/2"/>}
                           </div>
-                          <Button onClick={()=>{connectDomainFunc("verify")}} className="w-full">Verificar DNS</Button>
+                          <Button onClick={()=>{connectDomainFunc("verify")}} className="w-full">{verifyLoading ? "Verificando..." : "Verificar DNS"}</Button>
       
                         </div>
                     </div>

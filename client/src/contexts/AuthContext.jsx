@@ -109,14 +109,22 @@ export const AuthProvider = ({ children }) => {
     }
   };
 
-  const pollHostname = async (domain) => {
+  const domainDisconnect = async (domain) => {
     try {
-      const res = await api.post('/api/domains/poll_hostname_status', {hostnameId: domain.hostnameId});
-      return res.data;
+      await api.post('/api/domains/disconnect', {domainId: domain._id });
     } catch (err) {
       return { error: err.response?.data?.message || 'Connection failed' };
     }
   };
+
+  // const pollHostname = async (domain) => {
+  //   try {
+  //     const res = await api.post('/api/domains/poll_hostname_status', {hostnameId: domain.hostnameId});
+  //     return res.data;
+  //   } catch (err) {
+  //     return { error: err.response?.data?.message || 'Connection failed' };
+  //   }
+  // };
   
   const save = async (user) => {
     try {
@@ -133,7 +141,7 @@ export const AuthProvider = ({ children }) => {
 
   return (
     <AuthContext.Provider 
-      value={{ user, login, logout, register, save, setUser, connectDomain, verifyCNAME, pollHostname, appError, setAppError, popError, setPopError, deleteUser, linkAccount, sendRecoveryEmail}}>
+      value={{ user, login, logout, register, save, setUser, connectDomain, verifyCNAME, appError, setAppError, domainDisconnect, popError, setPopError, deleteUser, linkAccount, sendRecoveryEmail}}>
       {children}
     </AuthContext.Provider>
   );
