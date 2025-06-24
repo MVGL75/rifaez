@@ -1284,17 +1284,6 @@ const removeMethod = async (methodInp) => {
                 </div>
               </div>
 
-              <div>
-                <h3 className="text-lg font-medium mb-4">Idioma</h3>
-                <select
-                  value={language}
-                  onChange={(e) => setLanguage(e.target.value)}
-                  className="w-full p-2 rounded-md border border-input bg-background"
-                >
-                  <option value="es">Español</option>
-                  <option value="en">English</option>
-                </select>
-              </div>
 
             </div>
           </div>
