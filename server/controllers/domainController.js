@@ -1,4 +1,7 @@
 import customDomain from '../models/CustomDomain.js';
+import { User } from '../models/Users.js';
+import sanitizeUser from '../utils/sanitize.js';
+import plans from '../seed/plans.js';
 import dns from 'dns/promises';
 import axios from 'axios';
 import renderApi from '@api/render-api';
@@ -221,15 +224,34 @@ export const createDomain = async (req, res) => {
       entry.status = verificationStatus;
       entry.hostnameId = result.data.id; // Save hostnameId so you can poll later
       await entry.save();
-      return res.json({
-        domain: entry,
-        verificationStatus,
-      });
+
+      if(verificationStatus === "verified"){
+        const user = await User.findById(req.user._id)
+        const clientUser = await setUserForClient(req, user)
+        return res.json({
+          domain: entry,
+          verificationStatus,
+          user: clientUser,
+        });
+      } else {
+        return res.json({
+          domain: entry,
+          verificationStatus,
+        });
+      }
+      
     } catch (err) {
       console.error('Error creating custom hostname:', err.response?.data || err.message);
       return res.status(400).json({ valid: false, error: err.message, status: 400 });
     }
   };
+
+  async function setUserForClient(req, user){
+    const popUser = await user.populate('raffles')
+    const safeUser = sanitizeUser(popUser)
+    const domain = await customDomain.findOne({userId: user._id, status: { $in: ['verified', 'unverified'] }})
+    return {...safeUser, currentPlan: plans[user.planId]?.name, planStatus: user.subscriptionStatus,  asWorker: req.user.asWorker, domain: domain || false}
+  }
 
   export const pollHostnameStatus = async (req, res) => {
     try {

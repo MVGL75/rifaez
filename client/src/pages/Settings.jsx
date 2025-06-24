@@ -299,6 +299,7 @@ const removeMethod = async (methodInp) => {
       if(res.verificationStatus ===  "verified"){
         setRecord({step: 3})
         setFormData(prev => ({...prev, domain: res.domain }))
+        setUser(res.user)
         newErr.domain_verification = false
       } else {
         newErr.domain_verification = true

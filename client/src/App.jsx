@@ -99,7 +99,7 @@ const AppContent = () => {
 
   const isCustomDomain = !window.location.host.endsWith("rifaez.com");
 
-  if(isCustomDomain || window.location.host !== "rifaez.com"){
+  if(false){
     return (
       <Routes>
         <Route path="/:id/*" element={<RaffleLanding />}></Route>
