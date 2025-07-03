@@ -32,10 +32,12 @@ import {
   CirclePlus,
   Trash2,
   CircleCheck,
+  CheckCircle,
 } from 'lucide-react';
 
 
 import axios from "axios";
+import Logo from "../Logo";
 const api = axios.create({
   baseURL: import.meta.env.VITE_CURRENT_HOST,
   withCredentials: true,
@@ -510,6 +512,7 @@ const removeMethod = async (methodInp) => {
   const handleSubscribe = (priceId) => {
       navigate(`/checkout?price_id=${priceId}`);
   }
+
   const handleSubscribeChange = async (priceId) => {
     setSpinner(true)
     try {
@@ -706,7 +709,7 @@ const removeMethod = async (methodInp) => {
                   </div>
                 </dialog>
               </div>)}
-              
+            
               
             </div>
           </div>
@@ -760,6 +763,24 @@ const removeMethod = async (methodInp) => {
                   />
                 </div>
               </div>
+                  <div>
+                    <label className="block text-sm font-medium mb-2">
+                      Rifaez Verificar
+                    </label>
+                    {user.verified ? (
+                      <Button variant="default" className="w-full flex justify-between px-4 py-6 rounded-md border border-input bg-background text-muted-foreground gap-3 hover">
+                        <span className="text-primary">Cuenta Verificada</span>
+                        <CheckCircle className="text-primary"/>
+                    </Button>
+                    ) : (
+                      <Button variant="outline" onClick={()=>{handleSubscribe(import.meta.env.VITE_PRICE_ID_VERIFY)}} className="w-full flex justify-start px-4 py-6 rounded-md border border-input bg-background text-muted-foreground gap-3 hover">
+                        <Logo />
+                        <span>Verificar Cuenta</span>
+                      </Button>
+                    )}
+                    
+                  </div>
+              
 
               <div>
                 <label className="block text-sm font-medium mb-2">

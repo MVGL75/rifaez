@@ -1,6 +1,7 @@
 import { Outlet } from "react-router-dom";
 import Navbar from "../components/MinNavbar";
 import Footer from "../components/MinFooter";
+import VerifiedFooter from "../components/Verified";
 import { useEffect } from "react";
 import "../noRadius.css";
 import WhatsWidget from "../components/WhatsWidget";
@@ -14,8 +15,14 @@ function Layout({raffle}) {
     <div className="">
       <Outlet context={raffle} />
     </div>
-    <WhatsWidget number={raffle.phone}/>
+    
     <Footer raffle={raffle} />
+    <div className='w-screen sticky bottom-0 right-0'>
+        <WhatsWidget number={raffle.phone}/>
+        {raffle.verified &&
+          <VerifiedFooter />
+        }
+    </div>
     </div>
   );
 }

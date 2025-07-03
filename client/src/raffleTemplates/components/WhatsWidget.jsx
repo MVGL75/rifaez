@@ -8,7 +8,7 @@ export default function WhatsWidget({number}){
                 href={`https://wa.me/521${number}`}
                 target="_blank"
                 rel="noopener noreferrer"
-                className="fixed bottom-6 right-6 bg-green-500 text-white px-4 py-4 rounded-full shadow-lg flex items-center gap-2 hover:bg-green-600 round-must"
+                className="absolute bottom-[calc(100%+8px)] right-6 bg-green-500 text-white w-min px-4 py-4 rounded-full shadow-lg flex items-center gap-2 hover:bg-green-600 round-must"
                 onMouseEnter={()=>{setShowText(true)}}
                 onMouseLeave={()=>{setShowText(false)}}
                 >

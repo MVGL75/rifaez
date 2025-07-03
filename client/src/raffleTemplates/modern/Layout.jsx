@@ -5,6 +5,7 @@ import { Menu, X, Aperture, Phone, Facebook } from 'lucide-react';
 import { Button } from './components/ui/button';
 import { cn } from '../lib/utils';
 import WhatsWidget from "../components/WhatsWidget";
+import VerifiedFooter from '../components/Verified';
 import "../noRadius.css";
 import DefaultLogo from "../components/ui/default-logo";
 import Logo from '../../Logo';
@@ -125,8 +126,7 @@ const Layout = ({raffle}) => {
           </motion.div>
         </AnimatePresence>
       </main>
-
-      <WhatsWidget number={raffle.phone}/>
+     
       <footer className="bg-headerRaffle border-t border-borderRaffle text-headerRaffle-foreground">
         <div className="max-w-[1400px] mx-auto px-4 sm:px-6 lg:px-8 py-6 flex items-center justify-center gap-3">
         <div className="flex flex-col items-center space-y-4">
@@ -159,6 +159,12 @@ const Layout = ({raffle}) => {
         </div>
         </div>
       </footer>
+      <div className='w-screen sticky bottom-0 right-0'>
+        <WhatsWidget number={raffle.phone}/>
+        {raffle.verified &&
+          <VerifiedFooter />
+        }
+    </div>
     </div>
   );
 };

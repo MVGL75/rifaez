@@ -115,7 +115,7 @@ export const editRaffle = async (req, res) => {
               availableTickets.push(i)
             }
           }
-          res.json({message: "Raffle found", status: 200, raffle: {...cleanRaffle, availableTickets: availableTickets, logo: user.logo, phone: user.phone, facebookUrl: user.facebookUrl, email: user.username, business_name: user.companyName}})
+          res.json({message: "Raffle found", status: 200, raffle: {...cleanRaffle, availableTickets: availableTickets, logo: user.logo, phone: user.phone, facebookUrl: user.facebookUrl, verified: user.verified, email: user.username, business_name: user.companyName}})
         } else {
           return res.json({message: "raffle inactive"})
         }

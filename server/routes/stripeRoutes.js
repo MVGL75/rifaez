@@ -13,7 +13,7 @@ const stripe = new Stripe(process.env.STRIPE_SECRET_KEY, {
 
 const router = express.Router();
 
-const checkPriceId = [process.env.PRICE_ID_BASIC, process.env.PRICE_ID_PRO, process.env.PRICE_ID_BUSINESS]
+const checkPriceId = [process.env.PRICE_ID_BASIC, process.env.PRICE_ID_PRO, process.env.PRICE_ID_BUSINESS, process.env.PRICE_ID_VERIFY]
 
 router.use(customDomain)
 
@@ -22,21 +22,28 @@ router.post('/create-checkout-session', isAuthenticated, async (req, res) => {
   const {priceId, customerEmail} = req.body;
   if (!priceId || !customerEmail) {
     throw new AppError({message: "missing priceid or customer email"});
-  }  
-  console.log(checkPriceId, priceId)
+  } 
   const newPriceId = checkPriceId.find(id => id === priceId)
   if(!newPriceId){
     throw new AppError({message: "price is invalid"});
   }
   const user = await User.findById(req.user._id)
-  if(user.subscriptionId){
-    const subscription = await stripe.subscriptions.retrieve(user.subscriptionId);
-    if(subscription){
-      await updateSubscription(user, subscription, priceId)
-      await findUser(req, res)
+  if(newPriceId !== process.env.PRICE_ID_VERIFY){
+    if(user.subscriptionId){
+      const subscription = await stripe.subscriptions.retrieve(user.subscriptionId);
+      if(subscription){
+        await updateSubscription(user, subscription, priceId)
+        await findUser(req, res)
+      }
+    }
+  } else {
+    if(user.verified){
+      throw new AppError({message: "user is already verified"});
     }
   }
+  
   try {
+
     const baseUrl = `${process.env.CLIENT_URL}/checkout/return?session_id={CHECKOUT_SESSION_ID}`;
 
     let extraParams = '';
@@ -47,9 +54,11 @@ router.post('/create-checkout-session', isAuthenticated, async (req, res) => {
     }
 
     const return_url = `${baseUrl}${extraParams}`;
+    console.log(newPriceId, newPriceId === process.env.PRICE_ID_VERIFY)
     const session = await stripe.checkout.sessions.create({
-      mode: 'subscription',
-    customer_email: customerEmail,
+      mode: newPriceId === process.env.PRICE_ID_VERIFY ? 'payment' : 'subscription',
+      customer: user.stripeCustomerId ? user.stripeCustomerId : undefined,
+      customer_email: user.stripeCustomerId ? undefined : customerEmail,
       ui_mode: 'embedded',
       locale: 'es',
       line_items: [
@@ -58,9 +67,7 @@ router.post('/create-checkout-session', isAuthenticated, async (req, res) => {
           quantity: 1,
         },
       ],
-      subscription_data: {
-        trial_period_days: 30
-      },
+      subscription_data: newPriceId === process.env.PRICE_ID_VERIFY ? undefined : {trial_period_days: 30},
       return_url,
     });
     res.json({ clientSecret: session.client_secret });
@@ -68,6 +75,29 @@ router.post('/create-checkout-session', isAuthenticated, async (req, res) => {
     throw new AppError(err)
   }
 });
+
+router.post("/verify-account", isAuthenticated, async (req, res) => {
+    try {
+      const session = await stripe.checkout.sessions.create({
+        ui_mode: 'embedded',
+        locale: 'es',
+        line_items: [
+          {
+            // Provide the exact Price ID (for example, price_1234) of the product you want to sell
+            price: process.env.PRICE_ID_VERIFY,
+            quantity: 1,
+          },
+        ],
+        mode: 'payment',
+        return_url: `${process.env.CLIENT_URL}/return?session_id={CHECKOUT_SESSION_ID}`,
+      });
+
+      res.json({ clientSecret: session.client_secret });
+      
+    } catch (error) {
+      
+    }
+})
 
 router.post("/update-plan", isAuthenticated, async (req, res) => {
   try {

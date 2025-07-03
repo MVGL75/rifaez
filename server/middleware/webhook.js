@@ -29,26 +29,49 @@ router.post('/', bodyParser.raw({ type: 'application/json' }), async (req, res) 
     // ✅ Handle the completed checkout session
     if (event.type === 'checkout.session.completed') {
       const session = event.data.object;
-
-      // You can access:
-      const customerEmail = session.customer_email;
       const customerId = session.customer;
-      const subscriptionId = session.subscription;
-      const subscription = await stripe.subscriptions.retrieve(subscriptionId);
-      const priceId = subscription.items.data[0].price.id;
-
-      // 🔁 Example: link to your user
-      const user = await User.findOne({ username: customerEmail });
-      if (user) {
-        user.stripeCustomerId = customerId;
-        user.subscriptionId = subscriptionId;
-        user.planId = priceId;
-        user.subscriptionStatus = 'active';
-        await user.save();
-        console.log(`✅ Subscription saved for ${customerEmail}`);
+      const customerEmail = session.customer_email;
+      let user
+      if(customerEmail){
+        user = await User.findOne({ username: customerEmail });
       } else {
-        console.warn(`⚠️ No user found with email: ${customerEmail}`);
+        user = await User.findOne({ stripeCustomerId: customerId });
       }
+
+      if (session.mode === 'subscription') {
+
+        const subscriptionId = session.subscription;
+        const subscription = await stripe.subscriptions.retrieve(subscriptionId);
+        const priceId = subscription.items.data[0].price.id;
+
+        if (user) {
+
+          user.stripeCustomerId = customerId;
+          user.subscriptionId = subscriptionId;
+          user.planId = priceId;
+          user.subscriptionStatus = 'active';
+
+          await user.save();
+          console.log(`✅ Subscription saved for ${customerEmail}`);
+        } else {
+          console.warn(`⚠️ No user found with email: ${customerEmail}`);
+        }
+      } else if (session.mode === 'payment') {
+        if (session.payment_status === 'paid') {
+          if (user) {
+
+            user.verified = true;
+            await user.save();
+
+            console.log(`✅ User verification sucessful for ${customerEmail}`);
+          } else {
+            console.warn(`⚠️ No user found with email: ${customerEmail}`);
+          }
+        }
+        // This was a one-time payment
+
+      }
+      
     }
     if (event.type === 'customer.subscription.deleted') {
       const subscription = event.data.object;
