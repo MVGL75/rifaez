@@ -1,10 +1,11 @@
 
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import { motion } from "framer-motion";
 import { Button } from "@/components/ui/button";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "@/contexts/AuthContext";
 import { saveSchema, workerSchema, passwordSchema, methodSchema } from "../validation/userSchema";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import Spinner from "../components/spinner"
 import DefaultLogo from "../raffleTemplates/components/ui/default-logo";
 import { 
@@ -63,6 +64,7 @@ const SettingsPage = () => {
   const [loading, setLoading] = useState(false)
   const [successDomain, setSuccessDomain] = useState(false)
   const [errors, setErrors] = useState({});
+  const [customBank, setCustomBank] = useState("")
   const [methods, setMethods] = useState(user.payment_methods || [])
   const [domainError, setDomainError] = useState(null)
   const [loadingCertificate, setLoadingCertificate] = useState(null)
@@ -71,6 +73,8 @@ const SettingsPage = () => {
   const [workers, setWorkers] = useState(user.workers || [])
   const [successMessage, setSuccessMessage] = useState("")
   const [passwordObj, setPasswordObj] = useState({})
+  const methodDialogRef = useRef(null)
+  const customSelectItemRef = useRef(null)
   const [formData, setFormData] = useState({
     name: user.name || "Juan Pérez",
     email: user.username || "juan@example.com",
@@ -135,7 +139,11 @@ const SettingsPage = () => {
 
   const addPaymentMethod = async () => {
     setWasSubmitted(prev => ({...prev, method: true}))
-    const {error, value} = methodSchema.validate(newMethod, {abortEarly: false});
+    const methodTemp = {...newMethod}
+    if(newMethod.bank === "otro"){
+      methodTemp.bank = customBank;
+    }
+    const {error, value} = methodSchema.validate(methodTemp, {abortEarly: false});
     let newObj = {}
     if(error){
       error.details.forEach(error => {
@@ -148,7 +156,7 @@ const SettingsPage = () => {
     if(error){
       return;
     }
-
+    
     const res = await api.post("/auth/save_settings/add_method", value)
     if(res.data.status === 200){
       setUser(res.data.user)
@@ -356,7 +364,12 @@ const removeMethod = async (methodInp) => {
   }, [newWorker])
   useEffect(() => {
     if(!wasSubmitted.method) return;
-    const {error} = methodSchema.validate(newMethod, {abortEarly: false});
+    const methodTemp = {...newMethod}
+    if(newMethod.bank === "otro"){
+      methodTemp.bank = customBank;
+    }
+   
+    const {error} = methodSchema.validate(methodTemp, {abortEarly: false});
     let newObj = {}
     if(error){
       error.details.forEach(error => {
@@ -365,7 +378,7 @@ const removeMethod = async (methodInp) => {
       
     }
     setErrors(prev => ({...prev, method: newObj}))
-  }, [newMethod])
+  }, [newMethod, customBank])
 
   const setPhoneFormat = (phone) => {
     if (typeof phone !== 'string') {
@@ -1057,7 +1070,7 @@ const removeMethod = async (methodInp) => {
 
                 ))}
             </div>
-            <dialog id="add-method" className="w-screen h-screen bg-transparent">
+            <dialog id="add-method" ref={methodDialogRef} className="w-screen h-screen bg-transparent">
               <div className="flex justify-center items-center w-full h-full">
               <div className="text-foreground bg-background p-6 shadow-lg rounded-lg w-[500px] max-w-[calc(100vw-24px)] ">
                       <h3 className="text-lg font-medium mb-4">Agregar Metodo de Pago</h3>
@@ -1066,14 +1079,56 @@ const removeMethod = async (methodInp) => {
                           <label className={`block text-sm font-medium mb-2 ${errors.method?.bank && "text-red-500"}`}>
                             Banco
                           </label>
-                          <input
-                            name="method_bank"
-                            type="text"
-                            value={newMethod.bank}
-                            onChange={handleChange}
-                            className={`w-full p-2 rounded-md border ${errors.method?.bank ? "border-red-500" : "border-input"} bg-background`}
-                            placeholder="BBVA"
-                          />
+                          <Select
+                              value={newMethod.bank}
+                              name="method_bank"
+                              onValueChange={(value) => {
+                                setNewMethod(prev => ({ ...prev, bank: value }));
+                              }}
+                            >
+                              <SelectTrigger error={errors.method?.bank} className="bg-background text-foreground">
+                                <SelectValue placeholder="Selecciona un banco" />
+                              </SelectTrigger>
+
+                              <SelectContent>
+                                <SelectItem value="Afirme">Afirme</SelectItem>
+                                <SelectItem value="Banco Azteca">Banco Azteca</SelectItem>
+                                <SelectItem value="Banco del Bajío">Banco del Bajío</SelectItem>
+                                <SelectItem value="BanCoppel">BanCoppel</SelectItem>
+                                <SelectItem value="Banorte">Banorte</SelectItem>
+                                <SelectItem value="Banregio">Banregio</SelectItem>
+                                <SelectItem value="Banca Mifel">Banca Mifel</SelectItem>
+                                <SelectItem value="Bansi">Bansi</SelectItem>
+                                <SelectItem value="BBVA">BBVA</SelectItem>
+                                <SelectItem value="CI Banco">CI Banco</SelectItem>
+                                <SelectItem value="Citibanamex">Citibanamex</SelectItem>
+                                <SelectItem value="Compartamos Banco">Compartamos Banco</SelectItem>
+                                <SelectItem value="Hey Banco">Hey Banco</SelectItem>
+                                <SelectItem value="HSBC">HSBC</SelectItem>
+                                <SelectItem value="Inbursa">Inbursa</SelectItem>
+                                <SelectItem value="Klar">Klar</SelectItem>
+                                <SelectItem value="Multiva">Multiva</SelectItem>
+                                <SelectItem value="Nu México">Nu México</SelectItem>
+                                <SelectItem value="Santander">Santander</SelectItem>
+                                <SelectItem value="Scotiabank">Scotiabank</SelectItem>
+                                <SelectItem value="otro">Otro</SelectItem>
+                              </SelectContent>
+                            </Select>
+
+                            {newMethod.bank === 'otro' && (
+                              <div className="mt-3 space-y-2">
+                                <label className="block text-sm font-medium">Nombre del banco</label>
+                                <div className="flex gap-2 items-center">
+                                  <input
+                                    type="text"
+                                    value={customBank}
+                                    onChange={e => setCustomBank(e.target.value)}
+                                    placeholder="Escribe el nombre"
+                                    className="w-full rounded-md bg-transparent border border-input px-3 py-2 text-sm"
+                                  />
+                                </div>
+                              </div>
+                            )}
                         </div>
                         <div>
                           <label className={`block text-sm font-medium mb-2 ${errors.method?.person && "text-red-500"}`}>

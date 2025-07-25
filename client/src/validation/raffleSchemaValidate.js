@@ -67,6 +67,42 @@ export const methodSchema = Joi.object({
 
 });
 
+export const firstStepValidationSchema = Joi.object({
+  title: Joi.string().required(),
+  description: Joi.string().allow('').optional(),
+  price: Joi.number().greater(0).required(),
+  maxParticipants: Joi.number().greater(0).required(),
+  additionalPrizes: Joi.array().items(
+      Joi.object({
+      place: Joi.number().required(),  
+      prize: Joi.string().required()   
+      })
+  ).default([]),
+  colorPalette: Joi.object({
+    header: colorSchema,
+    background: colorSchema,
+    accent: colorSchema,
+    borders: colorSchema,
+    color: colorSchema,
+  }).required(),
+  font: Joi.string().valid(...fonts).required(),
+  logo_position: Joi.string().valid('left', 'center', 'right').required(),
+  logo_type: Joi.string().valid('on', 'off').required(),
+  logo_size: Joi.string().valid('sm', 'md', 'lg').required(),
+  border_corner: Joi.string().valid('round', 'square').required(),
+  purchasedTicketDisplay: Joi.string().valid('hide', 'cross').required(),
+  logo_display_name: Joi.boolean().required(),
+  countdown: Joi.string().valid('on', 'off').required(),
+  timeLimitPay: Joi.number().greater(0).required(),
+  fileCounter: Joi.number().greater(0).less(11).required(),
+
+  endDate: Joi.string()
+      .isoDate()
+      .custom(isoDateAfterToday, 'Date must be after today') 
+      .default(getDate30DaysFromNow()),
+  extraInfo: Joi.string().max(500).allow('').optional(),
+})
+
 export const raffleValidationSchema = Joi.object({
   title: Joi.string().required(),
   description: Joi.string().allow('').optional(),
@@ -80,7 +116,6 @@ export const raffleValidationSchema = Joi.object({
         prize: Joi.string().required()   
         })
     ).default([]),
-    template: Joi.string().valid('classic', 'modern', 'popular').required(),
     colorPalette: Joi.object({
       header: colorSchema,
       background: colorSchema,
@@ -97,7 +132,7 @@ export const raffleValidationSchema = Joi.object({
     logo_display_name: Joi.boolean().required(),
     countdown: Joi.string().valid('on', 'off').required(),
     // nightMode: Joi.boolean().required(),
-    // maxTpT: Joi.number().greater(0).required(),
+    textHtml: Joi.string().required(),
     timeLimitPay: Joi.number().greater(0).required(),
     fileCounter: Joi.number().greater(0).less(11).required(),
     paymentMethods: Joi.array().items(methodSchema.required()).required(),

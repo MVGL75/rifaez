@@ -92,7 +92,6 @@ export const raffleValidationSchema = Joi.object({
       url: Joi.string().required(),  
       public_id: Joi.string().required()   
     })).max(10).required(),
-    template: Joi.string().valid('classic', 'modern', 'popular').required(),
     colorPalette: Joi.object({
       header: colorSchema,
       background: colorSchema,
@@ -109,7 +108,7 @@ export const raffleValidationSchema = Joi.object({
     logo_display_name: Joi.boolean().required(),
     countdown: Joi.string().valid('on', 'off').required(),
     // nightMode: Joi.boolean().required(),
-    // maxTpT: Joi.number().required(),
+    textHtml: Joi.string().required(),
     timeLimitPay: Joi.number().required(),
     paymentMethods: Joi.array().items(methodSchema.required()).required(),
     endDate: Joi.string()

@@ -92,9 +92,9 @@ const RaffleSchema = new mongoose.Schema({
                 }],
                 default: []
             },
-            template: {
+            textHtml: {
                 type: String,
-                required: true,
+                default: '',
             },
             colorPalette: {
                 type: {

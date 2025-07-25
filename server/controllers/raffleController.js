@@ -12,6 +12,7 @@ import plans from "../seed/plans.js"
 
 
 export const createRaffle = async(req, res)=>{
+  console.log(req.body)
       const images = req.files?.map(file => ({url: file.path, public_id: file.filename})); 
       const parsedBody = {
         ...req.body,
@@ -248,7 +249,7 @@ export const editRaffle = async (req, res) => {
     const raffle = await Raffle.findOne({ shortId: id });
     const ticket = searchTicket(raffle.currentParticipants, query);
     if(ticket){
-      res.json({message: "ticket found", status: 200, ticket: {id: ticket.transactionID, status: ticket.status}})
+      res.json({message: "ticket found", status: 200, ticket})
     } else {
       res.json({message: "ticket not found", status: 400})
     }
@@ -310,9 +311,14 @@ export const editRaffle = async (req, res) => {
         dayEntry.time.push({ hour, count: amount });
       }
     }
-  
-    raffle.stats[type] = statArray;
-    await raffle.save(); 
+    await Raffle.updateOne(
+      { _id: raffle._id },
+      {
+        $set: {
+          [`stats.${type}`]: statArray
+        }
+      }
+    );
   }
   
 

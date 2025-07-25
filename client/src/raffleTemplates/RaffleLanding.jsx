@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from "react";
 import { useParams } from "react-router-dom";
-import classicLanding from "./classic/Landing"
-import modernLanding from "./modern/Landing";
+// import classicLanding from "./classic/Landing"
+// import modernLanding from "./modern/Landing";
 import minimalistLanding from "./minimalist/Landing";
 import RaffleNotFound from "./RaffleNotFound"
 import setCustomRaffle from "./utils/setCustomRaffle";
@@ -13,11 +13,11 @@ const api = axios.create({
 });
 import Spinner from "../components/spinner";
 
-const TEMPLATES = {
-  classic: classicLanding,
-  modern: modernLanding,
-  popular: minimalistLanding,
-}
+// const TEMPLATES = {
+//   classic: classicLanding,
+//   modern: modernLanding,
+//   popular: minimalistLanding,
+// }
 
 const dataTemplate = {
   additionalPrizes: [],
@@ -139,18 +139,8 @@ function RaffleLanding() {
         setLoading(false)
       } 
     };
-    if(id === "template_classic"){
-      const raffle = {...dataTemplate, template: "classic"}
-      setCustomRaffle(raffle);
-      setModeTest(true)
-      setRaffle(raffle)
-    } else if(id === "template_popular"){
+    if(id === "template_popular"){
       const raffle = {...dataTemplate, template: "popular"}
-      setCustomRaffle(raffle);
-      setModeTest(true)
-      setRaffle(raffle)
-    } else if (id === "template_modern"){
-      const raffle = {...dataTemplate, template: "modern"}
       setCustomRaffle(raffle);
       setModeTest(true)
       setRaffle(raffle)
@@ -167,7 +157,7 @@ function RaffleLanding() {
   if(isRaffleOver) return <RaffleFinalized />;
   if(notFound) return <RaffleNotFound />;
   if (!raffleData) return null;
-  const Layout = TEMPLATES[raffleData.template] || classicLanding;
+  const Layout = minimalistLanding;
   return (
     <Layout raffle={raffleData} test={modeTest}/>
   );

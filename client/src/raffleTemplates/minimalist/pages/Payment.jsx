@@ -1,45 +1,17 @@
 
 import React, { useEffect, useState, useRef} from "react";
 import { motion } from "framer-motion";
+import TriDown from "../../components/TriDown";
+import { CopyIcon, CopyCheck } from "lucide-react";
+import bankLogos from "../../../seed/bankLogo";
 import { useLocation, useNavigate, useOutletContext } from "react-router-dom";
 
 const Payment = () => {
   const raffle = useOutletContext();
-  const location = useLocation();
-  const navigate = useNavigate();
-  const [selectedTickets, setSelectedTickets] = useState([]);
-  const [noTickets, setNoTickets] = useState(true);
-  const [userInfo, setUserInfo] = useState({});
+  const [copied, setCopied] = useState({})
   const topRef = useRef(null);
 
-  useEffect(() => {
-    const unParsedTickets = localStorage.getItem('selectedTickets')
-    const unParsedUser = localStorage.getItem('userInfo')
-    localStorage.removeItem('selectedTickets')
-    localStorage.removeItem('userInfo')
-    let tickets
-    let user
-    if(unParsedTickets && unParsedUser){
-      localStorage.setItem('pendingSelectedTickets', unParsedTickets)
-      localStorage.setItem('pendingUserInfo', unParsedUser)
-      tickets = JSON.parse(unParsedTickets || '[]');
-      user = JSON.parse(unParsedUser || '{}');
-    } else {
-      tickets = JSON.parse(localStorage.getItem('pendingSelectedTickets') || '[]');
-      user = JSON.parse(localStorage.getItem('pendingUserInfo') || '{}');
-    }
-
-    if (!tickets.length || Object.keys(user).length === 0) {
-      return;
-    }
-    
-    setNoTickets(false)
-    setSelectedTickets(tickets);
-    setUserInfo(user);
-    
-    topRef.current?.scrollIntoView({ behavior: 'smooth' });
-  }, [navigate]);
-
+  
   const setPhoneFormat = (phone) => {
     const digits = phone.replace(/\D/g, ''); 
 
@@ -59,20 +31,24 @@ const Payment = () => {
     return parts.join('');
   }
 
-  const paymentMethods = raffle.paymentMethods.map(method => (
-    {
-      bank: method.bank,
-      accountHolder: method.person,
-      accountNumber: method.number,
-      clabe: method.clabe,
-      instructions: method.instructions || null,
+  const copyFunc = (index, attr, text) => {
+    navigator.clipboard.writeText(text)
+    setCopied({[index]: {
+      [attr]: text
+    }})
+  }
+
+  useEffect(() => {
+    let timer;
+    if (copied) {
+      timer = setTimeout(() => {
+        setCopied([]);
+      }, 3000);
     }
-  ));
-  const goToParent = () => {
-    const segments = location.pathname.split("/").filter(Boolean); 
-    const parentPath = "/" + segments.slice(0, -1).join("/"); 
-    navigate(parentPath);
-  };
+    return () => clearTimeout(timer);
+  }, [copied]);
+
+
   const formatMethodNumber = (input) => {
     const digits = String(input).replace(/\D/g, '');
   
@@ -92,138 +68,69 @@ const Payment = () => {
     return [bank, branch, account, control].filter(Boolean).join(' ');
   }
 
-  const handleCopyNumber = (number) => {
-    navigator.clipboard.writeText(number);
-    toast({
-      title: "¡Número Copiado!",
-      description: "El número de cuenta ha sido copiado al portapapeles.",
-    });
-  };
-  if(noTickets) return (
-    <div className="text-colorRaffle box-border mx-auto max-w-2xl w-[1400px] max-w-[100vw] min-h-[calc(100vh-280px)] py-4 px-4">
-      <div className="h-[500px] flex-col justify-center text-center space-y-6 flex items-center">
-        <div className="text-2xl sm:text-3xl">No haz seleccionado un boleto de la rifa</div>
-        <p className="text-sm sm:text-base text-colorRaffle-300">Debes seleccionar al menos un boleto de la rifa y llenar tu informacion para poder accesar los metodos de pago</p>
-        <button onClick={goToParent} className="text-primaryRaffle-foreground text-sm sm:text-base rounded-[50px] w-fit ml-auto mr-auto bg-primaryRaffle flex justify-center items-center px-6 py-3">Regresar a pagina de rifa</button>
-        </div>
-      </div>
-  );
   return (
-    <div className="w-[1400px] max-w-[100vw] mx-auto px-4 py-8" ref={topRef}>
+    <div className="max-w-screen py-8 mb-10" ref={topRef}>
+       <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          className="text-center mb-8 flex flex-col items-center"
+        >
+          {raffle.logo?.url ?
+                <div className={`h-36 ${raffle.logo_type === "on" && "border-borderRaffle border-2 rounded-full object-cover aspect-square overflow-hidden"} mb-6`}>
+                <img alt="logo" className="h-36 object-cover mx-auto" src={raffle.logo.url}  />
+            </div>
+                : <DefaultLogo className="rounded-full w-32 h-32 mx-auto"/> }
+          <h1 className="md:text-3xl text-xl font-semibold py-2 text-headerRaffle-foreground w-full bg-headerRaffle">
+          INFORMACIÓN DE PAGO
+          </h1>
+        </motion.div>
       <motion.div
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
-        className="max-w-2xl mx-auto"
+        className="w-full flex flex-col items-center px-3"
       >
-        <div className="bg-cardRaffle p-6 rounded-lg mb-8">
-          <div className="grid md:grid-cols-2 gap-6">
-            {/* Purchase Summary */}
-            <div>
-              <h2 className="text-xl font-bold text-colorRaffle mb-4">Resumen de Compra</h2>
-              <div className="space-y-2 text-colorRaffle-300">
-                <p><span className="font-bold">Nombre:</span> {userInfo.name}</p>
-                <p><span className="font-bold">Teléfono:</span> {setPhoneFormat(userInfo.phone)}</p>
-                <p><span className="font-bold">Estado:</span> {userInfo.state}</p>
-                <p><span className="font-bold">Boletos Seleccionados:</span></p>
-                <div className="flex flex-wrap max-h-[150px] overflow-y-auto gap-2">
-                  {selectedTickets.map(ticket => (
-                    <span key={ticket} className="bg-primaryRaffle text-primaryRaffle-foreground px-3 py-1 rounded-full">
-                      #{ticket}
-                    </span>
-                  ))}
-                </div>
-                <p className="text-xl mt-4">
-                  <span className="font-bold">Total a Pagar:</span> ${selectedTickets.length * raffle.price} MXN
-                </p>
-              </div>
-            </div>
-
-            {/* Important Instructions */}
-            <div className="bg-primaryRaffle h-fit p-4 rounded-lg text-primaryRaffle-foreground">
-              <p className="text-lg font-bold mb-2">
-                ¡IMPORTANTE!
-              </p>
-              <p className="mb-5">
-                Una vez realizado el pago, envía tu comprobante por WhatsApp al{" "}
-                <a
-                href={`https://wa.me/521${raffle.phone}`}
+        <p className="text-colorRaffle max-w-2xl gap-4 flex flex-col text-xl items-center font-semibold text-center mb-8"> 
+                <TriDown fill={raffle.colorPalette.accent} className="w-[30px] lg:w-[30px]" />
+                <span>DEBES REALIZAR EL PAGO POR ALGUNA DE ESTAS OPCIONES Y ENVIAR TU COMPROBANTE DE PAGO AL BOTÓN DE ABAJO</span>
+          </p>
+          <div className="w-[400px] font-semibold max-w-full uppercase">
+            <a href={`https://wa.me/521${raffle.phone}`}
                 target="_blank"
                 rel="noopener noreferrer"
-                className="font-bold underline">
-                  {setPhoneFormat(raffle.phone)}
-                </a>
-                {" "}indicando tus números de boleto.
-              </p>
+                 className="bg-primaryRaffle cursor-pointer block py-3 text-center font-semibold text-2xl rounded-xl text-headerRaffle-foreground border-2 border-primaryRaffle hover:bg-headerRaffle mb-5">CLICK AQUÍ PARA IR A <br/> WHATSAPP {setPhoneFormat(raffle.phone)}</a>
+            <div className="border-[3px] border-primaryRaffle w-full p-2">
+              <header className="pb-2 flex justify-center w-full">
+              {raffle.logo?.url ?
+                  <div className={`h-16 ${raffle.logo_type === "on" && "border-borderRaffle border-2 rounded-full object-cover aspect-square overflow-hidden"}`}>
+                  <img alt="logo" className="h-16 object-cover mx-auto" src={raffle.logo.url}  />
+              </div>
+                  : <DefaultLogo className="rounded-full w-16 h-16 mx-auto"/> }
+              </header>
+              {raffle.paymentMethods.map((method, index) => (
+                <div key={index} className="max-w-full w-full border-2 border-borderRaffle p-2 mb-3">
+                    <div className="text-primaryRaffle underline w-full text-center">TU NOMBRE EN CONCEPTO DE PAGO</div>
+                    <ul className="mb-3">
+                      <li className="flex justify-between items-center"><div className="flex flex-wrap"><span className="text-blue-800 mr-1">Banco:</span><span>{bankLogos[method.bank] ? (
+                        <img className="h-[30px]" src={bankLogos[method.bank]} />
+                      ) : method.bank}</span></div><span>{ copied[index]?.bank ? <CopyCheck className="w-4 h-4" /> : <CopyIcon onClick={()=>{copyFunc(index, "bank", method.bank)}} className="w-4 h-4" />}</span></li>
+                      <li className="flex justify-between items-center"><div className="flex flex-wrap"><span className="text-blue-800 mr-1">Nombre:</span><span>{method.person}</span></div><span>{ copied[index]?.person ? <CopyCheck className="w-4 h-4" /> : <CopyIcon onClick={()=>{copyFunc(index, "person", method.person)}} className="w-4 h-4" />}</span></li>
+                      {method.number &&
+                        <li className="flex justify-between items-center"><div className="flex flex-wrap"><span className="text-blue-800 mr-1">Numero de tarjeta:</span><span>{formatMethodNumber(method.number)}</span></div><span>{ copied[index]?.number ? <CopyCheck className="w-4 h-4" /> : <CopyIcon onClick={()=>{copyFunc(index, "number", method.number)}} className="w-4 h-4" />}</span></li>
+                      }
+                      {method.clabe &&
+                          <li className="flex justify-between items-center"><div className="flex flex-wrap"><span className="text-blue-800 mr-1">clabe:</span><span>{formatCLABE(method.clabe)}</span></div><span>{ copied[index]?.clabe ? <CopyCheck className="w-4 h-4" /> : <CopyIcon onClick={()=>{copyFunc(index, "clabe", method.clabe)}} className="w-4 h-4" />}</span></li>
+                      }
+                    </ul>
+                    {method.instructions &&
+                        <div>{method.instructions}</div>
+                    } 
+                </div>
+              ))}
+              <footer className="text-primaryRaffle underline text-center">si alguna cuenta aparece saturada por favor intenta con otra</footer>
             </div>
           </div>
-        </div>
-
-        <h1 className="text-3xl font-bold text-colorRaffle mb-8 text-center">
-          Métodos de Pago
-        </h1>
-        
-        <div className="space-y-6 mb-8">
-          {paymentMethods.map((method, index) => (
-              <motion.div
-                key={index}
-                initial={{ opacity: 0, x: -20 }}
-                animate={{ opacity: 1, x: 0 }}
-                transition={{ delay: index * 0.1 }}
-                className="bg-cardRaffle p-6 rounded-lg text-colorRaffle relative"
-              >
-                  <h2 className="text-xl font-bold text-colorRaffle mb-4">
-                    {method.bank}
-                  </h2>
-                  <div className="space-y-4">
-                    <p>
-                      <span className="font-semibold">Titular:</span>{" "}
-                      {method.accountHolder}
-                    </p>
-                    {method.accountNumber &&
-                      <div className="flex items-center gap-2">
-                        <p className="font-semibold">Número de Cuenta:</p>
-                        <div
-                          onClick={() => handleCopyNumber(method.accountNumber)}
-                          variant="outline"
-                          size="sm"
-                          className="text-colorRaffle hover:text-colorRaffle-600"
-                        >
-                          {formatMethodNumber(method.accountNumber)}
-                        </div>
-                      </div>
-                    }
-                    {method.clabe &&   
-                        <div className="flex items-center gap-2">
-                          <p className="font-semibold">Clabe:</p>
-                          <div
-                            onClick={() => handleCopyNumber(method.clabe)}
-                            variant="outline"
-                            size="sm"
-                            className="text-colorRaffle hover:text-colorRaffle-600"
-                          >
-                            {formatCLABE(method.clabe)}
-                          </div>
-                        </div>
-                    }
-                    {method.instructions &&
-                    <div className="flex items-center gap-2">
-                      <p className="font-semibold">Nota:</p>
-                      <div
-                        variant="outline"
-                        size="sm"
-                        className="text-colorRaffle hover:text-colorRaffle-600"
-                      >
-                        {method.instructions}
-                      </div>
-                    </div>
-                    }
-                  </div>
-              </motion.div>
-            ))}
-        </div>
-        <section className='flex items-center justify-center text-center text-colorRaffle'>
-          Tus boletos ya quedaron apartados tienes {raffle.timeLimitPay} dias(s) para realizar el pago.
-      </section>
+          
+      
       </motion.div>
     </div>
   );

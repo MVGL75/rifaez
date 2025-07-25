@@ -3,6 +3,7 @@ import React, { useState, useEffect, useRef } from "react";
 import { motion } from "framer-motion";
 import { useNavigate, useParams } from "react-router-dom";
 import { useToast } from "@/components/ui/use-toast";
+import Editor from "../components/Editor";
 import { HexColorPicker } from "react-colorful";
 import { useAuth } from "@/contexts/AuthContext"
 import { Button } from "@/components/ui/button";
@@ -53,6 +54,9 @@ const RaffleEditPage = ({}) => {
   const [initialActive, setInitialActive] = useState(null)
   const [filesArray, setFiles] = useState([])
   const [previews, setPreviews] = useState([])
+  const [value, setValue] = useState("")
+  const [textError, setTextError] = useState(false)
+  const editorRef = useRef(null)
   const [oldPublicIds, setOldPublicIds] = useState([])
   const [carousel, setCarousel] = useState(0)
   const [minDate, setMinDate] = useState("");
@@ -101,7 +105,7 @@ const RaffleEditPage = ({}) => {
           isActive: raffleWithoutId.isActive, 
           paymentMethods: raffleWithoutId.paymentMethods, 
           additionalPrizes: raffleWithoutId.additionalPrizes, 
-          template: raffleWithoutId.template, 
+          textHtml: raffleWithoutId.textHtml,
           colorPalette: {
             header: raffleWithoutId.colorPalette.header,
             background: raffleWithoutId.colorPalette.background,
@@ -117,14 +121,22 @@ const RaffleEditPage = ({}) => {
           purchasedTicketDisplay: raffleWithoutId.purchasedTicketDisplay,
           countdown: raffleWithoutId.countdown, 
           font: raffleWithoutId.font, 
-          timeLimitPay: raffleWithoutId.timeLimitPay, 
+          timeLimitPay: raffleWithoutId.timeLimitPay,
+          textHtml:  raffleWithoutId.textHtml || "",
           extraInfo: raffleWithoutId.extraInfo, 
           fileCounter: raffle.images.length}); 
+          setValue(raffleWithoutId.textHtml)
       }
     } catch (error) {
       console.error('Error fetching raffle:', error);
     }
   };
+
+  useEffect(()=>{
+    if(raffle){
+        setRaffle(prev => ({...prev, textHtml: value}))
+    }
+  }, [value])
 
   useEffect(() => {
     fetchRaffle(); 
@@ -216,12 +228,6 @@ const RaffleEditPage = ({}) => {
     });
   };
 
-
-  const templates = {
-    basic : [["Clasico", "classic"]],
-    pro: [["Clasico", "classic"], ["Popular", "popular"]],
-    business: [["Clasico", "classic"], ["Popular", "popular"], ["Moderno", "modern"]],
-}
   const colors = [
     { id: 'red', name: "Rojo", hex: "#FF0000" },
     { id: 'blue', name: "Azul", hex: "#0000FF" },
@@ -674,25 +680,6 @@ const RaffleEditPage = ({}) => {
         {/* Template Selection */}
         <div className="space-y-4">
           <h2 className="text-2xl font-semibold">Diseño</h2>
-          <div>
-                <label className={`block text-sm font-medium mb-2 ${errors.template && "text-red-500"}`}>
-                  Plantilla
-                </label>
-                <select
-                  name="template"
-                  value={raffle.template}
-                  onChange={handleChange}
-                  className={`w-full p-2 rounded-md border ${errors.template ? "border-red-500" : "border-input"} bg-background`}
-                >
-                  <option value="">Selecciona una plantilla</option>
-                  {templates[user?.currentPlan] ?
-                  templates[user?.currentPlan].map(template => (
-                    <option key={template[1]} value={template[1]}>{template[0]}</option>
-                  )): (
-                    <option value="classic">Clasico</option>
-                  )}
-                </select>
-              </div>
               <div>
                 <label className={`block text-sm font-medium mb-2 ${errors.colorPalette && "text-red-500"}`}>
                   Paleta de Colores
@@ -959,6 +946,16 @@ const RaffleEditPage = ({}) => {
                   <div className="h-5 w-5 rounded-full bg-white"></div>
               </div>
             </div>
+        </div>
+
+        <div>
+              <h2 className="text-2xl font-semibold mb-4">Editor de Texto</h2>
+              <Editor
+                  value={value}
+                  setValue={setValue}
+                  textError={textError}
+                  ref={editorRef}
+              />
         </div>
         
         {/* Additional Information */}

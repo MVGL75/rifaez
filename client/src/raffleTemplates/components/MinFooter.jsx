@@ -27,7 +27,7 @@ const Footer = ({raffle}) => {
     <footer className="bg-headerRaffle w-screen text-headerRaffle-foreground">
         <div className="flex flex-col items-center w-full">
           
-          <div className="text-center underline flex flex-col items-center gap-2 w-full bg-borderRaffle px-3 py-3">
+          <div className="text-center underline flex flex-col items-center gap-2 w-full bg-primaryRaffle px-3 py-3">
           { raffle.facebookUrl &&
               <a href={raffle.facebookUrl} className="hover:text-primaryRaffle">
                 <Facebook size={24} />
@@ -47,7 +47,7 @@ const Footer = ({raffle}) => {
             </div>
           </div>
           <div className="mb-5 underline">
-            <Link to="/contact">Contacto</Link>
+            <Link to="contact">Contacto</Link>
           </div>
       </div>
     </footer>

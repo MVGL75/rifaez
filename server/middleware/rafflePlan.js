@@ -47,9 +47,6 @@ const rafflePlan = (type) => {
       throw new AppError({ message: "not allowed to create more methods" })
     }
 
-    if (!plan.templates.includes(req.body.template)) {
-      req.body.template = "classic";
-    }
 
     req.session.redirectAfterPayment = undefined;
     next();

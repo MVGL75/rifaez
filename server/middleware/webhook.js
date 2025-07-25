@@ -144,15 +144,6 @@ const restrictUserFeatures = async (user, newPriceId) => {
     );
   }
 
-  const permittedTemplates = newPlanRestrictions.templates || [];
-  await Promise.all(
-    userWithRaffles.raffles.map(raffle => {
-      if (!permittedTemplates.includes(raffle.template)) {
-        raffle.template = "classic";
-        return raffle.save();
-      }
-    })
-  );
   const permittedMethods = newPlanRestrictions.methods;
 
 await Promise.all(
@@ -184,7 +175,6 @@ const deleteUserFeatures = async (user) => {
 
   const userWithRaffles = await user.populate('raffles');
 
-  const userRaffles = userWithRaffles.raffles || [];
   const activeRaffles = userWithRaffles.raffles?.filter(r => r.isActive) || [];
   const activeWorkers = user.workers || [];
 
@@ -195,12 +185,6 @@ const deleteUserFeatures = async (user) => {
       })
     );
 
-  await Promise.all(
-    userRaffles.map(raffle => {
-        raffle.template = "classic";
-        return raffle.save();
-    })
-  );
   await Promise.all(
     activeWorkers.map(worker => {
         worker.isActive = false;

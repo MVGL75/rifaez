@@ -36,7 +36,7 @@ const Contact = () => {
 
 
   return (
-    <div className="max-w-[100vw] w-[1400px] flex justify-center mx-auto px-4 py-8 h-[calc(100vh-280px)] min-h-[500px]">
+    <div className="max-w-[100vw] w-[1400px] mb-6 flex justify-center mx-auto px-4 py-8 h-[calc(100vh-280px)] min-h-[500px]">
       <motion.div 
           className="space-y-8 my-12 max-w-full"
           initial={{ opacity: 0, x: 30 }}

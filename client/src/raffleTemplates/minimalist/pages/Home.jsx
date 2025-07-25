@@ -32,6 +32,7 @@ const Home = ({availableTickets, setAvailableTickets, test}) => {
   const ticketSectionRef = useRef(null);
   const [errors, setErrors] = useState({})
   const [direction, setDirection] = useState("left");
+  const [purchaseSuccess, setPurchaseSuccess] = useState(false)
   const [userInfo, setUserInfo] = useState({
     name: "",
     phone: "",
@@ -101,20 +102,6 @@ const Home = ({availableTickets, setAvailableTickets, test}) => {
     return new Intl.DateTimeFormat('es-ES', options).format(date);
   }
 
-  const ticketPrices = [
-    { quantity: 1, price: raffle?.price },
-    { quantity: 2, price: raffle?.price * 2 },
-    { quantity: 4, price: raffle?.price * 4 },
-    { quantity: 10, price: raffle?.price * 10 },
-    { quantity: 20, price: raffle?.price * 20 },
-    { quantity: 50, price: raffle?.price * 50 },
-    { quantity: 100, price: raffle?.price * 100 }
-  ];
-
-
-  const handlePriceClick = (quantity) => {
-    document.getElementById('ticketsSection').scrollIntoView({ behavior: 'smooth' });
-  };
 
   const validateForm = () => {
     const errorObj = {}
@@ -221,30 +208,39 @@ const Home = ({availableTickets, setAvailableTickets, test}) => {
     }
     const newSelectedTickets = selectedTickets.map(ticket => ticket.id)
     if(test){
-      localStorage.setItem('selectedTickets', JSON.stringify(newSelectedTickets));
-      localStorage.setItem('userInfo', JSON.stringify(value));
       setAvailableTickets(prev => prev.filter(p => !newSelectedTickets.includes(p)))
       setSelectedTickets([])
-      navigate('payment');
+      setPurchaseSuccess(true)
       return
     }
     if(isValid){
       const res = await api.post(`/api/raffle/${id}/payment`, {...value, tickets: newSelectedTickets})
       if(res.data.status === 200){
-        localStorage.setItem('selectedTickets', JSON.stringify(newSelectedTickets));
-        localStorage.setItem('userInfo', JSON.stringify(value));
         setAvailableTickets(prev => prev.filter(p => !newSelectedTickets.includes(p)))
         setSelectedTickets([])
-        navigate('payment');
+        setPurchaseSuccess(true)
       } else {
         console.log(res)
       }
     }
   };
 
+  const redirectWhats = () => {
+    window.open('https://wa.me/5216711132200', '_blank')
+  }
+
+  const closeForm = () => {
+      if(purchaseSuccess){
+        setPurchaseSuccess(false)
+      }
+      purchaseFormRef.current?.close()
+  }
+
   const scrollToTicketSection = () => {
     ticketSectionRef.current?.scrollIntoView({ behavior: 'smooth' });
   };
+
+
 
 function goToNext() {
   setDirection(1);
@@ -399,26 +395,7 @@ const handleTouchEnd = (e) => {
         </section>
       }
 
-      {/* Ticket Prices */}
-      {/* <div className="w-full bg-lightTint py-8 border-t-2 border-b-2 border-borderRaffle py-20">
-        <div className="max-w-4xl mx-auto px-4">
-          <h2 className="text-2xl font-bold text-center mb-6">Precios de Boletos</h2>
-          <div className="flex flex-col space-y-2 items-center">
-            {ticketPrices.map(({ quantity, price }) => (
-              <motion.button
-                key={quantity}
-                onClick={() => handlePriceClick(quantity)}
-                whileHover={{ scale: 1.05 }}
-                whileTap={{ scale: 0.95 }}
-                className="text-colorRaffle bg-cardRaffle shadow-lg p-3 w-full max-w-sm rounded-lg text-center transform transition-all hover:bg-primaryRaffle hover:text-colorRaffle-foreground"
-              >
-                <p className="">{quantity} boleto{quantity > 1 ? 's' : ''}</p>
-                <p className="text-lg">${price} MXN</p>
-              </motion.button>
-            ))}
-          </div>
-        </div>
-      </div> */}
+     
 
       <section className="bg-headerRaffle text-center w-full text-headerRaffle-foreground flex flex-col items-center gap-5 px-5 py-[10px]">
         <div className="flex mx-auto items-center justify-center gap-5">
@@ -432,7 +409,7 @@ const handleTouchEnd = (e) => {
         <div className="space-y-4 flex w-full flex-col bg-headerRaffle py-6 items-center sticky z-[100] top-[65px] lg:top-[110px] left-0">
         <button className="px-6 max-w-full w-fit py-2  rounded-md bg-primaryRaffle text-primaryRaffle-foreground flex justify-center items-center gap-3">
           <ArrowRight/>
-          <span className="text-lg" onClick={()=>{document.getElementById('purchase-form').showModal()}}>Apartar</span>
+          <span className="text-lg" onClick={()=>{purchaseFormRef.current?.showModal()}}>Apartar</span>
           <ArrowLeft/>
         </button>
         <div className="flex flex-wrap gap-2 justify-center">
@@ -527,18 +504,16 @@ const handleTouchEnd = (e) => {
 
        
           {/* Purchase Form */}
-          {selectedTickets.length > 0 && (
-            <dialog id="purchase-form" className="bg-transparent w-screen h-screen">
+            <dialog ref={purchaseFormRef} id="purchase-form" className="bg-transparent w-screen h-screen">
               <div className="flex w-full h-full items-center justify-center px-3">
                 <motion.form
-                  ref={purchaseFormRef}
                   initial={{ opacity: 0, y: 20 }}
                   animate={{ opacity: 1, y: 0 }}
                   className="mt-8 max-w-md mx-auto bg-backgroundRaffle text-left relative rounded-lg px-4 py-4"
                   onSubmit={handlePurchase}
                   noValidate
                 >
-                   <CircleX onClick={()=>{document.getElementById('purchase-form').close()}} className="w-8 h-8 absolute right-0 top-0"/>
+                   <CircleX onClick={closeForm} className="w-8 h-8 absolute right-0 top-0"/>
                   <header className="mb-4 space-y-3">
                   <h1 className="text-lg text-left leading-[24px]">LLENA TUS DATOS Y DA CLICK EN APARTAR</h1>
                   <h2 className="text-primaryRaffle text-left">{selectedTickets.length} BOLETOS SELECCIONADOS</h2>
@@ -580,7 +555,9 @@ const handleTouchEnd = (e) => {
                         })}
                       </div>}
                     </div>
-                    <p className="text-primaryRaffle">TU BOLETO SÓLO DURA {raffle.timeLimitPay * 24} HORAS APARTADO</p>
+                    
+                    <p className="text-primaryRaffle">{purchaseSuccess ? "TUS BOLETOS YA QUEDARON APARTADOS. DALE CLICK EN REDIRIGIR PARA SER REDIRIGIDO A WHATSAPP PARA MANADAR EL COMPROBANTE." : `TU BOLETO SÓLO DURA ${raffle.timeLimitPay * 24} HORAS APARTADO`}</p>
+                    {!purchaseSuccess ? 
                     <Button
                       type="submit"
                       size="lg"
@@ -588,11 +565,20 @@ const handleTouchEnd = (e) => {
                     >
                       Apartar
                     </Button>
+                    : 
+                    <Button
+                      type="button"
+                      size="lg"
+                      onClick={redirectWhats}
+                      className="w-full bg-primaryRaffle text-primaryRaffle-foreground hover:bg-primaryRaffle py-4 px-6 sm:px-8 rounded-sm text-lg text-center"
+                    >
+                      Redirigir
+                    </Button>
+                    }
                   </div>
                 </motion.form>
               </div>
             </dialog>
-          )}
         </div>
       </div>
     </div>
@@ -603,7 +589,7 @@ const TicketItem = ({ ticket, onClick, isSelected }) => {
   const ticketClasses = cn(
     "p-2 border rounded-sm text-center font-medium transition-all duration-200 transform text-xs sm:text-sm",
     {
-      "bg-colorRaffle border-borderRaffle text-colorRaffle cursor-not-allowed": ticket.status === 'purchased',
+      "bg-colorRaffle border-borderRaffle text-backgroundRaffle cursor-not-allowed": ticket.status === 'purchased',
       "bg-primaryRaffle border-0 text-primaryRaffle-foreground shadow-md scale-105": ticket.status === 'available' && isSelected,
       "bg-backgroundRaffle text-colorRaffle border-primaryRaffle hover:bg-primaryRaffle-300 hover:text-primaryRaffle-foreground cursor-pointer": ticket.status === 'available' && !isSelected,
     }
