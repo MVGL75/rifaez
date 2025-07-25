@@ -89,9 +89,7 @@ export const editRaffle = async (req, res) => {
       return res.json({ message: error.details, status: 400 });
     }
     const user = await User.findById(req.user._id)
-    if(!plans[user.planId].templates.includes(value.template)){
-      value.template = "classic";
-    }
+    
     const updatedRaffle = await Raffle.findByIdAndUpdate(id, { $set: value }, { new: true });
     if (updatedRaffle) {
       const clientUser = await setUserForClient(req, user)
