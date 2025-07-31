@@ -24,7 +24,7 @@ const Footer = ({raffle}) => {
     return parts.join('');
   }
   return (
-    <footer className="bg-headerRaffle w-screen text-headerRaffle-foreground">
+    <footer className="bg-headerRaffle relative z-[1] w-screen text-headerRaffle-foreground">
         <div className="flex flex-col items-center w-full">
           
           <div className="text-center underline flex flex-col items-center gap-2 w-full bg-primaryRaffle px-3 py-3">

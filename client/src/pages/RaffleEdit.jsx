@@ -54,7 +54,10 @@ const RaffleEditPage = ({}) => {
   const [initialActive, setInitialActive] = useState(null)
   const [filesArray, setFiles] = useState([])
   const [previews, setPreviews] = useState([])
-  const [value, setValue] = useState("")
+  const [value, setValue] = useState({
+    title: "",
+    html: ""
+  })
   const [textError, setTextError] = useState(false)
   const editorRef = useRef(null)
   const [oldPublicIds, setOldPublicIds] = useState([])
@@ -122,10 +125,16 @@ const RaffleEditPage = ({}) => {
           countdown: raffleWithoutId.countdown, 
           font: raffleWithoutId.font, 
           timeLimitPay: raffleWithoutId.timeLimitPay,
-          textHtml:  raffleWithoutId.textHtml || "",
+          textHtml:  {
+            title: raffleWithoutId.textHtml?.title || "",
+            html: raffleWithoutId.textHtml?.html || "",
+          },
           extraInfo: raffleWithoutId.extraInfo, 
           fileCounter: raffle.images.length}); 
-          setValue(raffleWithoutId.textHtml)
+          setValue({
+            title: raffleWithoutId.textHtml?.title || "",
+            html: raffleWithoutId.textHtml?.html || "",
+          })
       }
     } catch (error) {
       console.error('Error fetching raffle:', error);
@@ -392,7 +401,6 @@ const RaffleEditPage = ({}) => {
   const handleSave = async () => {
       setSaveLoader(true)
       const [error, value] = validateForm()
-      console.log(error)
       if(error){
         checkError(error)
         setSaveLoader(false)
@@ -402,7 +410,7 @@ const RaffleEditPage = ({}) => {
           if (key === "additionalPrizes" || key === "paymentMethods") {
             const serialized = value && value.length > 0 ? JSON.stringify(value) : JSON.stringify([]);
             newRaffleData.append(key, serialized);
-          } else if (key === "colorPalette"){
+          } else if (key === "colorPalette" || key === "textHtml"){
             const serialized = JSON.stringify(value)
             newRaffleData.append(key, serialized);
           } else if (key !== "fileCounter") {
@@ -947,7 +955,7 @@ const RaffleEditPage = ({}) => {
               </div>
             </div>
         </div>
-
+        
         <div>
               <h2 className="text-2xl font-semibold mb-4">Editor de Texto</h2>
               <Editor

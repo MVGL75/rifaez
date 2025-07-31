@@ -146,28 +146,14 @@ const updateTailwindVariables = (raffle) => {
     });
 }
 
-const HomePreview = ({raffle, previews, test}) => {
-  const newMexicanStates = mexicanStates.filter(state => state !== "Extranjero")
-  const navigate = useNavigate();
-  const {id} = useParams();
+const HomePreview = ({raffle, previews }) => {
   const [currentImageIndex, setCurrentImageIndex] = useState(0);
   const [selectedTickets, setSelectedTickets] = useState([]);
-  const [showSearch, setShowSearch] = useState(false);
-  const [filteredStates, setFilteredStates] = useState([...newMexicanStates, "Extranjero"]);
-  const [wasSubmitted, setWasSubmitted] = useState(false)
   const [allTickets, setAllTickets] = useState([]);
   const [searchTicket, setSearchTicket] = useState("")
-  const purchaseFormRef = useRef(null);
   const ticketSectionRef = useRef(null);
-  const [errors, setErrors] = useState({})
   const [direction, setDirection] = useState("left");
-  const [userInfo, setUserInfo] = useState({
-    name: "",
-    phone: "",
-    state: ""
-  });
-
-  console.log(previews)
+  
   const prizeImages = previews && previews?.length > 0 ? previews.map((value, index) => {
     return { url: value, description: "", alt: `Imagen ${index}` }
   }) : [{url: '', description: '', alt: ''}]
@@ -221,7 +207,7 @@ const HomePreview = ({raffle, previews, test}) => {
     return allTickets.filter(ticket => ticket.number.includes(searchTicket) &&( avToggle ? ticket : ticket.status === "available" ));
   }, [allTickets, searchTicket, availableToggle]);
 
-  const minSwipeDistance = 50;
+
 
 
   function formatSpanishDate(isoDateStr) {
@@ -239,33 +225,9 @@ const HomePreview = ({raffle, previews, test}) => {
     }
   }
 
-  const ticketPrices = [
-    { quantity: 1, price: raffle?.price },
-    { quantity: 2, price: raffle?.price * 2 },
-    { quantity: 4, price: raffle?.price * 4 },
-    { quantity: 10, price: raffle?.price * 10 },
-    { quantity: 20, price: raffle?.price * 20 },
-    { quantity: 50, price: raffle?.price * 50 },
-    { quantity: 100, price: raffle?.price * 100 }
-  ];
+  
 
 
-  const handlePriceClick = (quantity) => {
-    document.getElementById('ticketsSection').scrollIntoView({ behavior: 'smooth' });
-  };
-
-  const validateForm = () => {
-    const errorObj = {}
-    let isValid = true
-    const {error, value} = ticketInfoValidationSchema.validate(userInfo, { abortEarly: false })
-    if(error){
-      isValid = false
-      error.details.forEach(detail => errorObj[detail.context.key] = detail.message)
-    }
-    setErrors(errorObj)
-    return [isValid, value]
-    
-  }
 
   const handleSelectRandomTicket = () => {
 
@@ -298,103 +260,16 @@ const HomePreview = ({raffle, previews, test}) => {
   const removeTicket = (ticket) =>{
     setSelectedTickets(prev => prev.filter(t => t.id !== ticket.id))
   }
-  const handleChange = (e) => {
-    const name = e.target.name
-    let value = e.target.value
-    if(name === "state"){
-      setShowSearch(true)
-      const filteredStates = newMexicanStates.filter(state => {
-        return state.toLowerCase().includes(value.toLowerCase())
-      })
-      setFilteredStates([...filteredStates, "Extranjero"])
-    }
-    if(name === "phone"){
-      value = value.replace(/\D/g, '');
-      if(value.length > 10){
-        value = value.slice(0, 10); 
-      }
-    }
-    setUserInfo(prev => ({...prev, [name]: value}))
-    
-  }
-  const setPhoneFormat = () => {
-    const digits = userInfo.phone.replace(/\D/g, ''); 
-
-    const parts = [];
-
-    if (digits.length > 0) {
-      parts.push('(' + digits.substring(0, Math.min(3, digits.length)));
-    }
-    if (digits.length >= 4) {
-      parts[0] += ') ';
-      parts.push(digits.substring(3, Math.min(6, digits.length)));
-    }
-    if (digits.length >= 7) {
-      parts.push('-' + digits.substring(6, 10));
-    }
-
-    return parts.join('');
-  }
-
+ 
   
-  const selectState = (e) => {
-    const value = e.target.textContent
-    setShowSearch(false)
-    setUserInfo(prev => ({...prev, state: value}))
-  }
 
-  useEffect(()=>{
-    if(wasSubmitted){
-      validateForm()
-    }
-  },[userInfo])
 
-  const handlePurchase = async (e) => {
-    e.preventDefault();
-    setWasSubmitted(true)
-    const [isValid, value] = validateForm();
-    if (selectedTickets.length === 0) {
-      alert("Por favor selecciona al menos un boleto");
-      return;
-    }
-    const newSelectedTickets = selectedTickets.map(ticket => ticket.id)
-    if(test){
-      localStorage.setItem('selectedTickets', JSON.stringify(newSelectedTickets));
-      localStorage.setItem('userInfo', JSON.stringify(value));
-      setAvailableTickets(prev => prev.filter(p => !newSelectedTickets.includes(p)))
-      setSelectedTickets([])
-      navigate('payment');
-      return
-    }
-    if(isValid){
-      const res = await api.post(`/api/raffle/${id}/payment`, {...value, tickets: newSelectedTickets})
-      if(res.data.status === 200){
-        localStorage.setItem('selectedTickets', JSON.stringify(newSelectedTickets));
-        localStorage.setItem('userInfo', JSON.stringify(value));
-        setAvailableTickets(prev => prev.filter(p => !newSelectedTickets.includes(p)))
-        setSelectedTickets([])
-        navigate('payment');
-      } else {
-        console.log(res)
-      }
-    }
-  };
+ 
 
   const scrollToTicketSection = () => {
     ticketSectionRef.current?.scrollIntoView({ behavior: 'smooth' });
   };
 
-function goToNext() {
-  setDirection(1);
-  setCurrentImageIndex((prev) => (prev + 1) % prizeImages.length);
-}
-
-function goToPrev() {
-  setDirection(-1);
-  setCurrentImageIndex((prev) =>
-    prev === 0 ? prizeImages.length - 1 : prev - 1
-  );
-}
 
 const touchStartX = useRef(0);
 const touchStartY = useRef(0);
@@ -426,14 +301,14 @@ const handleTouchEnd = (e) => {
 
   return (
     <div className={`${raffle.border_corner === "square" && "no-radius"}text-colorRaffle font-fontRaffle items-center bg-backgroundRaffle`}>
-      <div className="flex flex-col bg-headerRaffle items-center font-semibold w-full px-3 py-2 text-headerRaffle-foreground ">
-      <h1 className="text-3xl uppercase text-center mb-2 tracking-[-2.5px]">
-       {raffle?.title || "Rifa"}
+      <div className="flex flex-col bg-headerRaffle items-center font-medium w-full px-3 py-3 text-headerRaffle-foreground ">
+      <h1 className="text-3xl uppercase text-center leading-[25px] mb-2 tracking-[-2.5px]">
+       {raffle?.title}
        </h1>
         {raffle.description && <p className="mb-3 text-lg">{raffle.description}</p> }
-        <p className="text-[22px] uppercase tracking-[-1.5px]">{formatSpanishDate(raffle?.endDate)}</p>
+        <p className="text-[22px] uppercase tracking-[-1.5px] mb-1">{formatSpanishDate(raffle?.endDate)}</p>
         {raffle.countdown === "on" &&
-        <div className="w-[350px] max-w-full mb-5 ">
+        <div className="w-[350px] max-w-full">
         <Countdown targetDate={raffle.endDate}/>
         </div>
       }
@@ -458,9 +333,9 @@ const handleTouchEnd = (e) => {
 
           {/* Image Carousel */}
 
-          <div className="flex w-full gap-5 flex-col px-[15px] w-[620px] max-w-full">
+          <div className="flex gap-5 flex-col px-[15px] w-[620px] max-w-full">
               <div 
-                className="relative h-[400px] rounded-md overflow-hidden bg-lightTint border-4 border-borderRaffle"
+                className="relative aspect-[620/400] w-full rounded-md overflow-hidden bg-lightTint border-4 border-borderRaffle"
                 onTouchStart={handleTouchStart}
                 onTouchEnd={handleTouchEnd}
               >
@@ -573,28 +448,28 @@ const handleTouchEnd = (e) => {
         
           {/* Selected Tickets Display */}
           <div ref={ticketSectionRef} className="mb-6 py-3 rounded-lg text-left">
-            <div className="flex gap-6 flex-col justify-between items-center">
+          <div className="flex gap-6 flex-col justify-between items-center">
               <div className="relative w-full flex justify-center">
-              <input placeholder="BUSCAR" type="number" value={searchTicket} onChange={(e)=>{setSearchTicket(e.target.value)}} className="border-2 text-center max-w-full bg-backgroundRaffle uppercase font-bold w-[300px] rounded-sm px-4 py-2 border-borderRaffle text-lg" />
+              <input placeholder="BUSCAR" type="number" value={searchTicket} onChange={(e)=>{setSearchTicket(e.target.value)}} className="border-2 text-center max-w-full bg-backgroundRaffle uppercase font-bold w-[300px] rounded-sm px-4 py-2 border-primaryRaffle text-lg" />
               </div>
-              <div className="flex gap-2 max-w-full w-[300px] px-3 py-2 bg-cardRaffle border-2 border-borderRaffle rounded-sm cursor-pointer justify-center" onClick={handleSelectRandomTicket}>
-                <span className="uppercase text-lg font-medium">Maquinita de la suerte</span>
+              <div className="flex gap-2 max-w-full w-[300px] px-3 py-2 bg-cardRaffle border-2 border-primaryRaffle rounded-sm cursor-pointer justify-center" onClick={handleSelectRandomTicket}>
+                <span className="uppercase text-lg font-semibold">Maquinita de la suerte</span>
               </div>
               {raffle.purchasedTicketDisplay === "cross" &&
               <>
-              <div className="flex justify-between w-[320px] max-w-full items-center">
+              <div className="flex flex-wrap justify-between gap-2 w-[320px] max-w-full items-center">
                 <div className="flex items-center gap-3">
                   <div className="bg-colorRaffle border-borderRaffle text-colorRaffle rounded-sm w-[55px] h-[30px] border line-through cursor-not-allowed flex items-center justify-center">000</div>
-                  <span>Pagados</span>
+                  <span className="uppercase font-medium">Pagados</span>
                 </div>
                 <div className="flex items-center gap-3">
                   <div className="bg-backgroundRaffle rounded-sm w-[55px] h-[30px] border text-primaryRaffle border-primaryRaffle cursor-pointer"></div>
-                  <span>Disponibles</span>
+                  <span className="uppercase font-medium">Disponibles</span>
                 </div>
               </div>
              
-              <div className="flex gap-2 px-3 py-1 bg-cardRaffle border-2 border-borderRaffle text-center rounded-sm cursor-pointer justify-center" onClick={showAvailableTickets}>
-                <span className="uppercase font-medium">{availableToggle ? "Mostrar Solo Disponibles" : "VER LISTA COMPLETA"}</span>
+              <div className="flex gap-2 px-3 py-1 bg-cardRaffle border-2 border-primaryRaffle text-center rounded-sm cursor-pointer justify-center" onClick={showAvailableTickets}>
+                <span className="uppercase font-semibold">{availableToggle ? "Mostrar Solo Disponibles" : "VER LISTA COMPLETA"}</span>
               </div>
               </>
               }
@@ -615,12 +490,12 @@ const handleTouchEnd = (e) => {
                   isSelected={selectedTickets.some(st => st.id === filteredTickets[index].id)}
                 />
               )}
-              listClassName="grid grid-cols-5 gap-[2px]"
-              style={{ height: 300 }}
+              listClassName="grid [grid-template-columns:repeat(auto-fit,minmax(57px,1fr))]"
+              style={{ height: 500 }}
             />
             </div>
           ) : (
-            <p className="text-center text-gray-500 py-4 text-sm">
+            <p className="text-center text-gray-500 py-4 text-sm sm:text-base">
               No se encontraron boletos con el número "{searchTicket}". Intenta con otro número o revisa los disponibles.
             </p>
           )}
@@ -632,13 +507,14 @@ const handleTouchEnd = (e) => {
   );
 };
 
+
 const TicketItem = ({ ticket, onClick, isSelected }) => {
   const ticketClasses = cn(
-    "p-2 m-0.5 border rounded-sm text-center font-medium transition-all duration-200 transform text-xs",
+    "flex items-center justify-center border rounded-[2px] h-[30px] m-[1px] text-center font-semibold transition-all duration-200 transform text-xs",
     {
       "bg-colorRaffle border-borderRaffle text-colorRaffle cursor-not-allowed": ticket.status === 'purchased',
-      "bg-primaryRaffle border-0 text-primaryRaffle-foreground shadow-md scale-105": ticket.status === 'available' && isSelected,
-      "bg-backgroundRaffle text-colorRaffle border-primaryRaffle hover:bg-primaryRaffle-300 hover:text-primaryRaffle-foreground cursor-pointer": ticket.status === 'available' && !isSelected,
+      "bg-backgroundRaffle text-backgroundRaffle border-backgroundRaffle": ticket.status === 'available' && isSelected,
+      "bg-backgroundRaffle text-colorRaffle border-primaryRaffle cursor-pointer": ticket.status === 'available' && !isSelected,
     }
   );
 
@@ -647,8 +523,6 @@ const TicketItem = ({ ticket, onClick, isSelected }) => {
     <motion.div
       onClick={ticket.status === 'available' ? () => onClick(ticket) : undefined}
       className={ticketClasses}
-      whileHover={ticket.status === 'available' ? { scale: 1.1 } : {}}
-      whileTap={ticket.status === 'available' ? { scale: 0.95 } : {}}
       layout
     >
       {ticket.number}

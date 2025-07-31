@@ -33,22 +33,13 @@ export default function Countdown({targetDate}){
                         <div className=" h-[60px] w-[60px] rounded-lg flex items-center justify-center text-2xl font-semibold sm:text-4xl">{timeLeft.days}</div>
                         
                     </div>
-                    <div className="grow flex items-center h-[60px] justify-center">
-                        <span className="text-lg sm:text-2xl">:</span>
-                    </div>
                     <div className="flex flex-col-reverse sm:gap-5 items-center">
                         <div className="text-colorRaffle-600 text-xs sm:text-xl">Horas</div>
                         <div className=" h-[60px] w-[60px] rounded-lg flex items-center justify-center text-2xl font-semibold sm:text-4xl">{timeLeft.hours}</div>
                     </div>
-                    <div className="grow flex items-center h-[60px] justify-center">
-                        <span className="text-lg sm:text-2xl">:</span>
-                    </div>
                     <div className="flex flex-col-reverse sm:gap-5 items-center">
                         <div className="text-colorRaffle-600 text-xs sm:text-xl">Minutos</div>
                         <div className=" h-[60px] w-[60px] rounded-lg flex items-center justify-center text-2xl font-semibold sm:text-4xl">{timeLeft.minutes}</div>
-                    </div>
-                    <div className="grow flex items-center h-[60px] justify-center">
-                        <span className="text-lg sm:text-2xl">:</span>
                     </div>
                     <div className="flex flex-col-reverse sm:gap-5 items-center">
                         <div className="text-colorRaffle-600 text-xs sm:text-xl">Segundos</div>

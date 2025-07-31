@@ -2,6 +2,7 @@ import React, { forwardRef, useEffect, useLayoutEffect, useRef, useState } from 
 import { Link as LinkIcon, Palette, Pipette} from 'lucide-react';
 import ReactQuill, { Quill } from 'react-quill';
 import { motion } from "framer-motion";
+import { Label } from "@/components/ui/label"
 import { HexColorPicker } from 'react-colorful';
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -60,6 +61,7 @@ const Editor = forwardRef(
     const [quillColor, setQuillColor] = useState(null)
     const [enableCheck, setEnableCheck] = useState(false)
     const colorPicker = useRef(null)
+
     useEffect(()=>{
         if(textError){
             setEnableCheck(true)
@@ -169,6 +171,7 @@ const Editor = forwardRef(
                    </div>
                  </div>
                </dialog>
+            
             <div id="toolbar">
             <button className="ql-bold"></button>
             <button className="ql-italic"></button>
@@ -214,6 +217,7 @@ const Editor = forwardRef(
                 <LinkIcon className="w-4 h-4" />
             </button>
             </div>
+            <div className='editor_rifaez'>
             <ReactQuill 
             ref={(el) => {
                 if (el) {
@@ -221,9 +225,14 @@ const Editor = forwardRef(
                 }
             }} 
             theme="snow" 
-            value={value} onChange={setValue} modules={{toolbar: "#toolbar"}} formats={['bold', 'italic', 'underline', 'link',
+            value={value.html} onChange={(v)=>{ setValue(prev => ({...prev, html: v}))}} modules={{toolbar: "#toolbar"}} formats={['bold', 'italic', 'underline', 'link',
                 'size', 'font', 'color'
             ]}/>
+            </div>
+            <div className='mt-5 flex flex-col gap-2'>
+                <Label>Titulo</Label>
+                <Input type="text" value={value.title} onChange={(e)=>{ setValue(prev => ({...prev, title: e.target.value}))}} />
+            </div>
         </div>
         
     ) ;

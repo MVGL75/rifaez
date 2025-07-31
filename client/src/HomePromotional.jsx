@@ -4,6 +4,7 @@ import { Button } from "./raffleTemplates/components/ui/button"
 import { Line } from "react-chartjs-2";
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/home_components/ui/card';
 import { motion } from "framer-motion";
+import PromotionalLayout from "./PromotionalLayout";
 import { ChevronRight, Shuffle, Rocket, CheckCircle, Zap, Award, BarChart, Users, Palette, Globe, MessageCircle, Search, Ticket, Check, Router, PanelsTopLeft, ChartBar, Server, User, Tag, MapPin, Phone, MessageSquare, Grid3X3 } from "lucide-react"
 import { Link, useNavigate } from "react-router-dom"
 import { useState, useEffect, useRef } from "react";
@@ -191,20 +192,7 @@ export default function HomePromotional(){
       };
       
     return (
-        <div
-        style={style}
-         className="bg-[#FBFCFF] w-[100vw] min-h-[100vh] text-[#242426]">
-            <header>
-                <div className="mx-auto py-4 max-w-[100vw] sm:px-14 px-6 w-[1400px]">
-                    <nav className="w-full flex justify-between">
-                        <Logo className="w-8 h-8"/>
-                        <button onClick={()=>{navigate("/login")}} className="bg-primary text-white text-sm flex items-center rounded-full gap-1 px-4 py-1.5">
-                            <span>Login</span>
-                            <ChevronRight className="w-4 h-4"/>                   
-                        </button>
-                    </nav>
-                </div>
-            </header>
+        <PromotionalLayout>
             <section className="mx-auto mt-12 py-4 max-w-[100vw] sm:px-14 px-6 w-[1300px]">
                 <div className="flex items-center flex-col gap-10">
                     <div className="p-4 rounded-lg shadow-md">
@@ -549,9 +537,7 @@ export default function HomePromotional(){
               </div>
             </div>
             </section>
-            <footer className="border border-gray-200 w-screen py-10 px-8 text-center">
-              Potenciando tus rifas, simplificando tu éxito.
-            </footer>     
-        </div>
+            
+        </PromotionalLayout>
     )
 }

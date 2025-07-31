@@ -132,7 +132,10 @@ export const raffleValidationSchema = Joi.object({
     logo_display_name: Joi.boolean().required(),
     countdown: Joi.string().valid('on', 'off').required(),
     // nightMode: Joi.boolean().required(),
-    textHtml: Joi.string().required(),
+    textHtml: Joi.object({
+      title: Joi.string().required(),
+      html: Joi.string().required(),
+    }).required(),
     timeLimitPay: Joi.number().greater(0).required(),
     fileCounter: Joi.number().greater(0).less(11).required(),
     paymentMethods: Joi.array().items(methodSchema.required()).required(),

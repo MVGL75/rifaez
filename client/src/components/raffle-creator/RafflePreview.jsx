@@ -42,7 +42,7 @@ const RafflePreview = ({ previews, hookFormData, verified, phone, logo }) => {
       initial={{ opacity: 0, scale: 0.95 }}
       animate={{ opacity: 1, scale: 1 }}
       transition={{ duration: 0.5 }}
-      className="bg-card rounded-2xl shadow-inner w-full h-full flex flex-col overflow-hidden"
+      className="bg-card rounded-lg sm:rounded-2xl shadow-inner w-full h-full flex flex-col overflow-hidden"
     >
       <PreviewLayout previews={previews} logo={logo} verified={verified} phone={phone} raffle={hookFormData} />
     </motion.div>

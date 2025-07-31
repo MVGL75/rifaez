@@ -17,7 +17,7 @@ function Layout({raffle}) {
     </div>
     
     <Footer raffle={raffle} />
-    <div className='w-screen sticky bottom-0 right-0'>
+    <div className='w-screen z-[3] sticky bottom-0 right-0'>
         <WhatsWidget number={raffle.phone}/>
         {raffle.verified &&
           <VerifiedFooter />

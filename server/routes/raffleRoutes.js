@@ -1,5 +1,5 @@
 import express from 'express';
-import { createRaffle, viewUpdateRaffle, addNote, findRaffle, deleteRaffle, editFindRaffle, editRaffle, paymentRaffle, markPaid, viewNotification, verifyRaffle } from '../controllers/raffleController.js';
+import { createRaffle, viewUpdateRaffle, findRaffle, deleteRaffle, editFindRaffle, editRaffle, paymentRaffle, updateTicket, updateTicketsById, deleteTicket, viewNotification, verifyRaffle } from '../controllers/raffleController.js';
 import isAuthenticated from '../middleware/isAuthenticated.js';
 import upload from '../middleware/upload.js';
 import hasPermission from '../middleware/hasPermission.js';
@@ -17,15 +17,17 @@ const router = express.Router();
 router.post('/create', customDomain, isAuthenticated, catchAsync(checkPlan), upload.array('images', 10), catchAsync(rafflePlan("create")), catchAsync(createRaffle));
 router.post('/delete/:id', customDomain, isAuthenticated, hasPermission, catchAsync(deleteRaffle));
 router.post('/edit/:id', customDomain, isAuthenticated, hasPermission, upload.array('images', 10), catchAsync(rafflePlan("edit")), catchAsync(editRaffle));
-router.post('/:id/:ticketID/mark_paid', customDomain, isAuthenticated, hasPermission, catchAsync(markPaid));
+router.post('/:id/:ticketNumber/update_ticket', customDomain, isAuthenticated, hasPermission, catchAsync(updateTicket));
+router.post('/:id/:ticketId/update_tickets', customDomain, isAuthenticated, hasPermission, catchAsync(updateTicketsById));
 router.post('/:id/:notificationid/view_notify', customDomain, isAuthenticated, hasPermission, catchAsync(viewNotification));
+router.delete('/:id/:ticketNumber', customDomain, isAuthenticated, hasPermission, catchAsync(deleteTicket));
 
-
-router.post('/:id/:ticketID/add_note', customDomain, isAuthenticated, hasPermission, catchAsync(addNote));
 // router.post('/:id/contact', catchAsync(contactRaffle));
 router.post('/:id/payment', ownedCustomDomain, catchAsync(paymentRaffle));
 router.post('/:id/view', ownedCustomDomain, catchAsync(viewUpdateRaffle));
 router.post('/:id/verify', ownedCustomDomain, catchAsync(verifyRaffle));
+
+
 // GET /api/raffle/:id
 
 

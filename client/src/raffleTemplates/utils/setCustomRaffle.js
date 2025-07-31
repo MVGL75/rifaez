@@ -87,7 +87,7 @@ export default function(raffle){
     const settings = {
         '--light-tint': background[3],
         '--light-color-tint': background[1],
-        '--background-raffle': background[2],
+        '--background-raffle': background[0],
         '--font-raffle': raffle.font ,
         '--header-raffle': header[2] ,
         '--header-raffle-foreground': header[5] ,

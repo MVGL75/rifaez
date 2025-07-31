@@ -1,6 +1,7 @@
 
 import { Route, Routes } from "react-router-dom";
 import HomeRaffle from "./pages/Home";
+import MainRaffle from "./pages/MainRaffle";
 import ContactRaffle from "./pages/Contact";
 import PaymentRaffle from "./pages/Payment";
 import TicketVerificationRaffle from "./pages/TicketVerification";
@@ -14,7 +15,8 @@ function Landing({raffle, test}) {
     <>
        <Routes>
         <Route path="/" element={<Layout raffle={raffle} />}>
-          <Route index element={<HomeRaffle availableTickets={availableTickets} setAvailableTickets={setAvailableTickets} test={test}/>} />
+          <Route index element={<MainRaffle availableTickets={availableTickets} setAvailableTickets={setAvailableTickets} test={test}/>} />
+          <Route path="lista" element={<HomeRaffle availableTickets={availableTickets} setAvailableTickets={setAvailableTickets} test={test}/>} />
           <Route path="verify" element={<TicketVerificationRaffle test={test} />} />
           <Route path="contact" element={<ContactRaffle />} />
           <Route path="payment" element={<PaymentRaffle  />} />

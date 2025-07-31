@@ -2,7 +2,7 @@ import React, { useState, useEffect, useRef } from "react";
 import { Routes, Route, Navigate, useNavigate } from "react-router-dom";
 import MainLayout from "./MainLayout";
 import { AuthProvider, useAuth } from "@/contexts/AuthContext";
-
+import { Toaster } from '@/components/TicketPanel/ui/toaster';
 // Pages
 import HomePage from "@/pages/Home";
 import StatsPage from "@/pages/Stats";
@@ -24,6 +24,7 @@ import PopError from "./PopError";
 import AppNotFound from "./AppNotFound";
 import RaffleNotFound from "./raffleTemplates/RaffleNotFound";
 import HomePromotional from "./HomePromotional";
+import RifaezVerification from "./RifaezVerification";
 import NoRaffle from "./components/NoRaffle";
 import SpinningLogo from "./components/spinner";
 import RecoverPass from "./pages/RecoverPass";
@@ -138,7 +139,6 @@ const AppContent = () => {
     try {
       try {
         const res = await api.get("/auth/user");
-        console.log(res)
         if (res.data?.status === 401) return;
         const user = res.data;
         const raffles = user?.raffles?.length > 0 ? user?.raffles : [null];
@@ -165,6 +165,8 @@ const AppContent = () => {
     }
   }, [user]);
 
+
+
   if (loadingUser)
     return (
       <div className="w-screen h-screen flex items-center justify-center">
@@ -178,6 +180,7 @@ const AppContent = () => {
         {appError ? <Route path="*" element={<AppError />} /> : (
         <>
         <Route path="/" element={<HomePromotional/>} />
+        <Route path="/verification" element={<RifaezVerification/>} />
         <Route path="/login" element={<LoginPage />} />
         <Route path="/register" element={<RegisterPage />} />
         <Route path="/privacy-policy" element={<PrivacyPolicy/>} />
@@ -198,6 +201,7 @@ const AppContent = () => {
       <>
         <Routes>
         <Route path="/" element={<HomePromotional/>} />
+        <Route path="/verification" element={<RifaezVerification/>} />
           <Route
             path="/raffle-admin"
             element={
@@ -302,6 +306,7 @@ const App = () => {
   return (
     <AuthProvider>
       <AppContent />
+      <Toaster />
     </AuthProvider>
   );
 };

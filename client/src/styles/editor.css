@@ -18,7 +18,7 @@
 .ql-container {
     border: none !important;
 }
-.ql-editor {
+.editor_rifaez .ql-editor {
     border: 1.5px dashed hsl(var(--border-editor)) !important;
 }
 .ql-editor:focus-visible {

@@ -4,7 +4,8 @@ import sanitizeRaffle from '../utils/sanitizeRaffle.js';
 import { raffleValidationSchema } from '../validators/raffleSchema.js';
 import { ticketInfoValidationSchema } from '../validators/ticketInfoSchemaValidate.js';
 import setUserForClient from '../functions/userClient.js';
-import { getNextTransactionId, RaffleCounter } from '../models/RaffleCounter.js';
+import { RaffleCounter } from '../models/RaffleCounter.js';
+import AppError from '../utils/AppError.js';
 import { v2 as cloudinary } from 'cloudinary';
 import plans from "../seed/plans.js"
 
@@ -12,13 +13,13 @@ import plans from "../seed/plans.js"
 
 
 export const createRaffle = async(req, res)=>{
-  console.log(req.body)
       const images = req.files?.map(file => ({url: file.path, public_id: file.filename})); 
       const parsedBody = {
         ...req.body,
         images,
         logo_display_name: JSON.parse(req.body.logo_display_name || 'true'),
-        colorPalette: JSON.parse(req.body.colorPalette || '[]'),
+        textHtml: JSON.parse(req.body.textHtml || '{}'),
+        colorPalette: JSON.parse(req.body.colorPalette || '{}'),
         paymentMethods: JSON.parse(req.body.paymentMethods || '[]'),
         additionalPrizes: JSON.parse(req.body.additionalPrizes || '[]'),
       };
@@ -78,7 +79,8 @@ export const editRaffle = async (req, res) => {
     const newRaffle = {
       ...restBody,
       logo_display_name: JSON.parse(req.body.logo_display_name || 'true'),
-      colorPalette: JSON.parse(req.body.colorPalette || '[]'),
+      textHtml: JSON.parse(req.body.textHtml || '{}'),
+      colorPalette: JSON.parse(req.body.colorPalette || '{}'),
       additionalPrizes: req.body.additionalPrizes ? JSON.parse(req.body.additionalPrizes) : [],
       paymentMethods: req.body.paymentMethods ? JSON.parse(req.body.paymentMethods) : [],
       images: uploadedImages.length > 0 ? uploadedImages : parsedOldIds,
@@ -107,7 +109,7 @@ export const editRaffle = async (req, res) => {
         const user = await User.findOne({ raffles: raffle._id });
         if(raffle.isActive){
           const cleanRaffle = sanitizeRaffle(raffle)
-          const unavailableTickets = raffle.currentParticipants.flatMap(part => part.tickets);
+          const unavailableTickets = raffle.currentParticipants.flatMap(part => part.tickets.map(t => t.number));
           const availableTickets = []
           for (let i = 1; i < raffle.maxParticipants + 1; i++) {
             if(!unavailableTickets.includes(i)){
@@ -138,9 +140,18 @@ export const editRaffle = async (req, res) => {
   //   );
   //   res.json({message: "Contact Sent", status: 200})
   // }
+
+  function getNextTransactionId(currentParticipants){
+    const transactionNumber = currentParticipants.length > 0 ? Number(currentParticipants[currentParticipants.length - 1].transactionID) + 1 : 1;
+    const transactionID = String(transactionNumber).padStart(3, '0');
+    return transactionID
+  }
+
+
   export const paymentRaffle = async (req, res)=>{
     const raffleID = req.params.id
     const raffle = await Raffle.findOne({ shortId: raffleID });
+    const currentParticipants = raffle.currentParticipants;
     const now = new Date();
     const endDate = new Date(raffle.endDate);
     if(now > endDate){
@@ -148,19 +159,22 @@ export const editRaffle = async (req, res) => {
     }
     const body = req.body
     let ticketExists = false
-    raffle.currentParticipants?.forEach(participant => {
-      for (const ticket of body.tickets) {
-        if(participant.tickets.includes(ticket)){
+    currentParticipants.forEach(participant => {
+      for (const number of body.tickets) {
+        if(participant.tickets.map(t => t.number).includes(number)){
           ticketExists = true
         }
       }
       
     })
     if(ticketExists) return res.json({message: "ticket exists", status: 400});
-    const transactionId = await getNextTransactionId(raffle._id.toString());
+    const transactionId = getNextTransactionId(currentParticipants);
     const amount = raffle.price * body.tickets.length
     const newBody = {
       ...body,
+      tickets: body.tickets.map(t => ({
+        number: t
+      })),
       transactionID: transactionId,
       amount: amount
     }
@@ -188,24 +202,83 @@ export const editRaffle = async (req, res) => {
         res.json({message: "Raffle not found", status: 200})
       }
     }
-  export const markPaid = async (req, res)=>{
-    const {id, ticketID} = req.params
-    const raffle = await Raffle.findById(id);
-    const transaction = raffle.currentParticipants.id(ticketID)
-    if(transaction?.status === "pending"){
-      transaction.status = "paid"
-      raffle.stats.paidParticipants += 1;
+  export const updateTicket = async (req, res)=>{
+      const { id, ticketNumber } = req.params
+      const { updates } = req.body
+      const numberTicket = Number(ticketNumber)
+      const raffle = await Raffle.findById(id);
+      raffle.currentParticipants = raffle.currentParticipants.map(participant => {
+        let foundTicket = false
+        for (const { number } of participant.tickets) {
+            if(number === numberTicket){
+              foundTicket = true
+            }
+        }
+        if(foundTicket){
+          return {...participant, tickets: participant.tickets.map(ticket => ticket.number === numberTicket ? {...ticket, ...updates} : ticket)}
+        } else {
+          return participant
+        }
+      })
+
       await raffle.save();
       const user = await User.findById(req.user._id)
       const clientUser = await setUserForClient(req, user)
-      if(clientUser){
-        res.json({message: "Updated", status: 200, user: clientUser})
-      } else {
-        res.json({message: "Raffle not found", status: 400})
+
+      res.json({message: "Updated", status: 200, user: clientUser})
+
+  }
+
+  export const deleteTicket = async(req, res) => {
+    const {id, ticketNumber} = req.params
+    const raffle = await Raffle.findById(id);
+    if (!raffle) return res.status(404).json({ message: "Raffle not found" });
+
+    let ticketFound = false;
+
+    raffle.currentParticipants = raffle.currentParticipants.map(participant => {
+      const originalLength = participant.tickets.length;
+
+      participant.tickets = participant.tickets.filter(
+        ticket => ticket.number.toString() !== ticketNumber
+      );
+
+      if (participant.tickets.length < originalLength) {
+        ticketFound = true;
       }
-    } else {
-      res.json({message: "already marked as paid", status: 400})
+
+      return participant;
+    }).filter(participant => participant.tickets.length > 0);;
+
+    if (!ticketFound) {
+      return res.status(404).json({ message: "Ticket not found" });
     }
+
+    await raffle.save();
+    const user = await User.findById(req.user._id)
+    const clientUser = await setUserForClient(req, user)
+
+    res.json({message: "Deleted", status: 200, user: clientUser})
+
+  }
+  export const updateTicketsById = async (req, res)=>{
+    const { id, ticketId } = req.params
+    const raffle = await Raffle.findById(id);
+    console.log(id, ticketId)
+    raffle.currentParticipants = raffle.currentParticipants.map(participant => {
+      if(participant._id.toString() === ticketId){
+        return {...participant, tickets: participant.tickets.map(ticket => ({...ticket, status: "pagado"}))}
+      } else {
+        return participant
+      }
+    })
+
+
+    await raffle.save();
+    const user = await User.findById(req.user._id)
+    const clientUser = await setUserForClient(req, user)
+
+    res.json({message: "Updated All", status: 200, user: clientUser})
   }
   export const viewNotification = async (req, res)=>{
     const {id, notificationid} = req.params
@@ -219,19 +292,7 @@ export const editRaffle = async (req, res) => {
       res.json({message: "already read", status: 200})
     }
   }
-  export const addNote = async (req, res)=>{
-    const {id, ticketID} = req.params
-    const {note} = req.body
-    const raffle = await Raffle.findById(id);
-    const transaction = raffle.currentParticipants.id(ticketID)
-    if(transaction){
-      transaction.notes.push(note)
-      await raffle.save();
-      res.json({message: "note added", status: 200})
-    } else {
-      res.json({message: "transaction not found", status: 400})
-    }
-  }
+  
   export const viewUpdateRaffle = async (req, res) => {
     const { id } = req.params
     const raffle = await Raffle.findOne({ shortId: id });

@@ -25,32 +25,23 @@ export default function Countdown({targetDate}){
       }, [targetDate]);
 
     return  (
-                <div className="w-full flex text-headerRaffle-foreground">
-                    <div className="flex flex-col-reverse items-center relative">
-                        <div className="text-xs">Dias</div>
-                        <div className="rounded-lg flex items-center justify-center text-2xl font-semibold">{timeLeft.days}</div>
+                <div className="w-full flex justify-center gap-[10px] text-headerRaffle-foreground">
+                    <div className="flex border-box w-[50px] h-[50px] p-[8px] flex-col-reverse items-center relative">
+                        <div className="text-[9px] md:text-[12px]">Dias</div>
+                        <div className="rounded-lg flex items-center justify-center text-[16px] md:text-[20px] font-semibold">{timeLeft.days}</div>
                         
                     </div>
-                    <div className="grow flex items-center h-[60px] justify-center">
-                        <span className="text-lg">:</span>
+                    <div className="flex border-box w-[50px] h-[50px] p-[8px] flex-col-reverse items-center">
+                        <div className="text-[9px] md:text-[12px]">Horas</div>
+                        <div className="rounded-lg flex items-center justify-center text-[16px] md:text-[20px] font-semibold">{timeLeft.hours}</div>
                     </div>
-                    <div className="flex flex-col-reverse items-center">
-                        <div className=" text-xs">Horas</div>
-                        <div className="rounded-lg flex items-center justify-center text-2xl font-semibold">{timeLeft.hours}</div>
+                    <div className="flex border-box w-[50px] h-[50px] p-[8px] flex-col-reverse items-center">
+                        <div className="text-[9px] md:text-[12px]">Minutos</div>
+                        <div className="rounded-lg flex items-center justify-center text-[16px] md:text-[20px] font-semibold">{timeLeft.minutes}</div>
                     </div>
-                    <div className="grow flex items-center h-[60px] justify-center">
-                        <span className="text-lg">:</span>
-                    </div>
-                    <div className="flex flex-col-reverse items-center">
-                        <div className=" text-xs">Minutos</div>
-                        <div className="rounded-lg flex items-center justify-center text-2xl font-semibold">{timeLeft.minutes}</div>
-                    </div>
-                    <div className="grow flex items-center h-[60px] justify-center">
-                        <span className="text-lg">:</span>
-                    </div>
-                    <div className="flex flex-col-reverse items-center">
-                        <div className=" text-xs">Segundos</div>
-                        <div className="rounded-lg flex items-center justify-center text-2xl font-semibold">{timeLeft.seconds}</div>
+                    <div className="flex border-box w-[50px] h-[50px] p-[8px] flex-col-reverse items-center">
+                        <div className="text-[9px] md:text-[12px]">Segundos</div>
+                        <div className="rounded-lg flex items-center justify-center text-[16px] md:text-[20px] font-semibold">{timeLeft.seconds}</div>
                     </div>
                 </div>
     )

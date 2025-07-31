@@ -98,15 +98,15 @@ const TicketVerification = ({test}) => {
           </p>
           {generationResponse.ticket &&
               <div className="w-[350px] max-w-full relative px-12 py-1 bg-primaryRaffle mb-12">
-                <aside className="absolute text-2xl text-primaryRaffle-foreground -rotate-90 left-[24px] top-1/2 -translate-x-1/2 -translate-y-1/2">{raffle.title}</aside>
+                <aside className="absolute text-2xl text-primaryRaffle-foreground w-max -rotate-90 left-[24px] top-1/2 -translate-x-1/2 -translate-y-1/2">{raffle.title}</aside>
                   <div className="bg-backgroundRaffle font-medium mb-1">
-                    <header className="flex items-center gap-2 justify-center py-3">
+                    <header className="flex items-center gap-2 justify-center py-4">
                       {raffle.logo?.url ?
-                        <div className={`h-12 ${raffle.logo_type === "on" && "border-borderRaffle border-2 rounded-full object-cover aspect-square overflow-hidden"}`}>
-                          <img alt="logo" className="h-12 object-cover mx-auto" src={raffle.logo.url}  />
+                        <div className={`h-16 ${raffle.logo_type === "on" && "border-borderRaffle border-2 rounded-full object-cover aspect-square overflow-hidden"}`}>
+                          <img alt="logo" className="h-16 object-cover mx-auto" src={raffle.logo.url}  />
                       </div>
                           : <DefaultLogo className="rounded-full w-12 h-12 mx-auto"/> }
-                        <span>{raffle.business_name}</span>
+                        <span className="text-xl">{raffle.business_name}</span>
                     </header>
                     <div className="border-t-2 flex px-3 py-4 border-b-2 border-borderRaffle border-dashed">
                         <p>Boleto(s):</p>
@@ -117,20 +117,20 @@ const TicketVerification = ({test}) => {
                         </ul>
                     </div>
                     <div className="px-3 flex gap-4 py-3">
-                        <div className="flex flex-col gap-3 text-sm">
+                        <div className="grid grid-cols-2 gap-3 text-sm">
                           <div>SORTEO:</div>
+                          <div className="text-primaryRaffle uppercase">{raffle.title}</div>
                           <div>NOMBRE:</div>
+                          <div className="text-primaryRaffle uppercase">{generationResponse.ticket.first_name}</div>
+                          <div>APELLIDO:</div>
+                          <div className="text-primaryRaffle uppercase">{generationResponse.ticket.last_name}</div>
                           <div>ESTADO:</div>
+                          <div className="text-primaryRaffle uppercase">{generationResponse.ticket.state}</div>
                           <div>PAGADO:</div>
+                          <div className="text-primaryRaffle uppercase">{generationResponse.ticket.status === "pending" ? "No pagado" : "Si pagado"}</div>
                           <div>COMPRA:</div>
-                        </div>
-                        <div className="flex flex-col uppercase gap-3 w-[200px] text-primaryRaffle text-sm">
-                          <div>{raffle.title}</div>
-                          <div>{generationResponse.ticket.name}</div>
-                          <div>{generationResponse.ticket.state}</div>
-                          <div>{generationResponse.ticket.status === "pending" ? "No pagado" : "Si pagado"}</div>
-                          <div>{generationResponse.ticket.amount + "$"}</div>
-                        </div>
+                          <div className="text-primaryRaffle uppercase">{generationResponse.ticket.amount + "$"}</div>
+                          </div>
                     </div>
                     
                   </div>
@@ -140,7 +140,7 @@ const TicketVerification = ({test}) => {
                   <div className="bg-backgroundRaffle text-center font-semibold">
                     <span className="text-primaryRaffle">¡MUCHA SUERTE!</span>
                   </div>
-                <aside className="absolute text-2xl text-primaryRaffle-foreground rotate-90 right-[24px] top-1/2 translate-x-1/2 -translate-y-1/2">{raffle.title}</aside>
+                <aside className="absolute w-max text-2xl text-primaryRaffle-foreground rotate-90 right-[24px] top-1/2 translate-x-1/2 -translate-y-1/2">{raffle.title}</aside>
               </div>
           }
           <form onSubmit={handleVerification} className="flex flex-col items-center w-[400px] max-w-full mb-10">
@@ -209,12 +209,15 @@ const TicketVerification = ({test}) => {
 
           {verificationResponse.ticket &&
             <div className="max-w-[100vw] px-2 overflow-x-scroll">
-              <div className="grid w-max grid-cols-4 border border-borderRaffle">
+              <div className="grid w-max grid-cols-5 border border-borderRaffle">
                 <div className="bg-headerRaffle text-headerRaffle-foreground p-3 text-center">
                   Número
                 </div>
                 <div className="bg-headerRaffle text-headerRaffle-foreground p-3 text-center">
                   Nombre
+                </div>
+                <div className="bg-headerRaffle text-headerRaffle-foreground p-3 text-center">
+                  Apellido
                 </div>
                 <div className="bg-headerRaffle text-headerRaffle-foreground p-3 text-center">
                   Estado
@@ -224,11 +227,14 @@ const TicketVerification = ({test}) => {
                 </div>
                 <div className="p-3 text-center">
                 {verificationResponse.ticket?.tickets?.map(ticket => (
-                    <span>{ticket}</span>
+                    <span key={ticket}>{ticket},</span>
                   ))}
                 </div>
                 <div className="p-3 text-center">
-                  {verificationResponse.ticket?.name}
+                  {verificationResponse.ticket?.first_name}
+                </div>
+                <div className="p-3 text-center">
+                  {verificationResponse.ticket?.last_name}
                 </div>
                 <div className="p-3 text-center">
                 {verificationResponse.ticket?.state}

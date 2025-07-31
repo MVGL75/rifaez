@@ -38,11 +38,17 @@ const RaffleSchema = new mongoose.Schema({
             },
             currentParticipants: {
                 type: [{
-                    name: {
+                    first_name: {
+                        type: String
+                    },
+                    last_name: {
                         type: String
                     },
                     phone: {
-                        type: Number
+                        type: {
+                            number: String,
+                            country: String,
+                        }
                     },
                     state: {
                         type: String
@@ -51,22 +57,24 @@ const RaffleSchema = new mongoose.Schema({
                         type: String
                     },
                     tickets: {
-                        type: [Number]
+                        type: [{
+                            number: Number,
+                            status: {
+                                type: String,
+                                default: "pending"
+                            },
+                            notes: {
+                                type: String,
+                                default: ""
+                            }
+                        }]
                     },
                     amount: {
                         type: Number
                     },
-                    status: {
-                        type: String,
-                        default: "pending"
-                    },
                     transactionID: {
                         type: String,
                     },
-                    notes: {
-                        type: [String],
-                        default: []
-                    }
                 }],
                 required: true,
                 default: []
@@ -93,8 +101,14 @@ const RaffleSchema = new mongoose.Schema({
                 default: []
             },
             textHtml: {
-                type: String,
-                default: '',
+                type: {
+                    title: {
+                        type: String,
+                        default: "Preguntas Frecuentes"
+                    },
+                    html: String
+                },
+                required: true,
             },
             colorPalette: {
                 type: {
@@ -226,6 +240,24 @@ const RaffleSchema = new mongoose.Schema({
         }
 )
 
+RaffleSchema.pre('save', function (next) {
+    const raffle = this;
+  
+    let paidCount = 0;
+    
+    raffle.currentParticipants.forEach(participant => {
+      participant.tickets.forEach(ticket => {
+        if (ticket.status === 'pagado') {
+          paidCount++;
+        }
+      });
+    });
+  
+    raffle.stats.paidParticipants = paidCount;
+  
+    next();
+  });
+
 RaffleSchema.virtual('totalVisits').get(function () {
     return this.stats?.dailyVisitStats?.reduce((sum, visit) => sum + visit?.count, 0) || 0;
   });
@@ -251,44 +283,6 @@ RaffleSchema.virtual('totalVisits').get(function () {
         return "Justo ahora";
     }
 };
-
-// RaffleSchema.virtual('notifications').get(function () {
-//     const getToday = new Date();
-//     const getTodayIso = getToday.toISOString().split('T')[0]; 
-//     const notifications = [];
-//     let id = 0;
-
-//     const curr = this.currentParticipants?.filter((part) => part.date.split('T')[0] === getTodayIso);
-//     if (curr && curr.length > 0) {
-//         curr.forEach((participant) => {
-//             id += 1;
-//             const notifyTime = calcTimeAgo(participant.date);
-//             notifications.push({
-//                 id: id,
-//                 type: "sale",
-//                 message: `Transacción #${participant.transactionID}`,
-//                 time: notifyTime
-//             });
-//         });
-//     }
-//     const cont = this.contact?.filter((part) => part.date.split('T')[0] === getTodayIso);
-
-//     if (cont && cont.length > 0) {
-//         cont.forEach((contact) => {
-//             id += 1;
-//             const notifyTime = calcTimeAgo(contact.date);
-//             notifications.push({
-//                 id: id,
-//                 type: "contact",
-//                 contact,
-//                 message: `Te contactó ${contact.name}`,
-//                 time: notifyTime
-//             });
-//         });
-//     }
-
-//     return notifications;
-// });
 
 
 RaffleSchema.pre('save', function (next) {
