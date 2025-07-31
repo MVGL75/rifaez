@@ -108,7 +108,6 @@ const RaffleEditPage = ({}) => {
           isActive: raffleWithoutId.isActive, 
           paymentMethods: raffleWithoutId.paymentMethods, 
           additionalPrizes: raffleWithoutId.additionalPrizes, 
-          textHtml: raffleWithoutId.textHtml,
           colorPalette: {
             header: raffleWithoutId.colorPalette.header,
             background: raffleWithoutId.colorPalette.background,
