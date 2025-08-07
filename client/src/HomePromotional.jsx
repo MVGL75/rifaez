@@ -1,14 +1,34 @@
 import Logo from "./Logo"
 import React from "react";
-import { Button } from "./raffleTemplates/components/ui/button"
+import { Button } from "@/components/TicketPanel/ui/button"
 import { Line } from "react-chartjs-2";
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/home_components/ui/card';
-import { motion } from "framer-motion";
+import { motion, AnimatePresence } from "framer-motion";
 import PromotionalLayout from "./PromotionalLayout";
-import { ChevronRight, Shuffle, Rocket, CheckCircle, Zap, Award, BarChart, Users, Palette, Globe, MessageCircle, Search, Ticket, Check, Router, PanelsTopLeft, ChartBar, Server, User, Tag, MapPin, Phone, MessageSquare, Grid3X3 } from "lucide-react"
+import { ChevronRight, Shuffle, Rocket, CheckCircle, Zap, Edit, Copy, TicketIcon, Clock, Info, Award, BarChart, Users, Palette, Globe, MessageCircle, Search, Ticket, ChevronDown, Router, PanelsTopLeft, ChartBar, Server, User, Trash2, MapPin, Phone, Calendar, Grid3X3 } from "lucide-react"
+import { Badge } from '@/components/TicketPanel/ui/badge';
 import { Link, useNavigate } from "react-router-dom"
 import { useState, useEffect, useRef } from "react";
 import { Chart } from "chart.js";
+
+const tickets = [
+  {
+    number: 101,
+    status: "pendiente",
+    notes: ""
+  },
+  {
+    number: 102,
+    status: "pendiente",
+    notes: ""
+  },
+  {
+    number: 103,
+    status: "pagado",
+    notes: "Paid via OXXO"
+  }
+];
+
 export default function HomePromotional(){
     const navigate = useNavigate()
     const [domainAnimateText, setDomainAnimateText] = useState("")
@@ -190,6 +210,25 @@ export default function HomePromotional(){
         '--card-raffle': 'hsl(224 4% 14%)',
         '--color-raffle': 'hsl(220 0% 94%)'
       };
+
+      const statusStyles = {
+          pagado: {
+            icon: <CheckCircle className="w-5 h-5" />,
+            bg: 'bg-green-100',
+            text: 'text-green-600',
+            badge: 'bg-green-500 hover:bg-green-600',
+            buttonText: 'Pendiente'
+          },
+          pendiente: {
+            icon: <Clock className="w-5 h-5" />,
+            bg: 'bg-yellow-100',
+            text: 'text-yellow-600',
+            badge: 'bg-yellow-500 hover:bg-yellow-600',
+            buttonText: 'Pagado'
+          }
+        };
+      
+        
       
     return (
         <PromotionalLayout>
@@ -236,12 +275,6 @@ export default function HomePromotional(){
                     </div>
                 </div>  
                 <div>
-                {/* <div className="bg-white absolute p-6 shadow-lg rounded-lg -right-20 -top-10">
-                    <img src="/fakePhone.png" className="w-24" alt="" />
-                    <button className="absolute left-1/2 -translate-x-1/2 shadow-lg w-[200px]">
-                        <span className="bg-primary text-sm text-white py-3 px-4 rounded-xl">Crear Nueva Rifa</span>
-                    </button>
-                </div> */}
                 
                     
                 </div>
@@ -277,103 +310,98 @@ export default function HomePromotional(){
                             <p className="mb-8">Lleva un control completo de cada participante en tu rifa: visualiza registros, verifica pagos, asigna boletos y gestiona ganadores desde un solo lugar.</p>
                             <button className="py-1.5 px-4 rounded-full bg-primary sm:text-base text-sm text-white " onClick={()=>{navigate("/register")}}>Registrate</button>
                         </div>
-                        <div className="flex justify-evenly">
-                            
-                        </div>
+                     
                     </div>
-                      <div className="border max-w-full w-[640px] min-h-[320px] flex justify-center items-center border-gray-200 rounded-xl overflow-hidden shadow-lg">
-                          <div
-                              className="bg-muted/50 rounded-lg p-6 flex flex-col  min-h-fit h-[320px] w-full"
-                            >
-                              <div className="flex gap-6 flex-col items-start sm:flex-row sm:justify-between ">
-                                <div className=" w-full sm:w-auto">
-                                  <div className="flex flex-col sm:flex-row sm:items-center gap-3 mb-4">
-                                    <Tag className="w-5 h-5 text-primary" />
-                                    <div className="flex flex-col gap-1 xs:flex-row xs:items-center grow justify-between sm:justify-start xs:gap-3">
-                                      <h3 className="font-medium">Transacción #002</h3>
-                                        <span className="bg-primary/10 text-primary xs:px-2 py-1 rounded-md text-sm">
-                                          3 boletos
-                                        </span>
-                                    </div>
-                                  </div>
-                                  <div className="flex w-full flex-col items-left sm:w-auto sm:flex-row sm:items-center gap-2 mb-6">
-                                    <Button
-                                      variant="outline"
-                                      size="sm"
-                                      className="flex items-center space-x-1 border border-gray-200"
-                                    >
-                                      <Check className="w-4 h-4" />
-                                      <span>Marcar como Pagado</span>
-                                    </Button>
-                                  <Button
-                                    variant="outline"
-                                    size="sm"
-                                    className="border border-gray-200"
-                                  >
-                                    Ver Detalles
-                                  </Button>
-                                </div>
-                                  <div className="flex flex-col sm:mb-0 mb-6 gap-4 items-start md:items-center sm:flex-row text-sm text-muted-foreground">
-                                    <div className="flex items-center space-x-1">
-                                      <User className="w-4 h-4" />
-                                      <span>Juan</span>
-                                    </div>
-                                    <div className="flex items-center space-x-1">
-                                      <MapPin className="w-4 h-4" />
-                                      <span>Jalisco</span>
-                                    </div>
-                                    <div className="flex items-center space-x-1">
-                                      <Phone className="w-4 h-4" />
-                                      <span>(649) 490-4930</span>
-                                    </div>
-                                  </div>
-
-                                    <div className="sm:mt-3 sm:mb-0 mb-6 pl-8 border-l-2 border-primary/20">
-                                      <div className="text-sm text-muted-foreground mb-2">
-                                        Boletos:
-                                      </div>
-                                      <div className="flex flex-wrap gap-2">
-                                          <span
-                                            className="px-2 py-1 text-sm bg-background rounded-md"
-                                          >
-                                            #6
-                                          </span>
-                                          <span
-                                            className="px-2 py-1 text-sm bg-background rounded-md"
-                                          >
-                                            #8
-                                          </span>
-                                          <span
-                                            className="px-2 py-1 text-sm bg-background rounded-md"
-                                          >
-                                            #12
-                                          </span>
-                                      </div>
-                                    </div>
-                                </div>
-
-                               
-                              </div>
-
-                              <div className="flex flex-col xs:flex-row xs:items-center justify-between mt-auto pt-4 border-t border-muted">
-                                <div className="flex flex-col-reverse xs:mb-0 mb-3 items-left sm:flex-row sm:items-center gap-4">
-                                  <span className="px-2 py-1 rounded-full w-fit text-xs font-medium bg-yellow-100 text-yellow-800">
-                                    Pendiente
-                                  </span>
-                                  <span className="text-sm text-muted-foreground">
-                                    2025-05-30T02:22:27.140Z
-                                  </span>
-                                  <span className="text-sm font-medium">
-                                    $60
-                                  </span>
-                                </div>
-
-                                  <div  className="flex flex-row items-center space-x-1 text-sm text-muted-foreground">
-                                    <MessageSquare className="w-4 h-4" />
-                                    <span>2 notas</span>
-                                  </div>
+                    <div className="border rounded-lg overflow-hidden bg-background shadow-sm">
+                        <div className="w-full flex items-start sm:items-center justify-between p-3 text-left">
+                          <div className="flex flex-col sm:flex-row sm:items-center gap-3 flex-grow cursor-pointer min-w-0">
+                            <div className="flex-shrink-0">
+                              <div className='w-10 h-10 rounded-full flex items-center justify-center bg-green-100 text-green-600'>
+                                <CheckCircle className="w-5 h-5" />
                               </div>
                             </div>
+                            <div className="flex-grow min-w-0">
+                              <p className="font-semibold text-foreground truncate">
+                                <span className="text-primary">#002</span> - Carlos
+                              </p>
+                              <div className="flex flex-wrap items-center gap-x-3 gap-y-1 text-xs text-muted-foreground mt-1">
+                                <span className="flex items-center gap-1"><Calendar className="w-3 h-3" /> {new Date("12-05-25").toLocaleDateString()}</span>
+                                <span className="flex items-center gap-1"><TicketIcon className="w-3 h-3" /> {3} Boleto{3 !== 1 && 's'}</span>
+                                <span className={`flex items-center gap-1 font-medium ${1 > 0 ? 'text-green-600' : ''}`}><CheckCircle className="w-3 h-3" /> {1} Pagado{1 !== 1 && 's'}</span>
+                                <span className={`flex items-center gap-1 font-medium ${2 > 0 ? 'text-yellow-600' : ''}`}><Clock className="w-3 h-3" /> {2} Pendiente{2 !== 1 && 's'}</span>
+                              </div>
+                            </div>
+                          </div>
+                          <div className="flex items-center gap-1 flex-shrink-0 ml-2">
+                            <Button variant="ghost" size="icon" className="text-muted-foreground hover:text-primary">
+                              <Info className="w-4 h-4" />
+                            </Button>
+                            <Button variant="ghost" size="icon">
+                              <ChevronDown
+                                className='w-5 h-5 text-muted-foreground transition-transform'
+                              />
+                            </Button>
+                          </div>
+                        </div>
+                        <AnimatePresence>
+                            <motion.div
+                              initial={{ height: 0, opacity: 0 }}
+                              animate={{ height: 'auto', opacity: 1 }}
+                              exit={{ height: 0, opacity: 0 }}
+                              transition={{ duration: 0.3, ease: 'easeInOut' }}
+                              className="overflow-hidden"
+                            >
+                              <div className="p-3 border-t">
+                                  <div className="flex justify-end mb-2">
+                                    <Button size="sm" className="bg-green-500 hover:bg-green-600 text-white">
+                                      <CheckCircle className="w-4 h-4 mr-2" />
+                                      Marcar Todos Como Pagados
+                                    </Button>
+                                  </div>
+                                <div className="space-y-2">
+                                  {tickets.map((ticket) => {
+                                    const currentStatus = statusStyles[ticket.status] || statusStyles.pendiente;
+                                    return (
+                                   <motion.div
+                                      layout
+                                      initial={{ opacity: 0, y: -10 }}
+                                      animate={{ opacity: 1, y: 0 }}
+                                      exit={{ opacity: 0, x: -20 }}
+                                      className="flex flex-col sm:flex-row gap-5 sm:items-center justify-between p-2.5 bg-card rounded-md shadow-sm"
+                                    >
+                                      <div className="flex items-center gap-3">
+                                        <div className={`p-2 rounded-full ${currentStatus.bg} ${currentStatus.text}`}>
+                                          {currentStatus.icon}
+                                        </div>
+                                        <div>
+                                          <p className="font-bold text-foreground">Boleto #{ticket.number}</p>
+                                          <Badge variant={ticket.status === 'pagado' ? 'default' : 'secondary'} className={`${currentStatus.badge} capitalize`}>
+                                            {ticket.status}
+                                          </Badge>
+                                        </div>
+                                      </div>
+                                      <div className="flex items-center gap-1">
+                                        <Button variant="outline" className="text-xs xxs:text-sm" size="sm">
+                                          Marcar {currentStatus.buttonText}
+                                        </Button>
+                                        <Button variant="ghost" size="icon" className="text-gray-500 hover:text-primary">
+                                          <Edit className="w-4 h-4" />
+                                          {ticket.notes && <span className="absolute top-1 right-1 block h-2 w-2 rounded-full bg-primary" />}
+                                        </Button>
+                                        <Button variant="ghost" size="icon" className="text-gray-500 hover:text-primary">
+                                          <Copy className="w-4 h-4" />
+                                        </Button>
+                                        <Button variant="ghost" size="icon" className="text-red-500 hover:bg-red-100">
+                                          <Trash2 className="w-4 h-4" />
+                                        </Button>
+                                      </div>
+                                    </motion.div>
+                                    )
+                                  })}
+                                </div>
+                              </div>
+                            </motion.div>
+                        </AnimatePresence>
                       </div>
               </div>
             </section> 
@@ -383,25 +411,13 @@ export default function HomePromotional(){
                     <div className="flex items-center justify-center w-20 h-20 shadow-lg rounded-full">
                                 <Grid3X3 className="w-10 h-10 text-primary"/>
                         </div>
-                        <h1 className="text-3xl">Plantillas</h1>
-                        <p className="max-w-[400px] text-center">Ve las plantillas únicas que ofrece Rifaez para potenciar tus rifas al máximo.</p>
+                        <h1 className="text-3xl">Plantilla</h1>
+                        <p className="max-w-[400px] text-center">Ve la plantilla única que ofrece Rifaez para potenciar tus rifas al máximo.</p>
                     </div>
                     <div className="grow flex flex-col gap-8">
-                      <Link to="/raffle/template_classic">
-                        <div className="bg-white flex items-center justify-between shadow-lg hover:shadow-primary hover:text-primary w-full px-6 py-4 text-lg rounded-lg">
-                          <span>Clasica</span>
-                          <ChevronRight className="w-6 h-6"/>
-                        </div>
-                      </Link>
                       <Link to="/raffle/template_popular">
                         <div className="bg-white flex items-center justify-between shadow-lg hover:shadow-primary hover:text-primary w-full px-6 py-4 text-lg rounded-lg">
                           <span>Popular</span>
-                          <ChevronRight className="w-6 h-6"/>
-                        </div>
-                      </Link>
-                      <Link to="/raffle/template_modern">
-                        <div className="bg-white flex items-center justify-between shadow-lg hover:shadow-primary hover:text-primary w-full px-6 py-4 text-lg rounded-lg">
-                          <span>Moderna</span>
                           <ChevronRight className="w-6 h-6"/>
                         </div>
                       </Link>

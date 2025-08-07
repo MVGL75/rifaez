@@ -159,9 +159,20 @@ const AppContent = () => {
   }, []);
 
   useEffect(() => {
+    const index = user?.raffles?.findIndex(obj => obj.id === selectedRaffle?.id);
+    localStorage.setItem("selectedRaffleIndex", `${index}`);
+  }, [selectedRaffle])
+
+  useEffect(() => {
     if (user) {
       const raffles = user?.raffles?.length > 0 ? user?.raffles : ["null"];
-      setSelectedRaffle(raffles[0]);
+      const selectedRaffleIndex = localStorage.getItem("selectedRaffleIndex");
+      if(selectedRaffleIndex){
+        setSelectedRaffle(raffles[selectedRaffleIndex]);
+      } else {
+        localStorage.setItem("selectedRaffleIndex", "0");
+        setSelectedRaffle(raffles[0]);
+      }
     }
   }, [user]);
 

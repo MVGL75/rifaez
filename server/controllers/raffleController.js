@@ -8,7 +8,16 @@ import { RaffleCounter } from '../models/RaffleCounter.js';
 import AppError from '../utils/AppError.js';
 import { v2 as cloudinary } from 'cloudinary';
 import plans from "../seed/plans.js"
-
+import nodemailer from 'nodemailer';
+const transporter = nodemailer.createTransport({
+    host: 'smtp.gmail.com',
+    port: 465,
+    secure: true,
+    auth: {
+      user: process.env.EMAIL_USER,       // your email address
+      pass: process.env.EMAIL_PASS        // your email password or app password
+    }
+});
 
 
 
@@ -190,6 +199,13 @@ export const editRaffle = async (req, res) => {
     })
     await updateStats(raffle, "dailySales", amount);
     await raffle.save()
+    const user = await User.findOne({ raffles: raffle._id });
+    await transporter.sendMail({
+      to: user.username,
+      subject: '¡Tu boleto ha sido vendido!',
+      html: `<p>¡Felicidades! Se ha hecho una transaccion <strong>${transactionId}</strong> a nombre de <strong>${value.first_name + ' ' + value.last_name}</strong>.</p>
+      <p>Gracias por usar nuestra plataforma. Puedes ver los detalles en tu cuenta.</p>`
+    });
     res.json({message: "Contact Sent", status: 200})
   }
   export const editFindRaffle = async (req, res)=>{

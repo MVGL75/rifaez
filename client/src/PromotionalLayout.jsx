@@ -1,6 +1,7 @@
 import Logo from "./Logo";
 import { ChevronRight } from "lucide-react";
 import { useNavigate } from "react-router-dom";
+import { Link } from "react-router-dom";
 const style = {
     '--background': '0 0% 100%',
     '--foreground': '222.2 84% 4.9%',
@@ -37,7 +38,9 @@ export default function PromotionalLayout({children}){
             <header>
                 <div className="mx-auto py-4 max-w-[100vw] sm:px-14 px-6 w-[1400px]">
                     <nav className="w-full flex justify-between">
-                        <Logo className="w-8 h-8"/>
+                        <Link to="/">
+                            <Logo className="w-8 h-8"/>
+                        </Link>
                         <button onClick={()=>{navigate("/login")}} className="bg-primary text-white text-sm flex items-center rounded-full gap-1 px-4 py-1.5">
                             <span>Login</span>
                             <ChevronRight className="w-4 h-4"/>                   

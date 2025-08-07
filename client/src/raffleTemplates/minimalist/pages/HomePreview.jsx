@@ -301,7 +301,7 @@ const handleTouchEnd = (e) => {
 
   return (
     <div className={`${raffle.border_corner === "square" && "no-radius"}text-colorRaffle font-fontRaffle items-center bg-backgroundRaffle`}>
-      <div className="flex flex-col bg-headerRaffle items-center font-medium w-full px-3 py-3 text-headerRaffle-foreground ">
+      <div className="flex flex-col bg-headerRaffle text-center items-center font-medium w-full px-3 py-3 text-headerRaffle-foreground ">
       <h1 className="text-3xl uppercase text-center leading-[25px] mb-2 tracking-[-2.5px]">
        {raffle?.title}
        </h1>

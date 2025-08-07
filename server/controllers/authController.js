@@ -257,8 +257,8 @@ export const save = async(req, res)=> {
     await user.save();
     await transporter.sendMail({
       to: email,
-      subject: 'Password Reset',
-      html: `<p>Click <a href="${process.env.CLIENT_URL}/reset-password?token=${resetToken}">here</a> to reset your password. This link expires in 15 minutes.</p>`
+      subject: 'Restablecimiento de Contraseña',
+      html: `<p>Haz clic <a href="${process.env.CLIENT_URL}/reset-password?token=${resetToken}">aquí</a> para restablecer tu contraseña. Este enlace expirará en 15 minutos.</p>`
     });
     res.json({message: 'token generated', status: 200})
   }
