@@ -49,8 +49,11 @@ export default function PromotionalLayout({children}){
                 </div>
             </header>
             {children}
-            <footer className="border mt-auto border-gray-200 w-screen py-10 px-8 text-center">
-              Potenciando tus rifas, simplificando tu éxito.
+            <footer className="border flex flex-col gap-4 mt-auto border-gray-200 w-screen py-10 px-8 text-center">
+             <span> Potenciando tus rifas, simplificando tu éxito.</span>
+              <Link to="/privacy-policy" className="underline">
+                Politica de Privacidad
+              </Link>
             </footer>     
         </div>
     )

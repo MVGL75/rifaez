@@ -23,6 +23,7 @@ const dataTemplate = {
   additionalPrizes: [],
   availableTickets: Array.from({ length: 10000 }, (_, i) => i + 1).filter(n => ![33, 35, 67, 109, 844, 1203].includes(n)), // assuming tickets missing were 33,35,67
   border_corner: "round",
+  verified: true,
   business_name: "Rifaez",
   colorPalette: {
     header: 'black',

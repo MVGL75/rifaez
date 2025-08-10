@@ -417,7 +417,7 @@ export default function HomePromotional(){
                     <div className="grow flex flex-col gap-8">
                       <Link to="/raffle/template_popular">
                         <div className="bg-white flex items-center justify-between shadow-lg hover:shadow-primary hover:text-primary w-full px-6 py-4 text-lg rounded-lg">
-                          <span>Popular</span>
+                          <span>Ejemplo</span>
                           <ChevronRight className="w-6 h-6"/>
                         </div>
                       </Link>
